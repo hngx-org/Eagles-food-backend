@@ -8,7 +8,7 @@ namespace eagles_food_backend.Controllers
     {
         private readonly ILogger<LunchController> _logger;
 
-        public LunchController(ILogger<LunchController> logger)
+        public LunchControlle(ILogger<LunchController> logger)
         {
             _logger = logger;
         }
