@@ -1,9 +1,13 @@
-﻿namespace eagles_food_backend.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace eagles_food_backend.Models
 {
     public class Transaction
     {
         public long Id { get; set; }
+        [Required]
         public long SenderId { get; set; }
+        [Required]
         public long RecieverId { get; set; }
         public double Amount { get; set; }
         public string Currency { get; set; }
