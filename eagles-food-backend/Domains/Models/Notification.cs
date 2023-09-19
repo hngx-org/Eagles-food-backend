@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace eagles_food_backend.Models
+namespace eagles_food_backend.Domains.Models
 {
-    public class Notification
+    public class Activity
     {
         public long Id { get; set; }
         public long Staff_Id { get; set; }

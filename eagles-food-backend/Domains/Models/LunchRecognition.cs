@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace eagles_food_backend.Models
+namespace eagles_food_backend.Domains.Models
 {
     public class LunchRecognition
     {

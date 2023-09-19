@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace eagles_food_backend.Models
+namespace eagles_food_backend.Domains.Models
 {
     public class User
     {

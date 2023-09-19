@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace eagles_food_backend.Models
+namespace eagles_food_backend.Domains.Models
 {
     public class DevicePushNotification
     {
@@ -10,6 +10,6 @@ namespace eagles_food_backend.Models
         public long User_Id { get; set; }
         [ForeignKey("User_Id")]
         public User User { get; set; }
-       
+
     }
 }
