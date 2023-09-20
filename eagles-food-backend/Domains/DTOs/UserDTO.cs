@@ -1,24 +1,19 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace eagles_food_backend.Domains.DTOs
+﻿namespace eagles_food_backend.Domains.DTOs
 {
-    public class UserDTO
+    public class UserLoginDTO
     {
+        public string username { get; set; }
+        public string password { get; set; }
     }
 
     public class CreateUserDTO
     {
-        [Required]
-        public string LastName { get; set; }
-        [Required]
-        public string FirstName { get; set; }
-        [Required]
-        public string Email { get; set; }
-        [Required]
-        public string Address { get; set; }
-        [Required]
-        public string Password { get; set; }
-        public string Phone { get; set; }
+        [Required] public string first_name { get; set; }
+        [Required] public string last_name { get; set; }
+        [Required] public string username { get; set; }
+        [Required] public string password { get; set; }
+        [Required] public string email { get; set; }
+
     }
 
     public record UserProfileReadDTO(string name, string email, string profile_picture, string phonenumber, string bank_number, string bank_code, string bank_name, bool is_admin);

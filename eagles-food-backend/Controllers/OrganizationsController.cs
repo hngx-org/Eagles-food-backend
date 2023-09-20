@@ -1,12 +1,13 @@
 using eagles_food_backend.Domains.DTOs;
 using eagles_food_backend.Domains.Models;
 using eagles_food_backend.Services;
+using eagles_food_backend.Services.OrganizationRepository;
 using Microsoft.AspNetCore.Mvc;
 
 namespace eagles_food_backend.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class OrganizationsController : ControllerBase
     {
         private readonly ILogger<OrganizationsController> _logger;
