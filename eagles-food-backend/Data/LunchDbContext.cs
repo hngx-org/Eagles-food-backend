@@ -15,16 +15,16 @@ namespace eagles_food_backend.Data
         public DbSet<Lunch> Lunches { get; set; }
         public DbSet<Organization> Organizations { get; set; }
         public DbSet<OrganizationWallet> OrganizationWallets { get; set; }
-        public DbSet<Withdawal> Withdrawals { get; set; }
+        public DbSet<Withdrawal> Withdrawals { get; set; }
         
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+           // modelBuilder.Entity<Organization>().Property(e=>e.Id).ValueGeneratedOnAdd();
             modelBuilder.Entity<User>().HasOne(o => o.Organization).WithMany(o => o.users);
-            modelBuilder.Entity<Withdawal>().HasOne(w => w.User).WithMany(u => u.withdrawals);
+            modelBuilder.Entity<Withdrawal>().HasOne(w => w.User).WithMany(u => u.withdrawals);
             modelBuilder.Entity<Invite>().HasOne(i => i.organization).WithMany(o => o.invitations);
-            modelBuilder.Entity<Lunch>().HasOne(l => l.sender).WithMany(s => s.sent_lunches);
-            modelBuilder.Entity<Lunch>().HasOne(l => l.reciever).WithMany(s => s.recieved_lunches);
-
+            //modelBuilder.Entity<Lunch>().HasOne(l => l.sender).WithMany(s => s.sent_lunches);
+            //modelBuilder.Entity<Lunch>().HasOne(l => l.reciever).WithMany(s => s.recieved_lunches);
         }
 
     }

@@ -18,7 +18,7 @@ namespace eagles_food_backend.Services
 
     public interface IResponseService
     {
-        ServiceResponse<T> SuccessResponse<T>(T Data, string? message);
-        ServiceResponse<T> ErrorResponse<T>(string? message);
+        ServiceResponse<T> SuccessResponse<T>(T Data, string message = null);
+        ServiceResponse<T> ErrorResponse<T>(string message = null);
     }
 }
