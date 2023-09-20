@@ -36,7 +36,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-<<<<<<< HEAD
+
 builder.Services.AddScoped<IUserRepository,UserService>();
 builder.Services.AddSingleton<AuthenticationClass>();
 
@@ -59,11 +59,7 @@ builder.Services.AddControllersWithViews()
     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
 );
 
-=======
-builder.Services.AddScoped<IResponseService, ResponseService>();
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IOrganizationService, OrganizationService>();
->>>>>>> d578b4b9c03e1e86c6cd0805d08b730cfdd32333
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
