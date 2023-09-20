@@ -21,7 +21,7 @@ namespace eagles_food_backend.Domains.Models
         public DateTime Created_at { get; set; } = DateTime.Now;
         public DateTime updated_at { get; set; }
         public bool is_admin { get; set; } = false;
-        public IEnumerable<Withdawal> withdrawals { get; set; }
-        public IEnumerable<Lunch> lunches { get; set; }
+        public IEnumerable<Withdawal>? withdrawals { get; set; }
+        
     }
 }
