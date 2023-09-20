@@ -58,7 +58,7 @@ namespace eagles_food_backend.Services.UserServices
                     }
                     else
                     {
-                        var token = authentication.createToken((user_login.UserId).ToString(), "user");
+                        var token = authentication.createToken((user_login.id).ToString(), "user");
                         response.data = token;
                         response.message = "Login succesful";
                     }
@@ -84,16 +84,16 @@ namespace eagles_food_backend.Services.UserServices
         {
             try
             {
-                long? org_id = (await db_context.users.FirstOrDefaultAsync(x => x.UserId == user_id))?.OrganizationId;
+                long? org_id = (await db_context.users.FirstOrDefaultAsync(x => x.id == user_id))?.org_id;
                 if (org_id == null)
                 {
                     return new Response<List<UserReadDTO>>() { message = "User not found", success = false, status_code = "404" };
                 }
-                var users = await db_context.users.Where(x => x.OrganizationId == org_id).Select(x => new UserReadDTO(
+                var users = await db_context.users.Where(x => x.org_id == org_id).Select(x => new UserReadDTO(
                 $"{x.first_name} {x.last_name}",
                 x.email,
-                x.profile_picture,
-                x.UserId.ToString())).ToListAsync();
+                x.profile_pic,
+                x.id.ToString())).ToListAsync();
 
                 return new Response<List<UserReadDTO>>() { data = users, message = "Users fetched successfully" };
             }
@@ -107,7 +107,7 @@ namespace eagles_food_backend.Services.UserServices
         {
             try
             {
-                var user = await db_context.users.FirstOrDefaultAsync(x => x.UserId == id);
+                var user = await db_context.users.FirstOrDefaultAsync(x => x.id == id);
                 if (user == null)
                 {
                     return new Response<UserProfileReadDTO>() { message = "User not found", success = false, status_code = "404" };
@@ -116,7 +116,7 @@ namespace eagles_food_backend.Services.UserServices
                 (
                     name: $"{user.first_name} {user.last_name}",
                     email: user.email,
-                    profile_picture: user.profile_picture,
+                    profile_picture: user.profile_pic,
                     phonenumber: "",
                     bank_number: user.bank_number,
                     bank_code: user.bank_code,
@@ -136,7 +136,7 @@ namespace eagles_food_backend.Services.UserServices
         {
             try
             {
-                var user = await db_context.users.FirstOrDefaultAsync(x => x.UserId == user_id);
+                var user = await db_context.users.FirstOrDefaultAsync(x => x.id == user_id);
                 if (user == null)
                 {
                     return new Response<UserBankUpdateDTO>() { message = "User not found", success = false, status_code = "404" };
@@ -168,8 +168,8 @@ namespace eagles_food_backend.Services.UserServices
                 var userReadDto = new UserReadDTO(
                     name: $"{user.first_name} {user.last_name}",
                     email: user.email,
-                    profile_picture: user.profile_picture,
-                    user_id: user.UserId.ToString());
+                    profile_picture: user.profile_pic,
+                    user_id: user.id.ToString());
 
                 return new Response<UserReadDTO>() { data = userReadDto, message = "User found" };
             }

@@ -1,4 +1,4 @@
-﻿    using eagles_food_backend.Domains.Models;
+﻿using eagles_food_backend.Domains.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace eagles_food_backend.Data
@@ -7,7 +7,7 @@ namespace eagles_food_backend.Data
     {
         public LunchDbContext(DbContextOptions<LunchDbContext> options) : base(options)
         {
-                
+
         }
 
         public DbSet<User> users { get; set; }
@@ -19,7 +19,7 @@ namespace eagles_food_backend.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<User>().HasOne(o => o.Organization).WithMany(o => o.users);
+            modelBuilder.Entity<User>().HasOne(o => o.Organization).WithMany(o => o.users).HasForeignKey("org_id");
             modelBuilder.Entity<Withdrawal>().HasOne(w => w.User).WithMany(u => u.withdrawals);
             modelBuilder.Entity<Invite>().HasOne(i => i.organization).WithMany(o => o.invitations);
 

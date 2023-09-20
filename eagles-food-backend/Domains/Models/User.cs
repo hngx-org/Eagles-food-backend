@@ -4,14 +4,14 @@ namespace eagles_food_backend.Domains.Models
 {
     public class User
     {
-        [Key] public long UserId { get; set; }
+        [Key] public long id { get; set; }
         [Required] public string first_name { get; set; } //Required for registration
         [Required] public string last_name { get; set; } //Required for registration
         [Required] public string username { get; set; }
-        public long OrganizationId { get; set; }
+        public long org_id { get; set; }
 
-        public Organization Organization { get; set; }
-        public string? profile_picture { get; set; }
+        public virtual Organization Organization { get; set; }
+        public string? profile_pic { get; set; }
         [Required] public string email { get; set; } //Required for registration
         public byte[] password_hash { get; set; } //
         public byte[] password_salt { get; set; } //
@@ -26,6 +26,7 @@ namespace eagles_food_backend.Domains.Models
         public DateTime created_at { get; set; } = DateTime.Now;
         public DateTime updated_at { get; set; } = DateTime.Now;
         public bool is_admin { get; set; } = false;
+        public bool is_deleted { get; set; } = false;
         public IEnumerable<Withdrawal>? withdrawals { get; set; }
         public IEnumerable<Lunch> sent_lunches { get; set; }
         public IEnumerable<Lunch> recieved_lunches { get; set; }

@@ -26,7 +26,7 @@ using eagles_food_backend.Services.ResponseServce;
                 var organization = new Organization()
                 {
                     name = model.Name,
-                    currency = model.Currency,
+                    currency_code = model.Currency,
                     lunch_price = model.LunchPrice
                 };
                 await _context.AddAsync(organization);
@@ -41,7 +41,7 @@ using eagles_food_backend.Services.ResponseServce;
                 if (organization == null) return _responseService.ErrorResponse<OrganizationDTO>("Organization not found");
                 var response = new OrganizationDTO()
                 {
-                    Currency = organization.currency,
+                    Currency = organization.currency_code,
                     LunchPrice = organization.lunch_price,
                     Name = organization.name,
                 };
