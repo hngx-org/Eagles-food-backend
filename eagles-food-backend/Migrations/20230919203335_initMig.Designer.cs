@@ -64,7 +64,7 @@ namespace eagles_food_backend.Migrations
                     b.Property<int>("quantity")
                         .HasColumnType("int");
 
-                    b.Property<long>("recieverId")
+                    b.Property<long>("receiverId")
                         .HasColumnType("bigint");
 
                     b.Property<long>("senderId")
@@ -74,7 +74,7 @@ namespace eagles_food_backend.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.HasIndex("recieverId");
+                    b.HasIndex("receiverId");
 
                     b.HasIndex("senderId");
 
@@ -236,7 +236,7 @@ namespace eagles_food_backend.Migrations
 
                     b.HasOne("eagles_food_backend.Domains.Models.Organization", "reciever")
                         .WithMany("recieved_lunches")
-                        .HasForeignKey("recieverId")
+                        .HasForeignKey("receiverId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

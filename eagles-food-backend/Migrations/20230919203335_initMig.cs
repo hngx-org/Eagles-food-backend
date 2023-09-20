@@ -190,7 +190,7 @@ namespace eagles_food_backend.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Lunches_recieverId",
                 table: "Lunches",
-                column: "recieverId");
+                column: "receiverId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Lunches_senderId",

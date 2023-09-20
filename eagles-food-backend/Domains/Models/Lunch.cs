@@ -4,13 +4,12 @@ namespace eagles_food_backend.Domains.Models
 {
     public class Lunch
     {
-        [Key] public long LunchId { get; set; }
-        [Required] public long senderId { get; set; }
-        public Organization sender { get; set; }
-        [Required] public long recieverId { get; set; }
-        public Organization reciever{ get; set; }
+        [Key] public string id { get; set; }
+        [Required] public string senderId { get; set; }
+        [Required] public string recieverId { get; set; }
         [Required] public int quantity { get; set; }
-        public DateTime created_at { get; set; } = DateTime.Now;
+        public DateTime created_at { get; set; } = DateTime.UtcNow;
         [Required] public string note { get; set; } = string.Empty;
+        [Required] public bool redeemed { get; set; }
     }
 }
