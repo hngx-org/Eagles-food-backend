@@ -4,10 +4,10 @@ namespace eagles_food_backend.Domains.Models
 {
     public class User
     {
-        [Key] public long UserId { get; set; }
+        [Key] public int id { get; set; }
         [Required] public string first_name { get; set; }
         [Required] public string last_name { get; set; }
-        public long OrganizationId { get; set; }
+        public int organizationId { get; set; }
         public Organization Organization { get; set; }
         [Required] public string profile_picture { get; set; }
         [Required] public string email { get; set; }
@@ -21,7 +21,7 @@ namespace eagles_food_backend.Domains.Models
         public DateTime Created_at { get; set; } = DateTime.Now;
         public DateTime updated_at { get; set; }
         public bool is_admin { get; set; } = false;
-        public IEnumerable<Withdawal>? withdrawals { get; set; }
+        public IEnumerable<Withdrawal>? withdrawals { get; set; }
         
     }
 }

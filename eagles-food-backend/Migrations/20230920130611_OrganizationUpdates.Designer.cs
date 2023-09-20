@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using eagles_food_backend.Data;
 
@@ -10,9 +11,10 @@ using eagles_food_backend.Data;
 namespace eagles_food_backend.Migrations
 {
     [DbContext(typeof(LunchDbContext))]
-    partial class LunchDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230920130611_OrganizationUpdates")]
+    partial class OrganizationUpdates
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
