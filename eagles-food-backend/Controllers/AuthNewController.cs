@@ -1,18 +1,17 @@
 using eagles_food_backend.Domains.DTOs;
-using eagles_food_backend.Domains.Models;
 using eagles_food_backend.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace eagles_food_backend.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
-    public class UsersController : ControllerBase
+    [Route("api/users")]
+    public class AuthController : ControllerBase
     {
-        private readonly ILogger<UsersController> _logger;
+        private readonly ILogger<AuthController> _logger;
         private readonly IUserService _userService;
 
-        public UsersController(ILogger<UsersController> logger, IUserService userService)
+        public AuthController(ILogger<AuthController> logger, IUserService userService)
         {
             _logger = logger;
             _userService = userService;
