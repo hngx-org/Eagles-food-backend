@@ -11,8 +11,8 @@ using eagles_food_backend.Data;
 namespace eagles_food_backend.Migrations
 {
     [DbContext(typeof(LunchDbContext))]
-    [Migration("20230919203335_initMig")]
-    partial class initMig
+    [Migration("20230920160208_migration_1")]
+    partial class migration_1
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -42,7 +42,7 @@ namespace eagles_food_backend.Migrations
 
                     b.HasIndex("OrganizationId");
 
-                    b.ToTable("Invites");
+                    b.ToTable("organization_invites");
                 });
 
             modelBuilder.Entity("eagles_food_backend.Domains.Models.Lunch", b =>
@@ -51,7 +51,7 @@ namespace eagles_food_backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    b.Property<long?>("UserId")
+                    b.Property<long>("OrganizationId")
                         .HasColumnType("bigint");
 
                     b.Property<DateTime>("created_at")
@@ -72,13 +72,13 @@ namespace eagles_food_backend.Migrations
 
                     b.HasKey("LunchId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("OrganizationId");
 
                     b.HasIndex("recieverId");
 
                     b.HasIndex("senderId");
 
-                    b.ToTable("Lunches");
+                    b.ToTable("lunches");
                 });
 
             modelBuilder.Entity("eagles_food_backend.Domains.Models.Organization", b =>
@@ -100,7 +100,7 @@ namespace eagles_food_backend.Migrations
 
                     b.HasKey("OrganizationId");
 
-                    b.ToTable("Organizations");
+                    b.ToTable("organizations");
                 });
 
             modelBuilder.Entity("eagles_food_backend.Domains.Models.OrganizationWallet", b =>
@@ -119,7 +119,7 @@ namespace eagles_food_backend.Migrations
 
                     b.HasIndex("OrganizationId");
 
-                    b.ToTable("OrganizationWallets");
+                    b.ToTable("organization_lunch_wallets");
                 });
 
             modelBuilder.Entity("eagles_food_backend.Domains.Models.User", b =>
@@ -127,13 +127,6 @@ namespace eagles_food_backend.Migrations
                     b.Property<long>("UserId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
-
-                    b.Property<DateTime>("Created_at")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("longtext");
 
                     b.Property<long>("OrganizationId")
                         .HasColumnType("bigint");
@@ -147,6 +140,21 @@ namespace eagles_food_backend.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<string>("bank_number")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("bank_region")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("created_at")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("currency")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("currency_code")
                         .IsRequired()
                         .HasColumnType("longtext");
 
@@ -165,30 +173,35 @@ namespace eagles_food_backend.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<string>("password_hash")
-                        .IsRequired()
-                        .HasColumnType("longtext");
+                    b.Property<int>("lunch_credit_balance")
+                        .HasColumnType("int");
 
-                    b.Property<string>("password_salt")
+                    b.Property<byte[]>("password_hash")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasColumnType("longblob");
+
+                    b.Property<byte[]>("password_salt")
+                        .IsRequired()
+                        .HasColumnType("longblob");
 
                     b.Property<string>("profile_picture")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<string>("refresh_token")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<DateTime>("updated_at")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<string>("username")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.HasKey("UserId");
 
                     b.HasIndex("OrganizationId");
 
-                    b.ToTable("Users");
+                    b.ToTable("users");
                 });
 
             modelBuilder.Entity("eagles_food_backend.Domains.Models.Withdawal", b =>
@@ -214,7 +227,7 @@ namespace eagles_food_backend.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Withdrawals");
+                    b.ToTable("withdrawals");
                 });
 
             modelBuilder.Entity("eagles_food_backend.Domains.Models.Invite", b =>
@@ -230,21 +243,25 @@ namespace eagles_food_backend.Migrations
 
             modelBuilder.Entity("eagles_food_backend.Domains.Models.Lunch", b =>
                 {
-                    b.HasOne("eagles_food_backend.Domains.Models.User", null)
+                    b.HasOne("eagles_food_backend.Domains.Models.Organization", "Organization")
                         .WithMany("lunches")
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.HasOne("eagles_food_backend.Domains.Models.Organization", "reciever")
+                    b.HasOne("eagles_food_backend.Domains.Models.User", "reciever")
                         .WithMany("recieved_lunches")
                         .HasForeignKey("recieverId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("eagles_food_backend.Domains.Models.Organization", "sender")
+                    b.HasOne("eagles_food_backend.Domains.Models.User", "sender")
                         .WithMany("sent_lunches")
                         .HasForeignKey("senderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Organization");
 
                     b.Navigation("reciever");
 
@@ -288,16 +305,16 @@ namespace eagles_food_backend.Migrations
                 {
                     b.Navigation("invitations");
 
-                    b.Navigation("recieved_lunches");
-
-                    b.Navigation("sent_lunches");
+                    b.Navigation("lunches");
 
                     b.Navigation("users");
                 });
 
             modelBuilder.Entity("eagles_food_backend.Domains.Models.User", b =>
                 {
-                    b.Navigation("lunches");
+                    b.Navigation("recieved_lunches");
+
+                    b.Navigation("sent_lunches");
 
                     b.Navigation("withdrawals");
                 });

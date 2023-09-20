@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace eagles_food_backend.Migrations
 {
-    public partial class initMig : Migration
+    public partial class migration_1 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -14,7 +14,7 @@ namespace eagles_food_backend.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
-                name: "Organizations",
+                name: "organizations",
                 columns: table => new
                 {
                     OrganizationId = table.Column<long>(type: "bigint", nullable: false)
@@ -27,12 +27,12 @@ namespace eagles_food_backend.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Organizations", x => x.OrganizationId);
+                    table.PrimaryKey("PK_organizations", x => x.OrganizationId);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
-                name: "Invites",
+                name: "organization_invites",
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
@@ -45,18 +45,18 @@ namespace eagles_food_backend.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Invites", x => x.Id);
+                    table.PrimaryKey("PK_organization_invites", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Invites_Organizations_OrganizationId",
+                        name: "FK_organization_invites_organizations_OrganizationId",
                         column: x => x.OrganizationId,
-                        principalTable: "Organizations",
+                        principalTable: "organizations",
                         principalColumn: "OrganizationId",
                         onDelete: ReferentialAction.Cascade);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
-                name: "OrganizationWallets",
+                name: "organization_lunch_wallets",
                 columns: table => new
                 {
                     WalletId = table.Column<long>(type: "bigint", nullable: false)
@@ -66,18 +66,18 @@ namespace eagles_food_backend.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_OrganizationWallets", x => x.WalletId);
+                    table.PrimaryKey("PK_organization_lunch_wallets", x => x.WalletId);
                     table.ForeignKey(
-                        name: "FK_OrganizationWallets_Organizations_OrganizationId",
+                        name: "FK_organization_lunch_wallets_organizations_OrganizationId",
                         column: x => x.OrganizationId,
-                        principalTable: "Organizations",
+                        principalTable: "organizations",
                         principalColumn: "OrganizationId",
                         onDelete: ReferentialAction.Cascade);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
-                name: "Users",
+                name: "users",
                 columns: table => new
                 {
                     UserId = table.Column<long>(type: "bigint", nullable: false)
@@ -86,80 +86,86 @@ namespace eagles_food_backend.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     last_name = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
+                    username = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     OrganizationId = table.Column<long>(type: "bigint", nullable: false),
-                    profile_picture = table.Column<string>(type: "longtext", nullable: false)
+                    profile_picture = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     email = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    password_hash = table.Column<string>(type: "longtext", nullable: false)
+                    password_hash = table.Column<byte[]>(type: "longblob", nullable: false),
+                    password_salt = table.Column<byte[]>(type: "longblob", nullable: false),
+                    refresh_token = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    password_salt = table.Column<string>(type: "longtext", nullable: false)
+                    currency = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    refresh_token = table.Column<string>(type: "longtext", nullable: false)
+                    currency_code = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
+                    lunch_credit_balance = table.Column<int>(type: "int", nullable: false),
                     bank_number = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     bank_code = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     bank_name = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    Description = table.Column<string>(type: "longtext", nullable: false)
+                    bank_region = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    Created_at = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    created_at = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     updated_at = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     is_admin = table.Column<bool>(type: "tinyint(1)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Users", x => x.UserId);
+                    table.PrimaryKey("PK_users", x => x.UserId);
                     table.ForeignKey(
-                        name: "FK_Users_Organizations_OrganizationId",
+                        name: "FK_users_organizations_OrganizationId",
                         column: x => x.OrganizationId,
-                        principalTable: "Organizations",
+                        principalTable: "organizations",
                         principalColumn: "OrganizationId",
                         onDelete: ReferentialAction.Cascade);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
-                name: "Lunches",
+                name: "lunches",
                 columns: table => new
                 {
                     LunchId = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    OrganizationId = table.Column<long>(type: "bigint", nullable: false),
                     senderId = table.Column<long>(type: "bigint", nullable: false),
                     recieverId = table.Column<long>(type: "bigint", nullable: false),
                     quantity = table.Column<int>(type: "int", nullable: false),
                     created_at = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     note = table.Column<string>(type: "longtext", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    UserId = table.Column<long>(type: "bigint", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Lunches", x => x.LunchId);
+                    table.PrimaryKey("PK_lunches", x => x.LunchId);
                     table.ForeignKey(
-                        name: "FK_Lunches_Organizations_recieverId",
+                        name: "FK_lunches_organizations_OrganizationId",
+                        column: x => x.OrganizationId,
+                        principalTable: "organizations",
+                        principalColumn: "OrganizationId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_lunches_users_recieverId",
                         column: x => x.recieverId,
-                        principalTable: "Organizations",
-                        principalColumn: "OrganizationId",
+                        principalTable: "users",
+                        principalColumn: "UserId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Lunches_Organizations_senderId",
+                        name: "FK_lunches_users_senderId",
                         column: x => x.senderId,
-                        principalTable: "Organizations",
-                        principalColumn: "OrganizationId",
+                        principalTable: "users",
+                        principalColumn: "UserId",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Lunches_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId");
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
-                name: "Withdrawals",
+                name: "withdrawals",
                 columns: table => new
                 {
                     WithdrawalId = table.Column<long>(type: "bigint", nullable: false)
@@ -172,71 +178,71 @@ namespace eagles_food_backend.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Withdrawals", x => x.WithdrawalId);
+                    table.PrimaryKey("PK_withdrawals", x => x.WithdrawalId);
                     table.ForeignKey(
-                        name: "FK_Withdrawals_Users_UserId",
+                        name: "FK_withdrawals_users_UserId",
                         column: x => x.UserId,
-                        principalTable: "Users",
+                        principalTable: "users",
                         principalColumn: "UserId",
                         onDelete: ReferentialAction.Cascade);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Invites_OrganizationId",
-                table: "Invites",
+                name: "IX_lunches_OrganizationId",
+                table: "lunches",
                 column: "OrganizationId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Lunches_recieverId",
-                table: "Lunches",
+                name: "IX_lunches_recieverId",
+                table: "lunches",
                 column: "recieverId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Lunches_senderId",
-                table: "Lunches",
+                name: "IX_lunches_senderId",
+                table: "lunches",
                 column: "senderId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Lunches_UserId",
-                table: "Lunches",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_OrganizationWallets_OrganizationId",
-                table: "OrganizationWallets",
+                name: "IX_organization_invites_OrganizationId",
+                table: "organization_invites",
                 column: "OrganizationId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Users_OrganizationId",
-                table: "Users",
+                name: "IX_organization_lunch_wallets_OrganizationId",
+                table: "organization_lunch_wallets",
                 column: "OrganizationId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Withdrawals_UserId",
-                table: "Withdrawals",
+                name: "IX_users_OrganizationId",
+                table: "users",
+                column: "OrganizationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_withdrawals_UserId",
+                table: "withdrawals",
                 column: "UserId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Invites");
+                name: "lunches");
 
             migrationBuilder.DropTable(
-                name: "Lunches");
+                name: "organization_invites");
 
             migrationBuilder.DropTable(
-                name: "OrganizationWallets");
+                name: "organization_lunch_wallets");
 
             migrationBuilder.DropTable(
-                name: "Withdrawals");
+                name: "withdrawals");
 
             migrationBuilder.DropTable(
-                name: "Users");
+                name: "users");
 
             migrationBuilder.DropTable(
-                name: "Organizations");
+                name: "organizations");
         }
     }
 }
