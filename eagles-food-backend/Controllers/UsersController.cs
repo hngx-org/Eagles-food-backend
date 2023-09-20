@@ -1,29 +1,32 @@
 using eagles_food_backend.Domains.DTOs;
-using eagles_food_backend.Domains.Models;
-using eagles_food_backend.Services;
+using eagles_food_backend.Services.UserServices;
 using Microsoft.AspNetCore.Mvc;
 
 namespace eagles_food_backend.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class UsersController : ControllerBase
     {
-        private readonly ILogger<UsersController> _logger;
-        private readonly IUserService _userService;
+        private readonly IUserRepository _userService;
 
-        public UsersController(ILogger<UsersController> logger, IUserService userService)
+        public UsersController(IUserRepository userService)
         {
-            _logger = logger;
             _userService = userService;
         }
 
 
-        [HttpPost]
-        public async Task<IActionResult> CreateUser([FromBody] CreateUserDTO model)
+        [HttpPost("register")]
+        public async Task<ActionResult> CreateUser([FromBody] CreateUserDTO model)
         {
-            var createdUser = await _userService.CreateUser(model);
-            return createdUser.Status ? Ok(createdUser) : BadRequest(createdUser);
+            var res = await _userService.CreateUser(model);
+            return Ok(res);
+        }
+        [HttpPost("login")]
+        public async Task<ActionResult> Login([FromBody] UserLoginDTO model)
+        {
+            var res = await _userService.Login(model);
+            return Ok(res);
         }
     }
 }
