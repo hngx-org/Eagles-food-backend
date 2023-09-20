@@ -1,4 +1,5 @@
-﻿using eagles_food_backend.Data;
+﻿using AutoMapper;
+using eagles_food_backend.Data;
 using eagles_food_backend.Domains.DTOs;
 using eagles_food_backend.Domains.Models;
 using Microsoft.EntityFrameworkCore;
