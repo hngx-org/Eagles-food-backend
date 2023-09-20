@@ -1,4 +1,6 @@
-﻿namespace eagles_food_backend.Domains.DTOs
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace eagles_food_backend.Domains.DTOs
 {
     public class UserLoginDTO
     {
@@ -16,8 +18,8 @@
 
     }
 
-    public record UserProfileReadDTO(string name, string email, string profile_picture, string phonenumber, string bank_number, string bank_code, string bank_name, bool is_admin);
+    public record UserProfileReadDTO(string? name, string? email, string? profile_picture, string? phonenumber, string? bank_number, string? bank_code, string? bank_name, bool is_admin);
 
-    public record UserBankUpdateDTO(string bank_number, string bank_code, string bank_name);
-    public record UserReadDTO(string name, string email, string profile_picture, string user_id);
+    public record UserBankUpdateDTO([Required] string bank_number, [Required] string bank_code, [Required] string bank_name);
+    public record UserReadDTO(string? name, string? email, string? profile_picture, string? user_id);
 }

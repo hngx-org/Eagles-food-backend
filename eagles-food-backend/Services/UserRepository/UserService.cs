@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using eagles_food_backend.Data;
+﻿using eagles_food_backend.Data;
 using eagles_food_backend.Domains.DTOs;
 using eagles_food_backend.Domains.Models;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +11,7 @@ namespace eagles_food_backend.Services.UserServices
         private readonly IMapper mapper;
         private readonly AuthenticationClass authentication;
 
-        public UserService(LunchDbContext db_context,IMapper mapper,AuthenticationClass authentication)
+        public UserService(LunchDbContext db_context, IMapper mapper, AuthenticationClass authentication)
         {
             this.db_context = db_context;
             this.mapper = mapper;
@@ -79,6 +78,105 @@ namespace eagles_food_backend.Services.UserServices
             }
 
             return response;
+        }
+
+        public async Task<Response<List<UserReadDTO>>> GetAllUsersForOrganization(int user_id)
+        {
+            try
+            {
+                long? org_id = (await db_context.users.FirstOrDefaultAsync(x => x.UserId == user_id))?.OrganizationId;
+                if (org_id == null)
+                {
+                    return new Response<List<UserReadDTO>>() { message = "User not found", success = false, status_code = "404" };
+                }
+                var users = await db_context.users.Where(x => x.OrganizationId == org_id).Select(x => new UserReadDTO(
+                $"{x.first_name} {x.last_name}",
+                x.email,
+                x.profile_picture,
+                x.UserId.ToString())).ToListAsync();
+
+                return new Response<List<UserReadDTO>>() { data = users, message = "Users fetched successfully" };
+            }
+            catch (Exception)
+            {
+                return new Response<List<UserReadDTO>>() { message = "Internal Server Error", status_code = "500" };
+            }
+        }
+
+        public async Task<Response<UserProfileReadDTO>> GetUserProfile(int id)
+        {
+            try
+            {
+                var user = await db_context.users.FirstOrDefaultAsync(x => x.UserId == id);
+                if (user == null)
+                {
+                    return new Response<UserProfileReadDTO>() { message = "User not found", success = false, status_code = "404" };
+                }
+                var userprofile = new UserProfileReadDTO
+                (
+                    name: $"{user.first_name} {user.last_name}",
+                    email: user.email,
+                    profile_picture: user.profile_picture,
+                    phonenumber: "",
+                    bank_number: user.bank_number,
+                    bank_code: user.bank_code,
+                    bank_name: user.bank_name,
+                    is_admin: user.is_admin
+                );
+
+                return new Response<UserProfileReadDTO>() { data = userprofile, message = "User data fetched successfully" };
+            }
+            catch (Exception)
+            {
+                return new Response<UserProfileReadDTO>() { message = "Internal Server Error", status_code = "500" };
+            }
+        }
+
+        public async Task<Response<UserBankUpdateDTO>> UpdateUserBank(UserBankUpdateDTO userbank, int user_id)
+        {
+            try
+            {
+                var user = await db_context.users.FirstOrDefaultAsync(x => x.UserId == user_id);
+                if (user == null)
+                {
+                    return new Response<UserBankUpdateDTO>() { message = "User not found", success = false, status_code = "404" };
+                }
+                user.bank_number = userbank.bank_number;
+                user.bank_name = userbank.bank_name;
+                user.bank_code = userbank.bank_code;
+                await db_context.SaveChangesAsync();
+
+                return new Response<UserBankUpdateDTO>() { data = userbank, message = "Successfully created bank account" };
+            }
+            catch (Exception)
+            {
+                return new Response<UserBankUpdateDTO>() { message = "Internal Server Error", status_code = "500" };
+            }
+
+        }
+
+        public async Task<Response<UserReadDTO>> SearchForUser(string email)
+        {
+            try
+            {
+                var user = await db_context.users.FirstOrDefaultAsync(x => x.email == email);
+                if (user == null)
+                {
+                    return new Response<UserReadDTO>() { message = "User not found", success = false, status_code = "404" };
+                }
+
+                var userReadDto = new UserReadDTO(
+                    name: $"{user.first_name} {user.last_name}",
+                    email: user.email,
+                    profile_picture: user.profile_picture,
+                    user_id: user.UserId.ToString());
+
+                return new Response<UserReadDTO>() { data = userReadDto, message = "User found" };
+            }
+            catch (Exception)
+            {
+                return new Response<UserReadDTO>() { message = "Internal Server Error", status_code = "500" };
+            }
         }
     }
 }
