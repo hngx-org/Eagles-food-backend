@@ -8,7 +8,7 @@ namespace eagles_food_backend.Domains.Models
         [Required] public string email { get; set; }
         [Required] public string token { get; set; }
         [Required] DateTime TTL { get; set; }
-        [Required] public long OrganizationId { get; set; }
+        [Required] public int OrganizationId { get; set; }
         [Required] public Organization organization { get; set; }
     }
 }
