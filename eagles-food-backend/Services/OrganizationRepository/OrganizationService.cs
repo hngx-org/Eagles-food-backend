@@ -1,4 +1,11 @@
-﻿namespace eagles_food_backend.Services
+﻿using eagles_food_backend.Data;
+using eagles_food_backend.Domains.DTOs;
+using eagles_food_backend.Domains.Models;
+using eagles_food_backend.Services.OrganizationRepository;
+using eagles_food_backend.Services.ResponseService;
+using Microsoft.EntityFrameworkCore;
+
+namespace eagles_food_backend.Services
 {
     public class OrganizationService : IOrganizationService
     {

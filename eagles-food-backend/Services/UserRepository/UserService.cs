@@ -1,4 +1,10 @@
-﻿namespace eagles_food_backend.Services.UserServices
+﻿using eagles_food_backend.Data;
+using eagles_food_backend.Domains.DTOs;
+using eagles_food_backend.Domains.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+
+namespace eagles_food_backend.Services.UserServices
 {
     public class UserService : IUserRepository
     {
@@ -27,7 +33,7 @@
                 //	authentication.CreatePasswordHash(user.password, out byte[] password_hash, out byte[] password_salt);
                 //   newUser.password_salt = password_salt;
 
-                newUser.PasswordHash = "LiterallyNotAHash";
+                newUser.PasswordHash = hashed;
 
                 await db_context.Users.AddAsync(newUser);
                 await db_context.SaveChangesAsync();
@@ -95,16 +101,16 @@
         {
             try
             {
-                long? org_id = (await db_context.users.FirstOrDefaultAsync(x => x.id == user_id))?.org_id;
+                long? org_id = (await db_context.Users.FirstOrDefaultAsync(x => x.Id == user_id))?.OrgId;
                 if (org_id == null)
                 {
-                    return new Response<List<UserReadDTO>>() { message = "User not found", success = false, status_code = "404" };
+                    return new Response<List<UserReadDTO>>() { message = "Organization not found", success = false, status_code = "404" };
                 }
-                var users = await db_context.users.Where(x => x.org_id == org_id).Select(x => new UserReadDTO(
-                $"{x.first_name} {x.last_name}",
-                x.email,
-                x.profile_pic,
-                x.id.ToString())).ToListAsync();
+                var users = await db_context.Users.Where(x => x.OrgId == org_id).Select(x => new UserReadDTO(
+                $"{x.FirstName} {x.LastName}",
+                x.Email,
+                x.ProfilePic,
+                x.Id.ToString())).ToListAsync();
 
                 return new Response<List<UserReadDTO>>() { data = users, message = "Users fetched successfully" };
             }
@@ -118,21 +124,21 @@
         {
             try
             {
-                var user = await db_context.users.FirstOrDefaultAsync(x => x.id == id);
+                var user = await db_context.Users.FirstOrDefaultAsync(x => x.Id == id);
                 if (user == null)
                 {
                     return new Response<UserProfileReadDTO>() { message = "User not found", success = false, status_code = "404" };
                 }
                 var userprofile = new UserProfileReadDTO
                 (
-                    name: $"{user.first_name} {user.last_name}",
-                    email: user.email,
-                    profile_picture: user.profile_pic,
+                    name: $"{user.FirstName} {user.LastName}",
+                    email: user.Email,
+                    profile_picture: user.ProfilePic,
                     phonenumber: "",
-                    bank_number: user.bank_number,
-                    bank_code: user.bank_code,
-                    bank_name: user.bank_name,
-                    is_admin: user.is_admin
+                    bank_number: user.BankNumber,
+                    bank_code: user.BankCode,
+                    bank_name: user.BankName,
+                    is_admin: user.IsAdmin ?? false
                 );
 
                 return new Response<UserProfileReadDTO>() { data = userprofile, message = "User data fetched successfully" };
@@ -147,14 +153,14 @@
         {
             try
             {
-                var user = await db_context.users.FirstOrDefaultAsync(x => x.id == user_id);
+                var user = await db_context.Users.FirstOrDefaultAsync(x => x.Id == user_id);
                 if (user == null)
                 {
                     return new Response<UserBankUpdateDTO>() { message = "User not found", success = false, status_code = "404" };
                 }
-                user.bank_number = userbank.bank_number;
-                user.bank_name = userbank.bank_name;
-                user.bank_code = userbank.bank_code;
+                user.BankNumber = userbank.bank_number;
+                user.BankName = userbank.bank_name;
+                user.BankCode = userbank.bank_code;
                 await db_context.SaveChangesAsync();
 
                 return new Response<UserBankUpdateDTO>() { data = userbank, message = "Successfully created bank account" };
@@ -170,17 +176,17 @@
         {
             try
             {
-                var user = await db_context.users.FirstOrDefaultAsync(x => x.email == email);
+                var user = await db_context.Users.FirstOrDefaultAsync(x => x.Email == email);
                 if (user == null)
                 {
                     return new Response<UserReadDTO>() { message = "User not found", success = false, status_code = "404" };
                 }
 
                 var userReadDto = new UserReadDTO(
-                    name: $"{user.first_name} {user.last_name}",
-                    email: user.email,
-                    profile_picture: user.profile_pic,
-                    user_id: user.id.ToString());
+                    name: $"{user.FirstName} {user.LastName}",
+                    email: user.Email,
+                    profile_picture: user.ProfilePic,
+                    user_id: user.Id.ToString());
 
                 return new Response<UserReadDTO>() { data = userReadDto, message = "User found" };
             }

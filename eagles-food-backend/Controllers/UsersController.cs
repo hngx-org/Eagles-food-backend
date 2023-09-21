@@ -1,5 +1,6 @@
 ﻿using eagles_food_backend.Domains.DTOs;
 using eagles_food_backend.Services.UserServices;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -8,9 +9,9 @@ using System.Security.Claims;
 
 namespace eagles_food_backend.Controllers
 {
-    [Route("api/users")]
+    [Route("api/user")]
     [ApiController]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class UsersController : ControllerBase
     {
         private readonly IUserRepository _userService;
@@ -43,16 +44,16 @@ namespace eagles_food_backend.Controllers
             else return BadRequest();
         }
 
-        [HttpGet]
+        [HttpGet("all")]
         public async Task<IActionResult> GetUsersForOrganization()
         {
             if (int.TryParse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value, out int id))
             {
-                var role = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
-                if (role != "admin")
-                {
-                    return Unauthorized();
-                }
+                //var role = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+                //if (role != "admin")
+                //{
+                //    return Unauthorized();
+                //}
                 var response = await _userService.GetAllUsersForOrganization(id);
                 return Ok(response);
             }

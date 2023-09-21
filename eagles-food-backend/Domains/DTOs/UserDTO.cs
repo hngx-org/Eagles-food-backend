@@ -1,4 +1,6 @@
-﻿namespace eagles_food_backend.Domains.DTOs
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace eagles_food_backend.Domains.DTOs
 {
     public class UserDTO
     {
