@@ -4,13 +4,12 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace eagles_food_backend.Domains.Models
 {
-    public class Organization
+    public class Organization : BaseEntity
     {
-        [Key]
-        public int id { get; set; }
-        [Required] 
+
+        [Required]
         public string name { get; set; }
-        [Required] 
+        [Required]
         public double lunch_price { get; set; }
         public string currency { get; set; }
         public IEnumerable<User>? users { get; set; }

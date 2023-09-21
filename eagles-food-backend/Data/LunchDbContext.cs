@@ -1,4 +1,4 @@
-﻿    using eagles_food_backend.Domains.Models;
+﻿using eagles_food_backend.Domains.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace eagles_food_backend.Data
@@ -7,7 +7,7 @@ namespace eagles_food_backend.Data
     {
         public LunchDbContext(DbContextOptions<LunchDbContext> options) : base(options)
         {
-                
+
         }
 
         public DbSet<User> users { get; set; }
@@ -23,12 +23,9 @@ namespace eagles_food_backend.Data
             modelBuilder.Entity<Withdrawal>().HasOne(w => w.User).WithMany(u => u.withdrawals);
             modelBuilder.Entity<Invite>().HasOne(i => i.organization).WithMany(o => o.invitations);
 
-
             modelBuilder.Entity<Lunch>().HasOne(l => l.sender).WithMany(s => s.sent_lunches);
             modelBuilder.Entity<Lunch>().HasOne(l => l.reciever).WithMany(s => s.recieved_lunches);
             modelBuilder.Entity<Lunch>().HasOne(l => l.Organization).WithMany(o => o.lunches);
-
         }
-
     }
 }

@@ -12,7 +12,7 @@ namespace eagles_food_backend.Services.UserServices
         private readonly IMapper mapper;
         private readonly AuthenticationClass authentication;
 
-        public UserService(LunchDbContext db_context,IMapper mapper,AuthenticationClass authentication)
+        public UserService(LunchDbContext db_context, IMapper mapper, AuthenticationClass authentication)
         {
             this.db_context = db_context;
             this.mapper = mapper;
@@ -38,7 +38,6 @@ namespace eagles_food_backend.Services.UserServices
             {
                 response.success = false;
                 response.message = ex.Message;
-                response.message = ex.Message;
             }
 
             return response;
@@ -59,7 +58,7 @@ namespace eagles_food_backend.Services.UserServices
                     }
                     else
                     {
-                        var token = authentication.createToken((user_login.UserId).ToString(), "user");
+                        var token = authentication.createToken((user_login.Id).ToString(), "user");
                         response.data = token;
                         response.message = "Login succesful";
                     }

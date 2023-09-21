@@ -28,7 +28,7 @@ namespace eagles_food_backend.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetOrganization(int id)
+        public async Task<IActionResult> GetOrganization(string id)
         {
             var org = await _organizationService.GetOrganization(id);
             return Ok(org);

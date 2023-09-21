@@ -2,9 +2,8 @@
 
 namespace eagles_food_backend.Domains.Models
 {
-    public class Invite
+    public class Invite : BaseEntity
     {
-        [Key] public long Id { get; set; }
         [Required] public string email { get; set; }
         [Required] public string token { get; set; }
         [Required] DateTime TTL { get; set; }

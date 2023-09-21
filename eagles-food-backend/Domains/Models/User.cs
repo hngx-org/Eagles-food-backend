@@ -2,13 +2,12 @@
 
 namespace eagles_food_backend.Domains.Models
 {
-    public class User
+    public class User : BaseEntity
     {
-        [Key] public long UserId { get; set; }
         [Required] public string first_name { get; set; } //Required for registration
         [Required] public string last_name { get; set; } //Required for registration
         [Required] public string username { get; set; }
-        public long OrganizationId { get; set; }
+        public string OrganizationId { get; set; }
 
         public Organization Organization { get; set; }
         public string? profile_picture { get; set; }
@@ -29,6 +28,5 @@ namespace eagles_food_backend.Domains.Models
         public IEnumerable<Withdrawal>? withdrawals { get; set; }
         public IEnumerable<Lunch> sent_lunches { get; set; }
         public IEnumerable<Lunch> recieved_lunches { get; set; }
-
     }
 }

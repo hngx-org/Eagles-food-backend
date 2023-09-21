@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using eagles_food_backend.Domains.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace eagles_food_backend.Domains.DTOs
 {
@@ -8,11 +9,24 @@ namespace eagles_food_backend.Domains.DTOs
     public class CreateLunchDTO
     {
         [Required]
-        public string senderId { get; set; } = null!;
+        public string senderId { get; set; }
         [Required]
-        public string receiverId { get; set; } = null!;
+        public string receiverId { get; set; }
         [Required]
-        public string organization_id { get; set; } = null!;
+        public string org_id { get; set; }
+        [Required]
+        public int quantity { get; set; }
+        [Required]
+        public string note { get; set; } = string.Empty;
+    }
+    public class ResponseLunchDTO : BaseEntity
+    {
+        [Required]
+        public string senderId { get; set; }
+        [Required]
+        public string receiverId { get; set; }
+        [Required]
+        public string org_id { get; set; }
         [Required]
         public int quantity { get; set; }
         [Required]
