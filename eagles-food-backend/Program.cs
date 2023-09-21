@@ -4,7 +4,7 @@ using eagles_food_backend.Data;
 using eagles_food_backend.Domains.DTOs;
 using eagles_food_backend.Services;
 using eagles_food_backend.Services.OrganizationRepository;
-using eagles_food_backend.Services.ResponseServce;
+using eagles_food_backend.Services.ResponseService;
 using eagles_food_backend.Services.UserServices;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -13,14 +13,13 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
 using System.Text;
-using eagles_food_backend.Domains.DTOs;
 
 var builder = WebApplication.CreateBuilder(args);
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<LunchDbContext>(options =>
-    options.UseMySql(connectionString,ServerVersion.AutoDetect(connectionString)));
+    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 builder.Services.AddControllers();
 
 var config = builder.Configuration;
@@ -43,11 +42,11 @@ builder.Services.AddAutoMapper(typeof(Program).Assembly);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddScoped<IUserRepository,UserService>();
-builder.Services.AddScoped<IOrganizationService,OrganizationService>();
-builder.Services.AddScoped<IResponseService,ResponseService>();
+builder.Services.AddScoped<IUserRepository, UserService>();
+builder.Services.AddScoped<IOrganizationService, OrganizationService>();
+builder.Services.AddScoped<IResponseService, ResponseService>();
 
-builder.Services.AddScoped<IPasswordHasher<CreateUserDTO>,PasswordHasher<CreateUserDTO>>();
+builder.Services.AddScoped<IPasswordHasher<CreateUserDTO>, PasswordHasher<CreateUserDTO>>();
 builder.Services.AddSingleton<AuthenticationClass>();
 
 builder.Services.AddSwaggerGen(opts =>
