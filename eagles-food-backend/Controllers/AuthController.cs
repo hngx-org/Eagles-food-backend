@@ -22,6 +22,7 @@ namespace eagles_food_backend.Controllers
             var res = await _userService.CreateUser(model);
             return Ok(res);
         }
+        // returned data doesnt have access_token
         [HttpPost("login")]
         public async Task<ActionResult> Login([FromBody] UserLoginDTO model)
         {
