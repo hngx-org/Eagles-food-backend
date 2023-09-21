@@ -364,4 +364,6 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
-/eagles-food-backend/appsettings.json
+
+# Development application settings
+/eagles-food-backend/appsettings.Development.json

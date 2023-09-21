@@ -12,14 +12,14 @@ namespace eagles_food_backend.Services.UserServices
         private readonly LunchDbContext db_context;
         private readonly IMapper mapper;
         private readonly AuthenticationClass authentication;
-        private readonly IPasswordHasher<CreateUserDTO> _passwordHasher;
+        // private readonly IPasswordHasher<CreateUserDTO> _passwordHasher;
 
-        public UserService(LunchDbContext db_context, IMapper mapper, AuthenticationClass authentication, IPasswordHasher<CreateUserDTO> passwordHasher)
+        public UserService(LunchDbContext db_context, IMapper mapper, AuthenticationClass authentication)
         {
             this.db_context = db_context;
             this.mapper = mapper;
             this.authentication = authentication;
-            _passwordHasher = passwordHasher;
+            // _passwordHasher = passwordHasher;
 
         }
         public async Task<Response<User>> CreateUser(CreateUserDTO user)
@@ -29,12 +29,12 @@ namespace eagles_food_backend.Services.UserServices
 
             try
             {
-                var hashed = _passwordHasher.HashPassword(user, user.Password);
+                // var hashed = _passwordHasher.HashPassword(user, user.Password);
 
-                //	authentication.CreatePasswordHash(user.password, out byte[] password_hash, out byte[] password_salt);
+                authentication.CreatePasswordHash(user.Password, out string password_hash);
                 //   newUser.password_salt = password_salt;
 
-                newUser.PasswordHash = hashed;
+                newUser.PasswordHash = password_hash;
 
                 await db_context.Users.AddAsync(newUser);
                 await db_context.SaveChangesAsync();
@@ -61,18 +61,19 @@ namespace eagles_food_backend.Services.UserServices
             {
                 try
                 {
-                    var result = _passwordHasher.VerifyHashedPassword(userindb, user_login.PasswordHash, user.Password);
-                    if (result == PasswordVerificationResult.Failed)
-                    {
-                        response.success = false;
-                        response.message = "Incorrect password";
-                    }
+                    // var result = _passwordHasher.VerifyHashedPassword(userindb, user_login.PasswordHash, user.Password);
+                    var result = authentication.verifyPasswordHash(user.Password, user_login.PasswordHash);
+                    // if (result == PasswordVerificationResult.Failed)
+                    // {
+                    //     response.success = false;
+                    //     response.message = "Incorrect password";
+                    // }
 
-                    //if (!authentication.verifyPasswordHash(user.password, user_login.password_hash, user_login.password_salt))
-                    //{
-                    //    response.success = false;
-                    //    response.message = "Incorrect password";
-                    //}
+                    if (!authentication.verifyPasswordHash(user.Password, user_login.PasswordHash))
+                    {
+                       response.success = false;
+                       response.message = "Incorrect password";
+                    }
 
                     else
                     {
@@ -130,6 +131,7 @@ namespace eagles_food_backend.Services.UserServices
                 {
                     return new Response<UserProfileReadDTO>() { message = "User not found", success = false, statusCode = HttpStatusCode.NotFound };
                 }
+
                 var userprofile = new UserProfileReadDTO
                 (
                     user_id: user.Id.ToString(),

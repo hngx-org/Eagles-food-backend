@@ -3,7 +3,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
-
+using BC = BCrypt.Net.BCrypt;
 
 namespace eagles_food_backend
 {
@@ -17,24 +17,16 @@ namespace eagles_food_backend
         {
             this.config = config;
         }
-        public void CreatePasswordHash(string password, out byte[] password_hash, out byte[] password_salt)
+        public void CreatePasswordHash(string password, out string password_hash)
         {
-            using (var hmac = new HMACSHA512())
-            {
-                password_salt = hmac.Key;
-                password_hash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
-            }
+            // BCrypt maintains internal salt
+            password_hash = BC.HashPassword(password); 
         }
 
         //Verifying password
-        public bool verifyPasswordHash(string password, byte[] hash, byte[] salt)
+        public bool verifyPasswordHash(string password, string hash)
         {
-            using (var hmac = new HMACSHA512(salt))
-            {
-                var computeHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
-                return computeHash.SequenceEqual(hash);
-            }
-
+            return BC.Verify(password, hash);
         }
 
         //Creating Token

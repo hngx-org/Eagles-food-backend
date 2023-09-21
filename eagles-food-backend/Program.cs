@@ -46,7 +46,7 @@ builder.Services.AddScoped<IUserRepository, UserService>();
 builder.Services.AddScoped<IOrganizationService, OrganizationService>();
 builder.Services.AddScoped<IResponseService, ResponseService>();
 
-builder.Services.AddScoped<IPasswordHasher<CreateUserDTO>, PasswordHasher<CreateUserDTO>>();
+// builder.Services.AddScoped<IPasswordHasher<CreateUserDTO>, PasswordHasher<CreateUserDTO>>();
 builder.Services.AddSingleton<AuthenticationClass>();
 
 builder.Services.AddSwaggerGen(opts =>
