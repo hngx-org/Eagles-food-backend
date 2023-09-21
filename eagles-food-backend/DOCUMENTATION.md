@@ -198,10 +198,6 @@ Creates a new lunch request.
 
 Retrieves all lunch requests for the given user.
 
-**Request parameters:**
-
-* `userId`: The ID of the user for which to retrieve lunch requests.
-
 **Response:**
 
 ```json
