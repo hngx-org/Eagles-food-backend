@@ -1,35 +1,38 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace eagles_food_backend.Domains.Models
+﻿namespace eagles_food_backend.Domains.Models
 {
-    public class User
+    public partial class User
     {
-        [Key] public long id { get; set; }
-        [Required] public string first_name { get; set; } //Required for registration
-        [Required] public string last_name { get; set; } //Required for registration
-        [Required] public string username { get; set; }
-        public long org_id { get; set; }
+        public User()
+        {
+            LunchReceivers = new HashSet<Lunch>();
+            LunchSenders = new HashSet<Lunch>();
+            Withdrawals = new HashSet<Withdrawal>();
+        }
 
-        public virtual Organization Organization { get; set; }
-        public string? profile_pic { get; set; }
-        [Required] public string email { get; set; } //Required for registration
-        public byte[] password_hash { get; set; } //
-        public byte[] password_salt { get; set; } //
-        public string? refresh_token { get; set; }
-        [Required] public string currency { get; set; } = string.Empty;
-        [Required] public string currency_code { get; set; } = string.Empty;
-        [Required] public int lunch_credit_balance { get; set; } = 0;
-        [Required] public string bank_number { get; set; } = string.Empty;
-        [Required] public string bank_code { get; set; } = string.Empty;
-        [Required] public string bank_name { get; set; } = string.Empty;
-        [Required] public string bank_region { get; set; } = string.Empty;
-        public DateTime created_at { get; set; } = DateTime.Now;
-        public DateTime updated_at { get; set; } = DateTime.Now;
-        public bool is_admin { get; set; } = false;
-        public bool is_deleted { get; set; } = false;
-        public IEnumerable<Withdrawal>? withdrawals { get; set; }
-        public IEnumerable<Lunch> sent_lunches { get; set; }
-        public IEnumerable<Lunch> recieved_lunches { get; set; }
+        public int Id { get; set; }
+        public int? OrgId { get; set; }
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+        public string? ProfilePic { get; set; }
+        public string Email { get; set; } = null!;
+        public string? Phone { get; set; }
+        public string PasswordHash { get; set; } = null!;
+        public bool? IsAdmin { get; set; }
+        public int? LunchCreditBalance { get; set; }
+        public string? RefreshToken { get; set; }
+        public string? BankNumber { get; set; }
+        public string? BankCode { get; set; }
+        public string? BankName { get; set; }
+        public string? BankRegion { get; set; }
+        public string? Currency { get; set; }
+        public string? CurrencyCode { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
+        public bool? IsDeleted { get; set; }
 
+        public virtual Organization? Org { get; set; }
+        public virtual ICollection<Lunch> LunchReceivers { get; set; }
+        public virtual ICollection<Lunch> LunchSenders { get; set; }
+        public virtual ICollection<Withdrawal> Withdrawals { get; set; }
     }
 }

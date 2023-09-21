@@ -1,0 +1,29 @@
+version: "3"
+
+services:
+  mysql:
+    image: mysql:8.1
+    volumes:
+      - eagles-food-mysql-data:/var/lib/mysql
+      - ./migrate.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: free_lunch_db
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--silent"]
+      timeout: 30s
+      retries: 10
+
+  app:
+    build: .
+    ports:
+      - "8000:80"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      MYSQLCONNSTR_DefaultConnection: Server=mysql;Database=free_lunch_db;user=root;password=secret
+
+
+volumes:
+  eagles-food-mysql-data:

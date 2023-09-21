@@ -1,19 +1,23 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
 
 namespace eagles_food_backend.Domains.Models
 {
-    public class Lunch
+    public partial class Lunch
     {
-        [Key] public long LunchId { get; set; }
-        public long OrganizationId { get; set; }
-        public Organization Organization { get; set; }
-        [Required] public long senderId { get; set; }
-        public User sender { get; set; }
-        [Required] public long recieverId { get; set; }
-        public User reciever{ get; set; }
+        public int Id { get; set; }
+        public int? OrgId { get; set; }
+        public int? SenderId { get; set; }
+        public int? ReceiverId { get; set; }
+        public int Quantity { get; set; }
+        public bool? Redeemed { get; set; }
+        public string? Note { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
+        public bool? IsDeleted { get; set; }
 
-        [Required] public int quantity { get; set; }
-        public DateTime created_at { get; set; } = DateTime.Now;
-        [Required] public string note { get; set; } = string.Empty;
+        public virtual Organization? Org { get; set; }
+        public virtual User? Receiver { get; set; }
+        public virtual User? Sender { get; set; }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using eagles_food_backend.Domains.Models;
 
-namespace eagles_food_backend.Services.ResponseServce
+namespace eagles_food_backend.Services.ResponseService
 {
     public class ResponseService : IResponseService
     {
