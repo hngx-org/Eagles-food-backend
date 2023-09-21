@@ -11,11 +11,10 @@ using System.Text;
 
 namespace eagles_food_backend.Controllers
 {
-	[Route("api/[controller]")]
+	[Route("api/auth")]
 	[ApiController]
 	public class AuthenticationController : ControllerBase
 	{
-
 		private readonly LunchDbContext _context;
 		private readonly IMapper _mapper;
 		public AuthenticationController(LunchDbContext context, IMapper mapper)
@@ -24,28 +23,11 @@ namespace eagles_food_backend.Controllers
 			_mapper = mapper;
 		}
 
-		public static User user = new User();
-
-		[HttpPost("/registere")]
-		public async Task<ActionResult<User>> Register(CreateUserDTO userCreate)
-		{
-			var hashed = _passwordHasher.HashPassword(userCreate, userCreate.password);
-			user.username = userCreate.username;
-			user.email = userCreate.email;
-			user.first_name = userCreate.first_name;
-			user.last_name = userCreate.last_name;
-
-
-			_context.users.Add(user);
-			await _context.SaveChangesAsync();
-
-			return Ok(user);
-		}
-
-		[HttpPost("/logine")]
+		// logs in a user/org
+		[HttpPost("/login")]
 		public async Task<ActionResult<User>> Login(UserLoginDTO userLogin)
 		{
-			var userindb = await _context.users.Where(user => user.username == userLogin.username).FirstOrDefaultAsync();
+			var userInDB = await _context.users.Where(user => user.username == userLogin.username).FirstOrDefaultAsync();
 			var newUser = _mapper.Map<CreateUserDTO>(userindb);
 
 			try
@@ -76,6 +58,21 @@ namespace eagles_food_backend.Controllers
 
 		}
 
+		[HttpPost("/registere")]
+		public async Task<ActionResult<User>> Register(CreateUserDTO userCreate)
+		{
+			var hashed = _passwordHasher.HashPassword(userCreate, userCreate.password);
+			user.username = userCreate.username;
+			user.email = userCreate.email;
+			user.first_name = userCreate.first_name;
+			user.last_name = userCreate.last_name;
+
+
+			_context.users.Add(user);
+			await _context.SaveChangesAsync();
+
+			return Ok(user);
+		}
 
 		private void CreatePasswordHash(string password)
 		{
