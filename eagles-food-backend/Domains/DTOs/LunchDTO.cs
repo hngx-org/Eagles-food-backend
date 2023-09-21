@@ -1,0 +1,30 @@
+﻿using eagles_food_backend.Domains.Models;
+using System.ComponentModel.DataAnnotations;
+
+namespace eagles_food_backend.Domains.DTOs
+{
+    public class LunchDTO
+    {
+    }
+    public class CreateLunchDTO
+    {
+        [Required]
+        public int[] receivers { get; set; }
+        [Required]
+        public int SenderId { get; set; }
+        [Required]
+        public int quantity { get; set; }
+        [Required]
+        public string note { get; set; } = string.Empty;
+    }
+    public class ResponseLunchDTO
+    {
+        public int Id { get; set; }
+        public int SenderId { get; set; }
+        public int ReceiverId { get; set; }
+        public int Quantity { get; set; }
+        public bool Redeemed { get; set; }
+        public string Note { get; set; }
+        public DateTime CreatedAt { get; set; }
+    }
+}

@@ -5,6 +5,6 @@
         public T? data { get; set; }
         public string message { get; set; } = string.Empty;
         public bool success { get; set; }
-        public string status_code { get; set; } = "200";
+        public int statusCode { get; set; } = 200;
     }
 }
