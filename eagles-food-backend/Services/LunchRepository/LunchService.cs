@@ -5,6 +5,7 @@ using eagles_food_backend.Domains.Models;
 using eagles_food_backend.Services.ResponseService;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Net;
 
 namespace eagles_food_backend.Services.LunchRepository
 {
@@ -27,7 +28,7 @@ namespace eagles_food_backend.Services.LunchRepository
                 {
                     response.message = "Invalid request.";
                     response.success = false;
-                    response.statusCode = 400;
+                    response.statusCode = HttpStatusCode.BadRequest;
                     return response;
                 }
                 createLunchDTO.receivers = createLunchDTO.receivers.Distinct().ToArray();
@@ -35,7 +36,7 @@ namespace eagles_food_backend.Services.LunchRepository
                 {
                     response.message = "Sender cannot be among the receivers. Invalid request.";
                     response.success = false;
-                    response.statusCode = 400;
+                    response.statusCode = HttpStatusCode.BadRequest;
                     return response;
                 }
                 #endregion
@@ -48,7 +49,7 @@ namespace eagles_food_backend.Services.LunchRepository
                 {
                     response.message = "Users with the following IDs do not exist: " + string.Join(", ", nonExistentUserIds);
                     response.success = false;
-                    response.statusCode = 400;
+                    response.statusCode = HttpStatusCode.BadRequest;
                     return response;
                 }
                 #endregion
@@ -57,7 +58,7 @@ namespace eagles_food_backend.Services.LunchRepository
                 if (sender == null)
                 {
                     response.message = $"User with the ID {createLunchDTO.SenderId} do not exist";
-                    response.statusCode = 400;
+                    response.statusCode = HttpStatusCode.BadRequest;
                     response.success = false;
                     return response;
                 }
@@ -104,7 +105,7 @@ namespace eagles_food_backend.Services.LunchRepository
 
                 response.message = "Lunch request created successfully";
                 response.data = null;
-                response.statusCode = 201;
+                response.statusCode = HttpStatusCode.Created;
                 response.success = true;
                 #endregion
                 return response;
@@ -118,49 +119,24 @@ namespace eagles_food_backend.Services.LunchRepository
 
         public async Task<Response<List<ResponseLunchDTO>>> getAll(int userId)
         {
-            //var org = new Organization()
-            //{
-            //    CreatedAt = DateTime.Now,
-            //    Name = "karo",
-            //    LunchPrice = 10,
-            //    CurrencyCode = "NGN",
-            //    UpdatedAt = DateTime.Now,
-            //    IsDeleted = false,
-
-            //};
-            //_context.Organizations.Add(org);
-            //await _context.SaveChangesAsync();
-            //var user = new User()
-            //{
-            //    CreatedAt = DateTime.UtcNow,
-            //    Email = org.Id.ToString() + "a@g.c",
-            //    OrgId = org.Id,
-            //    Currency = "NGN",
-            //    IsAdmin = false,
-            //    IsDeleted = false,
-            //    LastName = "ww",
-            //    FirstName = "ss",
-            //    CurrencyCode = "322",
-            //    BankName = "ddd",
-            //    BankRegion = "ss",
-            //    PasswordHash = "sss",
-            //    Phone = "ss",
-            //    ProfilePic = "ss",
-            //    UpdatedAt = DateTime.Now,
-            //    LunchCreditBalance = 10,
-            //    BankNumber = "ssss",
-            //    BankCode = "www",
-
-
-            //};
-            //_context.Users.Add(user);
-            //await _context.SaveChangesAsync();
             Response<List<ResponseLunchDTO>> response = new Response<List<ResponseLunchDTO>>();
             try
             {
+
                 var newList = await _context.Lunches
                  .Where(x => x.ReceiverId == userId || x.SenderId == userId)
-                 .Select(x => _mapper.Map<ResponseLunchDTO>(x))
+                 .Select(x => new ResponseLunchDTO()
+                 {
+                     Id = x.Id,
+                     ReceiverName = _context.Users.FirstOrDefault(y => y.Id == x.ReceiverId).FirstName,
+                     SenderName = _context.Users.FirstOrDefault(y => y.Id == x.SenderId).FirstName,
+                     SenderId = x.SenderId ?? 0,
+                     ReceiverId = x.ReceiverId ?? 0,
+                     CreatedAt = x.CreatedAt ?? DateTime.Now,
+                     Note = x.Note,
+                     Quantity = x.Quantity,
+                     Redeemed = x.Redeemed ?? false
+                 })
                  .ToListAsync();
 
                 response.data = newList;
@@ -182,12 +158,12 @@ namespace eagles_food_backend.Services.LunchRepository
             {
                 response.success = false;
                 response.message = $"Lunch with the ID {id} do not exist";
-                response.statusCode = 400;
+                response.statusCode = HttpStatusCode.BadRequest;
                 return response;
             }
             response.data = _mapper.Map<ResponseLunchDTO>(result);
             response.success = true;
-            response.statusCode = 200;
+            response.statusCode = HttpStatusCode.OK;
             return response;
         }
 
