@@ -10,7 +10,7 @@ namespace eagles_food_backend.Controllers
     {
         private readonly IUserRepository _userService;
 
-        public AuthController(ILogger<AuthController> logger, IUserRepository userService)
+        public AuthController(IUserRepository userService)
         {
             _userService = userService;
         }

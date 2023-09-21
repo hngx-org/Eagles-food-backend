@@ -3,6 +3,7 @@ using eagles_food_backend.Domains.DTOs;
 using eagles_food_backend.Domains.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Net;
 
 namespace eagles_food_backend.Services.UserServices
 {
@@ -104,7 +105,7 @@ namespace eagles_food_backend.Services.UserServices
                 long? org_id = (await db_context.Users.FirstOrDefaultAsync(x => x.Id == user_id))?.OrgId;
                 if (org_id == null)
                 {
-                    return new Response<List<UserReadDTO>>() { message = "Organization not found", success = false, status_code = "404" };
+                    return new Response<List<UserReadDTO>>() { message = "Organization not found", success = false, statusCode = HttpStatusCode.NotFound };
                 }
                 var users = await db_context.Users.Where(x => x.OrgId == org_id).Select(x => new UserReadDTO(
                 $"{x.FirstName} {x.LastName}",
@@ -116,7 +117,7 @@ namespace eagles_food_backend.Services.UserServices
             }
             catch (Exception)
             {
-                return new Response<List<UserReadDTO>>() { message = "Internal Server Error", status_code = "500" };
+                return new Response<List<UserReadDTO>>() { message = "Internal Server Error", statusCode = HttpStatusCode.InternalServerError };
             }
         }
 
@@ -127,25 +128,23 @@ namespace eagles_food_backend.Services.UserServices
                 var user = await db_context.Users.FirstOrDefaultAsync(x => x.Id == id);
                 if (user == null)
                 {
-                    return new Response<UserProfileReadDTO>() { message = "User not found", success = false, status_code = "404" };
+                    return new Response<UserProfileReadDTO>() { message = "User not found", success = false, statusCode = HttpStatusCode.NotFound };
                 }
                 var userprofile = new UserProfileReadDTO
                 (
+                    user_id: user.Id.ToString(),
                     name: $"{user.FirstName} {user.LastName}",
                     email: user.Email,
                     profile_picture: user.ProfilePic,
-                    phonenumber: "",
-                    bank_number: user.BankNumber,
-                    bank_code: user.BankCode,
-                    bank_name: user.BankName,
-                    is_admin: user.IsAdmin ?? false
+                    phone_number: user.Phone,
+                    isAdmin: user.IsAdmin ?? false
                 );
 
                 return new Response<UserProfileReadDTO>() { data = userprofile, message = "User data fetched successfully" };
             }
             catch (Exception)
             {
-                return new Response<UserProfileReadDTO>() { message = "Internal Server Error", status_code = "500" };
+                return new Response<UserProfileReadDTO>() { message = "Internal Server Error", statusCode = HttpStatusCode.InternalServerError };
             }
         }
 
@@ -156,18 +155,19 @@ namespace eagles_food_backend.Services.UserServices
                 var user = await db_context.Users.FirstOrDefaultAsync(x => x.Id == user_id);
                 if (user == null)
                 {
-                    return new Response<UserBankUpdateDTO>() { message = "User not found", success = false, status_code = "404" };
+                    return new Response<UserBankUpdateDTO>() { message = "User not found", success = false, statusCode = HttpStatusCode.NotFound };
                 }
+                user.BankRegion = userbank.bank_region;
                 user.BankNumber = userbank.bank_number;
                 user.BankName = userbank.bank_name;
                 user.BankCode = userbank.bank_code;
                 await db_context.SaveChangesAsync();
 
-                return new Response<UserBankUpdateDTO>() { data = userbank, message = "Successfully created bank account" };
+                return new Response<UserBankUpdateDTO>() { data = null, message = "Successfully created bank account" };
             }
             catch (Exception)
             {
-                return new Response<UserBankUpdateDTO>() { message = "Internal Server Error", status_code = "500" };
+                return new Response<UserBankUpdateDTO>() { message = "Internal Server Error", statusCode = HttpStatusCode.InternalServerError };
             }
 
         }
@@ -179,7 +179,7 @@ namespace eagles_food_backend.Services.UserServices
                 var user = await db_context.Users.FirstOrDefaultAsync(x => x.Email == email);
                 if (user == null)
                 {
-                    return new Response<UserReadDTO>() { message = "User not found", success = false, status_code = "404" };
+                    return new Response<UserReadDTO>() { message = "User not found", success = false, statusCode = HttpStatusCode.NotFound };
                 }
 
                 var userReadDto = new UserReadDTO(
@@ -192,7 +192,7 @@ namespace eagles_food_backend.Services.UserServices
             }
             catch (Exception)
             {
-                return new Response<UserReadDTO>() { message = "Internal Server Error", status_code = "500" };
+                return new Response<UserReadDTO>() { message = "Internal Server Error", statusCode = HttpStatusCode.InternalServerError };
             }
         }
     }
