@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using eagles_food_backend.Domains.Models;
+﻿using eagles_food_backend.Domains.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace eagles_food_backend.Data
 {
