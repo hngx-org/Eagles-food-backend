@@ -37,7 +37,6 @@ namespace eagles_food_backend
 
             }
 
-
             //Creating Token
             public string createToken(string id, string role)
             {

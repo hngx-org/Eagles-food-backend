@@ -9,6 +9,7 @@ namespace eagles_food_backend.Domains
         public AutoMapperProfile()
         {
             CreateMap<CreateUserDTO,User>();
+            //CreateMap<User, CreateUserDTO>();
         }
     }
 }

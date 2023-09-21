@@ -14,7 +14,8 @@ namespace eagles_food_backend.Domains.Models
         public string? profile_picture { get; set; }
         [Required] public string email { get; set; } //Required for registration
         public byte[] password_hash { get; set; } //
-        public byte[] password_salt { get; set; } //
+
+        /*public byte[] password_salt { get; set; }*/ //
         public string? refresh_token { get; set; }
         [Required] public string currency { get; set; } = string.Empty;
         [Required] public string currency_code { get; set; } = string.Empty;

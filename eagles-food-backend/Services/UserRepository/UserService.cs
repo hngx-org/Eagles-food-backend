@@ -2,7 +2,9 @@
 using eagles_food_backend.Data;
 using eagles_food_backend.Domains.DTOs;
 using eagles_food_backend.Domains.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
 
 namespace eagles_food_backend.Services.UserServices
 {
@@ -11,13 +13,16 @@ namespace eagles_food_backend.Services.UserServices
         private readonly LunchDbContext db_context;
         private readonly IMapper mapper;
         private readonly AuthenticationClass authentication;
+        private readonly IPasswordHasher<CreateUserDTO> _passwordHasher;
 
-        public UserService(LunchDbContext db_context,IMapper mapper,AuthenticationClass authentication)
+		public UserService(LunchDbContext db_context,IMapper mapper, AuthenticationClass authentication, IPasswordHasher<CreateUserDTO> passwordHasher)
         {
             this.db_context = db_context;
             this.mapper = mapper;
             this.authentication = authentication;
-        }
+            _passwordHasher = passwordHasher;
+
+		}
         public async Task<Response<User>> CreateUser(CreateUserDTO user)
         {
             Response<User> response = new Response<User>();
@@ -25,10 +30,14 @@ namespace eagles_food_backend.Services.UserServices
 
             try
             {
-                authentication.CreatePasswordHash(user.password, out byte[] password_hash, out byte[] password_salt);
-                newUser.password_salt = password_salt;
-                newUser.password_hash = password_hash;
-                await db_context.users.AddAsync(newUser);
+				var hashed = _passwordHasher.HashPassword(user, user.password);
+
+			 //	authentication.CreatePasswordHash(user.password, out byte[] password_hash, out byte[] password_salt);
+             //   newUser.password_salt = password_salt;
+             
+                newUser.password_hash = (Encoding.UTF8.GetBytes(hashed));
+
+				await db_context.users.AddAsync(newUser);
                 await db_context.SaveChangesAsync();
 
                 response.data = newUser;
@@ -48,15 +57,24 @@ namespace eagles_food_backend.Services.UserServices
         {
             Response<string> response = new Response<string>();
             User? user_login = await db_context.users.Where(u => u.username == user.username).FirstOrDefaultAsync();
+            var userindb = mapper.Map<CreateUserDTO>(user_login);
             if (user_login is not null)
             {
                 try
                 {
-                    if (!authentication.verifyPasswordHash(user.password, user_login.password_hash, user_login.password_salt))
+                  var result = _passwordHasher.VerifyHashedPassword(userindb, user_login.password_hash.ToString(),user.password);
+                    if (result == PasswordVerificationResult.Failed)
                     {
-                        response.success = false;
-                        response.message = "Incorrect password";
-                    }
+						response.success = false;
+						response.message = "Incorrect password";
+					}
+                    
+                    //if (!authentication.verifyPasswordHash(user.password, user_login.password_hash, user_login.password_salt))
+                    //{
+                    //    response.success = false;
+                    //    response.message = "Incorrect password";
+                    //}
+
                     else
                     {
                         var token = authentication.createToken((user_login.UserId).ToString(), "user");
