@@ -21,41 +21,36 @@ $ docker compose up
 
 1. Use the `production.yaml` for Docker Compose (TODO)
 
-## creating migration script:
+## creating migration script and models:
 
 when the database schema is changed, `migrate.sql` will need to be regenerated:
 
-1. Spin up a MySQL docker container with the values from `appsettings.json` (you can skip this if MySQL is already installed and running on your machine)
+1. Connect to the production db.
+
+```sh
+$ mysql --host <host> -u eagles-admin -p
+```
+
+2. Dump the schema with `mysqldump`:
+
+```sh
+$  mysqldump -h <host> -u eagles-admin -p --no-data -B free_lunch_db --single-transaction > PROD_free_lunch_db.sql
+```
+
+3. Spin up a MySQL docker container with whatever values you need, or just use your installed version of MySQL.
 
 ```sh
 $ docker run --rm -d -p 3306:3306 -e MYSQL_ROOT_PASSWORD=secret -e MYSQL_DATABASE=free_lunch_db mysql:8.1
 ```
 
-2. Generate the idempotent migration file
+4. Run the script
 
 ```sh
-$ cd eagles-food-backend # the nested project folder, not the repo one
-$ dotnet ef migrations script --idempotent > ../migrate.sql
+$ mysql > source PROD_free_lunch_db.sql
 ```
 
-3. Remove the first 4 lines of the generated file, since .NET is dumb and leaves its build output in:
+5. Generate the models
 
-```sh
-$ cd ..
-$ cat ./migrate.sql # before removing
-Build started...
-Build succeeded.
-info: Microsoft.EntityFrameworkCore.Infrastructure[10403]
-      Entity Framework Core 6.0.22 initialized 'LunchDbContext' using provider 'Pomelo.EntityFrameworkCore.MySql:6.0.2' with options: ServerVersion 8.1.0-mysql 
-CREATE TABLE IF NOT EXISTS `__EFMigrationsHistory` (
-...more...
-
-$ vi ./migrate.sql
-
-$ cat ./migrate.sql # after editing
-CREATE TABLE IF NOT EXISTS `__EFMigrationsHistory` (
-    `MigrationId` varchar(150) CHARACTER SET utf8mb4 NOT NULL,
-    `ProductVersion` varchar(32) CHARACTER SET utf8mb4 NOT NULL,
-    CONSTRAINT `PK___EFMigrationsHistory` PRIMARY KEY (`MigrationId`)
-...more...
+```sh 
+$ dotnet ef dbcontext scaffold "Server=localhost;Database=free_lunch_db;user=root;password=secret" Pomelo.EntityFrameworkCore.MySql --output-dir ProdModels
 ```
