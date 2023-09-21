@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace eagles_food_backend.Controllers
 {
     [ApiController]
-    [Route("api/auth/users")]
+    [Route("api/auth")]
     public class AuthController : ControllerBase
     {
         private readonly IUserRepository _userService;
@@ -16,7 +16,7 @@ namespace eagles_food_backend.Controllers
         }
 
 
-        [HttpPost("register")]
+        [HttpPost("user/signup")]
         public async Task<ActionResult> CreateUser([FromBody] CreateUserDTO model)
         {
             var res = await _userService.CreateUser(model);
