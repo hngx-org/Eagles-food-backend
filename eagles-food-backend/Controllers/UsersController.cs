@@ -27,7 +27,7 @@ namespace eagles_food_backend.Controllers
             if (int.TryParse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value, out int id))
             {
                 var userprofile = await _userService.GetUserProfile(id);
-                return Ok(userprofile);
+                return userprofile.success ? Ok(userprofile) : BadRequest(userprofile);
             }
             else return BadRequest();
 
@@ -39,7 +39,7 @@ namespace eagles_food_backend.Controllers
             if (int.TryParse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value, out int id))
             {
                 var userprofile = await _userService.UpdateUserBank(userbank, id);
-                return Ok(userprofile);
+                return userprofile.success ? Ok(userprofile) : BadRequest(userprofile);
             }
             else return BadRequest();
         }
@@ -55,7 +55,7 @@ namespace eagles_food_backend.Controllers
                 //    return Unauthorized();
                 //}
                 var response = await _userService.GetAllUsersForOrganization(id);
-                return Ok(response);
+                return response.success ? Ok(response) : BadRequest(response);
             }
             else return BadRequest();
         }
@@ -64,7 +64,7 @@ namespace eagles_food_backend.Controllers
         public async Task<IActionResult> GetUser(string email)
         {
             var response = await _userService.SearchForUser(email);
-            return Ok(response);
+            return response.success ? Ok(response) : BadRequest(response);
         }
     }
 }
