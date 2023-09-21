@@ -13,16 +13,28 @@ namespace eagles_food_backend.Services.LunchRepository
     {
         private readonly LunchDbContext _context;
         private readonly IMapper _mapper;
-        public LunchService(LunchDbContext context, IMapper mapper)
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        public LunchService(LunchDbContext context, IMapper mapper, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
             _mapper = mapper;
+            _httpContextAccessor = httpContextAccessor;
         }
         public async Task<Response<ResponseLunchDTO>> create(CreateLunchDTO createLunchDTO)
         {
             Response<ResponseLunchDTO> response = new Response<ResponseLunchDTO>();
             try
             {
+                var id = _httpContextAccessor.HttpContext.User.Identity.Name;
+                if (id == null)
+                {
+                    response.message = $"UnAuthorized";
+                    response.statusCode = HttpStatusCode.Unauthorized;
+                    response.success = false;
+                    return response;
+                }
+                int senderId = int.Parse(id);
+
                 #region Check for Invalid Request
                 if (!createLunchDTO.receivers.Any())
                 {
@@ -32,7 +44,7 @@ namespace eagles_food_backend.Services.LunchRepository
                     return response;
                 }
                 createLunchDTO.receivers = createLunchDTO.receivers.Distinct().ToArray();
-                if (createLunchDTO.receivers.Contains(createLunchDTO.SenderId))
+                if (createLunchDTO.receivers.Contains(senderId))
                 {
                     response.message = "Sender cannot be among the receivers. Invalid request.";
                     response.success = false;
@@ -54,10 +66,10 @@ namespace eagles_food_backend.Services.LunchRepository
                 }
                 #endregion
                 #region check sender id
-                var sender = await _context.Users.FirstOrDefaultAsync(x => x.Id == createLunchDTO.SenderId);
+                var sender = await _context.Users.FirstOrDefaultAsync(x => x.Id == senderId);
                 if (sender == null)
                 {
-                    response.message = $"User with the ID {createLunchDTO.SenderId} do not exist";
+                    response.message = $"User with the ID {senderId} do not exist";
                     response.statusCode = HttpStatusCode.BadRequest;
                     response.success = false;
                     return response;
@@ -85,7 +97,7 @@ namespace eagles_food_backend.Services.LunchRepository
                 var lunchList = createLunchDTO.receivers.Select(id => new Lunch
                 {
                     ReceiverId = id,
-                    SenderId = createLunchDTO.SenderId,
+                    SenderId = senderId,
                     OrgId = sender.OrgId,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow,
@@ -117,12 +129,20 @@ namespace eagles_food_backend.Services.LunchRepository
             }
         }
 
-        public async Task<Response<List<ResponseLunchDTO>>> getAll(int userId)
+        public async Task<Response<List<ResponseLunchDTO>>> getAll()
         {
             Response<List<ResponseLunchDTO>> response = new Response<List<ResponseLunchDTO>>();
             try
             {
-
+                var id = _httpContextAccessor.HttpContext.User.Identity.Name;
+                if (id == null)
+                {
+                    response.message = $"UnAuthorized";
+                    response.statusCode = HttpStatusCode.Unauthorized;
+                    response.success = false;
+                    return response;
+                }
+                int userId = int.Parse(id);
                 var newList = await _context.Lunches
                  .Where(x => x.ReceiverId == userId || x.SenderId == userId)
                  .Select(x => new ResponseLunchDTO()

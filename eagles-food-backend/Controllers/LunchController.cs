@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace eagles_food_backend.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/lunch")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class LunchController : ControllerBase
     {
@@ -25,14 +25,14 @@ namespace eagles_food_backend.Controllers
             return Ok(response);
         }
 
-        [HttpGet("all/{userId}")]
-        public async Task<ActionResult> GetAllLunches(int userId)
+        [HttpGet("all")]
+        public async Task<ActionResult> GetAllLunches()
         {
-            var response = await _lunchService.getAll(userId);
+            var response = await _lunchService.getAll();
             return Ok(response);
         }
 
-        [HttpGet("getById/{id}")]
+        [HttpGet("/{id}")]
         public async Task<ActionResult> GetLunchById(int id)
         {
             var response = await _lunchService.getById(id);

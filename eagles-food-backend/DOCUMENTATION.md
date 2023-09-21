@@ -171,7 +171,6 @@ Creates a new lunch request.
 ```json
 {
   "receivers": [1, 2, 3],
-  "SenderId": 4,
   "quantity": 5,
   "note": "This is a note for the lunch request."
 }
@@ -189,7 +188,7 @@ Creates a new lunch request.
 ```
 ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃
 
-**GET** `/api/lunch/all/{userId}`
+**GET** `/api/lunch/all`
 
 ### Headers
 
@@ -238,7 +237,7 @@ Retrieves all lunch requests for the given user.
 ```
 ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃
 
-**GET** `/api/lunch/getById/{id}`
+**GET** `/api/lunch/{id}`
 
 ### Headers
 

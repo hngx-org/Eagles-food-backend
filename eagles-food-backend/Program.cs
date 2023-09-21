@@ -47,7 +47,7 @@ builder.Services.AddScoped<IUserRepository, UserService>();
 builder.Services.AddScoped<IOrganizationService, OrganizationService>();
 builder.Services.AddScoped<IResponseService, ResponseService>();
 builder.Services.AddScoped<ILunchRepository, LunchService>();
-
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IPasswordHasher<CreateUserDTO>, PasswordHasher<CreateUserDTO>>();
 builder.Services.AddSingleton<AuthenticationClass>();
 

@@ -3,15 +3,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace eagles_food_backend.Domains.DTOs
 {
-    public class LunchDTO
-    {
-    }
     public class CreateLunchDTO
     {
         [Required]
         public int[] receivers { get; set; }
-        [Required]
-        public int SenderId { get; set; }
         [Required]
         public int quantity { get; set; }
         [Required]
