@@ -35,6 +35,7 @@ namespace eagles_food_backend.Services.UserServices
                 //   newUser.password_salt = password_salt;
 
                 newUser.PasswordHash = password_hash;
+                newUser.IsAdmin = false;
 
                 await db_context.Users.AddAsync(newUser);
                 await db_context.SaveChangesAsync();
