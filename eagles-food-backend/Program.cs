@@ -21,7 +21,8 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<LunchDbContext>(options =>
-    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+    options.UseMySql(
+        connectionString, ServerVersion.AutoDetect(connectionString)));
 builder.Services.AddControllers();
 
 var config = builder.Configuration;

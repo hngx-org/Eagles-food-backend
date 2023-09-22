@@ -30,9 +30,27 @@ Users are regular users of the app, they cannot transfer, redeem, etc. unless th
     "statusCode": 201,
     "success": true,
     "data": {
-        "email": "john@doe.com",
-        "id": "1",
-    }
+      "Id": "8",
+      "OrgId": "",
+      "FirstName": "doe",
+      "LastName": "john",
+      "ProfilePic": "",
+      "Email": "john@doe.com",
+      "Phone": "123456",
+      "IsAdmin": "False",
+      "LunchCreditBalance": "",
+      "RefreshToken": "",
+      "BankNumber": "",
+      "BankCode": "",
+      "BankName": "",
+      "BankRegion": "",
+      "Currency": "",
+      "CurrencyCode": "",
+      "CreatedAt": "22/09/2023 12:38:46",
+      "UpdatedAt": "22/09/2023 12:38:46",
+      "access_token": "eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTUxMiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiOCIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6InVzZXIiLCJleHAiOjE2OTU0NzI3NTF9.JTdKZ1nfuA2SI0oQnCe2y5D5eTeTDIWsaCZdZk-Rh0qVdnc7jNs8r7NnN7q_l58Z_jsSeboUBEUogaTO-e2LnQ",
+      "Org": ""
+    },
   }
   ```
 
@@ -63,14 +81,30 @@ Users are regular users of the app, they cannot transfer, redeem, etc. unless th
 
   ```json
   {
-  "message": "User authenticated successfully",
-  "statusCode": 200,
-  "data": {
-    "access_token": "your-auth-token-here",
-	"email": "john@doe.com",
-    "id": "1",
-	"isAdmin": false
-    }
+    "message": "User authenticated successfully",
+    "statusCode": 200,
+    "data": {
+      "Id": "8",
+      "OrgId": "",
+      "FirstName": "doe",
+      "LastName": "john",
+      "ProfilePic": "",
+      "Email": "john@doe.com",
+      "Phone": "123456",
+      "IsAdmin": "False",
+      "LunchCreditBalance": "",
+      "RefreshToken": "",
+      "BankNumber": "",
+      "BankCode": "",
+      "BankName": "",
+      "BankRegion": "",
+      "Currency": "",
+      "CurrencyCode": "",
+      "CreatedAt": "22/09/2023 12:38:46",
+      "UpdatedAt": "22/09/2023 12:38:46",
+      "access_token": "eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTUxMiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiOCIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6InVzZXIiLCJleHAiOjE2OTU0NzI3NTF9.JTdKZ1nfuA2SI0oQnCe2y5D5eTeTDIWsaCZdZk-Rh0qVdnc7jNs8r7NnN7q_l58Z_jsSeboUBEUogaTO-e2LnQ",
+      "Org": ""
+    },
   }
   ```
 
@@ -122,11 +156,30 @@ Organizations are like banks, they hold users and allow them to transfer and red
     "message": "Staff signed up successfully",
     "statusCode": 201,
     "success": true,
+    "message": "User authenticated successfully",
+    "statusCode": 200,
     "data": {
-      "email": "john@doe.com",
-      "id": "1",
-      "orgId": "1"
-    }
+      "Id": "8",
+      "OrgId": "1",
+      "FirstName": "doe",
+      "LastName": "john",
+      "ProfilePic": "",
+      "Email": "john@doe.com",
+      "Phone": "123456",
+      "IsAdmin": "False",
+      "LunchCreditBalance": "",
+      "RefreshToken": "",
+      "BankNumber": "",
+      "BankCode": "",
+      "BankName": "",
+      "BankRegion": "",
+      "Currency": "",
+      "CurrencyCode": "",
+      "CreatedAt": "22/09/2023 12:38:46",
+      "UpdatedAt": "22/09/2023 12:38:46",
+      "access_token": "eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTUxMiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiOCIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6InVzZXIiLCJleHAiOjE2OTU0NzI3NTF9.JTdKZ1nfuA2SI0oQnCe2y5D5eTeTDIWsaCZdZk-Rh0qVdnc7jNs8r7NnN7q_l58Z_jsSeboUBEUogaTO-e2LnQ",
+      "Org": "doe john's org."
+    },
   }
   ```
 

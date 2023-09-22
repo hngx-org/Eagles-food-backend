@@ -36,8 +36,8 @@ namespace eagles_food_backend.Controllers
         /// </code>
         /// </remarks>
         /// <param name="model">Request body with user's details</param>
-        /// <returns>A response with 201 and the id, email of the new user</returns>
-        /// <response code="201">Returns the id, email of the new user</response>
+        /// <returns>A response with 201 and the id, email of the new user and token</returns>
+        /// <response code="201">Returns the id, email of the new user and token</response>
         /// <response code="400">If the email is already taken, or invalid</response>
         /// <response code="500">If there was an error creating the user</response>
         [HttpPost("user/signup")]

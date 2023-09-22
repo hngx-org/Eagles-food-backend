@@ -1,10 +1,10 @@
 ﻿using eagles_food_backend.Data;
 using eagles_food_backend.Domains.DTOs;
 using eagles_food_backend.Domains.Models;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
+using System.Reflection;
 
 namespace eagles_food_backend.Services.UserServices
 {
@@ -65,10 +65,27 @@ namespace eagles_food_backend.Services.UserServices
                 await db_context.SaveChangesAsync();
 
                 response.success = true;
-                response.data = new Dictionary<string, string>() {
-                    { "id", newUser.Id.ToString() },
-                    { "email", newUser.Email }
-                };
+
+                // get role (even if it's null) and create token
+                var role = newUser.IsAdmin == true ? "admin" : "user";
+                var token = authentication.createToken(newUser.Id.ToString(), role);
+
+                // get user data and add token
+                var res = newUser
+                    .GetType()
+                    .GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                    .ToDictionary(prop => prop.Name, prop => Convert.ToString(prop.GetValue(newUser, null)));
+                
+                // remove sensitive data
+                res.Remove("PasswordHash");
+                res.Remove("LunchReceivers");
+                res.Remove("LunchSenders");
+                res.Remove("Withdrawals");
+                res.Remove("IsDeleted");
+                
+                res.Add("access_token", token);
+
+                response.data = res!;
                 response.message = "User signed up successfully";
                 response.statusCode = HttpStatusCode.Created;
             }
@@ -122,9 +139,23 @@ namespace eagles_food_backend.Services.UserServices
                     var token = authentication.createToken(user_login.Id.ToString(), role);
 
                     response.success = true;
-                    response.data = new Dictionary<string, string>() {
-                        { "access_token", token }
-                    };
+                    
+                    // get user data and add token
+                    var res = user_login
+                        .GetType()
+                        .GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                        .ToDictionary(prop => prop.Name, prop => Convert.ToString(prop.GetValue(user_login, null)));
+                    
+                    // remove sensitive data
+                    res.Remove("PasswordHash");
+                    res.Remove("LunchReceivers");
+                    res.Remove("LunchSenders");
+                    res.Remove("Withdrawals");
+                    res.Remove("IsDeleted");
+                    
+                    res.Add("access_token", token);
+
+                    response.data = res!;
                     response.message = "User authenticated successfully";
                     response.statusCode = HttpStatusCode.OK;
                 }

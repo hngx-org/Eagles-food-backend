@@ -1,5 +1,11 @@
 # eagles-food-backend
 
+Live link is at [https://hngxeaglesfood-4graz0d2.b4a.run/](https://hngxeaglesfood-4graz0d2.b4a.run/)
+
+Swagger docs at [https://hngxeaglesfood-4graz0d2.b4a.run/swagger/index.html](https://hngxeaglesfood-4graz0d2.b4a.run/swagger/index.html)
+
+Markdown docs at [DOCUMENTATION.md](eagles-food-backend/DOCUMENTATION.md)
+
 ## working with locally
 
 1. Install [Docker](https://docs.docker.com/get-docker/)
@@ -19,7 +25,12 @@ $ docker compose up
 
 ## running in production
 
-1. Use the `production.yaml` for Docker Compose (TODO)
+1. Deploy the Dockerfile and set the following environment variables:
+
+```sh
+MYSQLCONNSTR_DefaultConnection = Server=3<host>;Database=<db>;user=<uname>;password=<pwd>
+JWTSettings__SecretKey = <secret-that-is-at-least-512-bytes>
+```
 
 ## creating migration script and models:
 
@@ -43,14 +54,32 @@ $  mysqldump -h <host> -u eagles-admin -p --no-data -B free_lunch_db --single-tr
 $ docker run --rm -d -p 3306:3306 -e MYSQL_ROOT_PASSWORD=secret -e MYSQL_DATABASE=free_lunch_db mysql:8.1
 ```
 
-4. Run the script
+4. Copy the schema dump into the container
+
+```sh
+$ docker cp PROD_free_lunch_db.sql <container-id>:/PROD_free_lunch_db.sql
+```
+
+5. Log into MySQL and run the script
 
 ```sh
 $ mysql > source PROD_free_lunch_db.sql
 ```
 
-5. Generate the models
+6. Modify your `appsettings.Development.json` to point to the new database
+
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=localhost;Database=free_lunch_db;user=root;password=secret"
+  }
+}
+```
+
+7. Generate the models
 
 ```sh 
 $ dotnet ef dbcontext scaffold "Server=localhost;Database=free_lunch_db;user=root;password=secret" Pomelo.EntityFrameworkCore.MySql --output-dir ProdModels
 ```
+
+8. Manually copy the models into the `Models` directory and delete the `ProdModels` directory.
