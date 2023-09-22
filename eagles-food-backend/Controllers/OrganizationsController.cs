@@ -152,6 +152,9 @@ namespace eagles_food_backend.Controllers
         ///  <response code="404">If unauthorised</response>
         ///  <response code="500">If there was an error updating</response>
         ///  <response code="401">If unauthorised</response>
+        [HttpPatch("api/organizations/lunch/update")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+
         public async Task<IActionResult> UpdateOrganizationLunchPrice([FromBody] UpdateOrganizationLunchPriceDTO model)
         {
             if (HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value != "admin")
@@ -170,5 +173,43 @@ namespace eagles_food_backend.Controllers
             }
         }
         
+        /// <summary>
+        /// Invites a user to an organisation
+        /// </summary>
+        /// <remarks>
+        /// Sample request:
+        /// <code>
+        /// POST api/organizations/invite
+        /// {
+        /// "email": "john@doe"
+        /// }
+        /// </code>
+        /// </remarks>
+        ///  <param name="model">The request body with the details</param>
+        ///  <returns>nothing</returns>
+        ///  <response code="200">Returns nothing</response>
+        ///  <response code="400">If valudation fails</response>
+        ///  <response code="404">If unauthorised</response>
+        ///  <response code="500">If there was an error </response>
+        ///  <response code="401">If unauthorised</response>
+        [HttpPost("api/organizations/invite")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<IActionResult> InviteToOrganization([FromBody] InviteToOrganizationDTO model)
+        {
+            if (HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value != "admin")
+            {
+                return Unauthorized();
+            }
+
+            if (int.TryParse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value, out int id))
+            {
+                var res = await _organizationService.InviteToOrganization(id, model);
+                return StatusCode((int)res.statusCode, res);
+            }
+            else
+            {
+                return BadRequest();
+            }
+        }
     }
 }
