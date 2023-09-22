@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Net;
+using System.Reflection;
 using eagles_food_backend.Data;
 using eagles_food_backend.Domains.DTOs;
 using eagles_food_backend.Domains.Models;
@@ -85,12 +86,29 @@ namespace eagles_food_backend.Services
                 await _context.Users.AddAsync(newUser);
                 await _context.SaveChangesAsync();
 
+                // get role (even if it's null) and create token
+                var role = newUser.IsAdmin == true ? "admin" : "user";
+                var token = _authentication.createToken(newUser.Id.ToString(), role);
+
                 response.success = true;
-                response.data = new Dictionary<string, string>() {
-                    { "id", newUser.Id.ToString() },
-                    { "orgId", newUser.OrgId.ToString()! },
-                    { "email", newUser.Email }
-                };
+
+                // get user data and add token
+                var res = newUser
+                    .GetType()
+                    .GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                    .ToDictionary(prop => prop.Name, prop => Convert.ToString(prop.GetValue(newUser, null)));
+                
+                // remove sensitive data
+                res.Remove("PasswordHash");
+                res.Remove("LunchReceivers");
+                res.Remove("LunchSenders");
+                res.Remove("Withdrawals");
+                res.Remove("IsDeleted");
+                
+                res.Add("access_token", token);
+
+                response.data = res!;
+
                 response.message = "Staff signed up successfully";
                 response.statusCode = HttpStatusCode.Created;
             }

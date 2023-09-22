@@ -41,8 +41,8 @@ namespace eagles_food_backend.Controllers
         /// </code>
         /// </remarks>
         /// <param name="model">Request body with staff's details</param>
-        /// <returns>A response with the id, email, and orgID of the new staff</returns>
-        /// <response code="201">Returns the id, email, orgID of the new staff</response>
+        /// <returns>A response with the id, email, and orgID of the new staff and token</returns>
+        /// <response code="201">Returns the id, email, orgID of the new staff and token</response>
         /// <response code="400">If validation errors</response>
         /// <response code="500">If there was an error creating the staff</response>        
         [HttpPost("staff/signup")]
