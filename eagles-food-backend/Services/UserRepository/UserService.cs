@@ -105,7 +105,19 @@ namespace eagles_food_backend.Services.UserServices
         public async Task<Response<Dictionary<string, string>>> Login(UserLoginDTO user)
         {
             Response<Dictionary<string, string>> response = new();
-            User? user_login = await db_context.Users.Where(u => u.Email == user.Email).FirstOrDefaultAsync();
+
+            if (!await db_context.Users.AnyAsync(u => u.Email == user.Email))
+            {
+                response.success = false;
+                response.message = "Email already exists";
+                response.data = new Dictionary<string, string>() {
+                    { "email", user.Email }
+                };
+                response.statusCode = HttpStatusCode.BadRequest;
+
+                return response;
+            }
+            User? user_login = await db_context.Users.FirstOrDefaultAsync(u => u.Email == user.Email);
             var userindb = mapper.Map<CreateUserDTO>(user_login);
 
             // ensure user exists

@@ -45,6 +45,17 @@ namespace eagles_food_backend.Controllers
             else return BadRequest();
         }
 
+        [HttpPut("update")]
+        public async Task<IActionResult> UpdateUser([FromBody] CreateUserDTO model)
+        {
+            if (int.TryParse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value, out int id))
+            {
+                var userprofile = await _userService.GetUserProfile(id);
+                return Ok();
+            }
+            return BadRequest();
+        }
+
         [HttpGet("all")]
         public async Task<IActionResult> GetUsersForOrganization()
         {
