@@ -6,6 +6,8 @@ Swagger docs at [https://hngxeaglesfood-4graz0d2.b4a.run/swagger/index.html](htt
 
 Markdown docs at [DOCUMENTATION.md](eagles-food-backend/DOCUMENTATION.md)
 
+Postman workspace at [https://www.postman.com/iediong/workspace/hngx-workspace/overview](https://www.postman.com/iediong/workspace/hngx-workspace/overview)
+
 ## working with locally
 
 1. Install [Docker](https://docs.docker.com/get-docker/)
