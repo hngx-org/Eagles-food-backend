@@ -105,9 +105,10 @@ namespace eagles_food_backend.Services.UserServices
         public async Task<Response<Dictionary<string, string>>> Login(UserLoginDTO user)
         {
             Response<Dictionary<string, string>> response = new();
-            User? user_login = await db_context.Users.Where(u => u.Email == user.Email).FirstOrDefaultAsync();
+            User? user_login = await db_context.Users.Where(u => u.Email == user.Email).Include(x=>x.Org).FirstOrDefaultAsync();
+            
             var userindb = mapper.Map<CreateUserDTO>(user_login);
-
+            
             // ensure user exists
             if (user_login is null)
             {
@@ -152,9 +153,9 @@ namespace eagles_food_backend.Services.UserServices
                     res.Remove("LunchSenders");
                     res.Remove("Withdrawals");
                     res.Remove("IsDeleted");
-                    
+                    res.Remove("Org");
                     res.Add("access_token", token);
-
+                    res.Add("organization_name", user_login?.Org?.Name);
                     response.data = res!;
                     response.message = "User authenticated successfully";
                     response.statusCode = HttpStatusCode.OK;
@@ -183,7 +184,9 @@ namespace eagles_food_backend.Services.UserServices
                 $"{x.FirstName} {x.LastName}",
                 x.Email,
                 x.ProfilePic,
-                x.Id.ToString())).ToListAsync();
+                x.Id.ToString(),
+                (bool)x.IsAdmin ? "Admin" : "User"
+                )).ToListAsync();
 
                 return new Response<List<UserReadDTO>>() { data = users, message = "Users fetched successfully" };
             }
@@ -197,7 +200,7 @@ namespace eagles_food_backend.Services.UserServices
         {
             try
             {
-                var user = await db_context.Users.FirstOrDefaultAsync(x => x.Id == id);
+                var user = await db_context.Users.Include(x=>x.Org).FirstOrDefaultAsync(x => x.Id == id);
                 if (user == null)
                 {
                     return new Response<UserProfileReadDTO>() { message = "User not found", success = false, statusCode = HttpStatusCode.NotFound };
@@ -210,7 +213,8 @@ namespace eagles_food_backend.Services.UserServices
                     email: user.Email,
                     profile_picture: user.ProfilePic,
                     phone_number: user.Phone,
-                    isAdmin: user.IsAdmin ?? false
+                    isAdmin: user.IsAdmin ?? false,
+                    organization:user.Org?.Name ?? "Unassigned"
                 );
 
                 return new Response<UserProfileReadDTO>() { data = userprofile, message = "User data fetched successfully" };
@@ -259,7 +263,9 @@ namespace eagles_food_backend.Services.UserServices
                     name: $"{user.FirstName} {user.LastName}",
                     email: user.Email,
                     profile_picture: user.ProfilePic,
-                    user_id: user.Id.ToString());
+                    user_id: user.Id.ToString(),
+                    role: (bool)user.IsAdmin ? "Admin":"User"
+                    );
 
                 return new Response<UserReadDTO>() { data = userReadDto, message = "User found" };
             }

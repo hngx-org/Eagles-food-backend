@@ -406,14 +406,15 @@ namespace eagles_food_backend.Services
                     Ttl = DateTime.Now.AddDays(1),
                     Token = Guid.NewGuid().ToString()
                 };
-
+                var userFromDb = await _context.Users.FirstAsync(x=>x.Email == model.Email);
+                userFromDb.OrgId = orgID;
                 await _context.OrganizationInvites.AddAsync(invite);
                 await _context.SaveChangesAsync();
 
                 response.success = true;
                 response.data = null;
 
-                response.message = "Organisation invite sent successfully";
+                response.message = "User Added To Organisation successfully";
                 response.statusCode = HttpStatusCode.OK;
             }
 
