@@ -103,7 +103,7 @@ Users are regular users of the app, they cannot transfer, redeem, etc. unless th
       "CreatedAt": "22/09/2023 12:38:46",
       "UpdatedAt": "22/09/2023 12:38:46",
       "access_token": "eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTUxMiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiOCIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6InVzZXIiLCJleHAiOjE2OTU0NzI3NTF9.JTdKZ1nfuA2SI0oQnCe2y5D5eTeTDIWsaCZdZk-Rh0qVdnc7jNs8r7NnN7q_l58Z_jsSeboUBEUogaTO-e2LnQ",
-      "Org": ""
+      "organization_name": "x hng's Organization",
     },
   }
   ```
@@ -317,7 +317,7 @@ Organizations are like banks, they hold users and allow them to transfer and red
 
     ```json
     {
-      "message": "User invited successfully",
+      "message": "User Added To Organisation successfully",
       "statusCode": 200,
       "success": true,
       "data": null
@@ -355,7 +355,8 @@ Organizations are like banks, they hold users and allow them to transfer and red
         "email": "john@gmail.com",
         "phone_number": "9800",
         "profile_picture": null,
-        "isAdmin": false
+        "isAdmin": false,
+        "organization": "x hng's Organization"
     },
     "message": "User data fetched successfully",
     "success": true,
@@ -410,13 +411,15 @@ Organizations are like banks, they hold users and allow them to transfer and red
             "name": "John Doe",
             "email": "doe@gmail.com",
             "profile_picture": null,
-            "user_id": "1"
+            "user_id": "1",
+            "role": "User"
         },
         {
             "name": "John Doe",
             "email": "john@gmail.com",
             "profile_picture": null,
-            "user_id": "2"
+            "user_id": "2",
+            "role": "User"
         }
     ],
     "message": "Users fetched successfully",
@@ -441,7 +444,8 @@ Organizations are like banks, they hold users and allow them to transfer and red
         "name": "John Doe",
         "email": "john@gmail.com",
         "profile_picture": null,
-        "user_id": "2"
+        "user_id": "2",
+        "role": "User"
     },
     "message": "User found",
     "success": true,
