@@ -27,7 +27,7 @@ builder.Services.AddControllers();
 var config = builder.Configuration;
 
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(opts =>
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, opts =>
 {
     opts.TokenValidationParameters = new TokenValidationParameters
     {
@@ -39,10 +39,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
     };
 });
 
-
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<IUserRepository, UserService>();
 builder.Services.AddScoped<IOrganizationService, OrganizationService>();
@@ -54,15 +52,32 @@ builder.Services.AddSingleton<AuthenticationClass>();
 
 builder.Services.AddSwaggerGen(opts =>
 {
-    opts.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+    opts.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = "Standard Authorization headers using the bearer scheme (\"bearer {token}\")",
+        Description = "Please enter a valid token",
         In = ParameterLocation.Header,
         Name = "Authorization",
-        Type = SecuritySchemeType.ApiKey,
-
+        Type = SecuritySchemeType.Http,
+        BearerFormat = "JWT",
+        Scheme = "Bearer"
     });
-    opts.OperationFilter<SecurityRequirementsOperationFilter>();
+
+    opts.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Id="Bearer",
+                    Type=ReferenceType.SecurityScheme
+                },
+            },
+            new string[]{}
+        }
+    });
+
+    // opts.OperationFilter<SecurityRequirementsOperationFilter>();
 
     var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     opts.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));

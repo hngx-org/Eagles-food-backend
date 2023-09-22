@@ -21,6 +21,7 @@ namespace eagles_food_backend.Services.UserServices
             this.authentication = authentication;
         }
 
+        // create a new user
         public async Task<Response<Dictionary<string, string>>> CreateUser(CreateUserDTO user)
         {
             Response<Dictionary<string, string>> response = new();
@@ -83,6 +84,7 @@ namespace eagles_food_backend.Services.UserServices
             return response;
         }
 
+        // login a user
         public async Task<Response<Dictionary<string, string>>> Login(UserLoginDTO user)
         {
             Response<Dictionary<string, string>> response = new();
