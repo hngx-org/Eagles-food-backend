@@ -32,7 +32,7 @@ namespace eagles_food_backend.Controllers
             return Ok(response);
         }
 
-        [HttpGet("/{id}")]
+        [HttpGet("{id}")]
         public async Task<ActionResult> GetLunchById(int id)
         {
             var response = await _lunchService.getById(id);
