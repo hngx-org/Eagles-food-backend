@@ -1,45 +1,83 @@
 ﻿# Authentication
 
-- POST `/api/auth/login` 
+- POST: `/api/auth/user/signup`
 
   takes:
 
   ```json
   {
-    "email": "user@example.com",
-    "password": "password123"
+    "lastName": "john",
+    "firstName": "doe",
+    "email": "john@doe.com",
+    "address": "123 Main St.",
+    "password": "pass",
+    "phone": "123456"
   }
   ```
 
-  returns:
-
-  if valid:
+  if successful, returns:
 
   ```json
   {
-    "message": "User authenticated successfully",
-    "statusCode": 200,
+    "message": "User signed up successfully",
+    "statusCode": 201,
+    "success": true,
     "data": {
-        "access_token": "your-auth-token-here",
-        "email": "email@mail.com",
-        "id": "random_id",
-        "isAdmin": true | false
-    }
-  }
-  ```
-  
-  else:
-  
-  ```json
-  {
-    "message": "User failed to authenticate",
-    "statusCode": 400,
-    "errors": {
-        "something went wrong"
+        "email": "john@doe.com",
+        "id": "1",
     }
   }
   ```
 
+  if invalid (e.g. due to invalid email, email not unique), returns:
+
+  ```json
+  {
+    "message": "Invalid email",
+    "statusCode": 400,
+    "success": false,
+    "data": {
+        "email": "not-an-email",
+    }
+  }
+  ```
+
+- POST `/api/auth/login`
+
+  takes:
+  ```json
+  {
+    "email": "john@doe.com",
+    "password": "pass"
+  }
+  ```
+  
+  if successful, returns:
+
+  ```json
+  {
+  "message": "User authenticated successfully",
+  "statusCode": 200,
+  "data": {
+    "access_token": "your-auth-token-here",
+	"email": "john@doe.com",
+    "id": "1",
+	"isAdmin": false
+    }
+  }
+  ```
+
+  if invalid (e.g. invalid email, wrong password), returns:
+  
+  ```json
+  {
+    "message": "Incorrect password",
+    "statusCode": 401,
+    "data": {
+      "email": "john@doe.com"
+    }
+  }
+  ```
 ## End-point: /api/user/profile
 ### Method: GET
 ### Headers
