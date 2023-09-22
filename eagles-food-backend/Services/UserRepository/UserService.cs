@@ -3,6 +3,7 @@ using eagles_food_backend.Domains.DTOs;
 using eagles_food_backend.Domains.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 
 namespace eagles_food_backend.Services.UserServices
@@ -12,27 +13,49 @@ namespace eagles_food_backend.Services.UserServices
         private readonly LunchDbContext db_context;
         private readonly IMapper mapper;
         private readonly AuthenticationClass authentication;
-        // private readonly IPasswordHasher<CreateUserDTO> _passwordHasher;
 
         public UserService(LunchDbContext db_context, IMapper mapper, AuthenticationClass authentication)
         {
             this.db_context = db_context;
             this.mapper = mapper;
             this.authentication = authentication;
-            // _passwordHasher = passwordHasher;
-
         }
-        public async Task<Response<User>> CreateUser(CreateUserDTO user)
+
+        public async Task<Response<Dictionary<string, string>>> CreateUser(CreateUserDTO user)
         {
-            Response<User> response = new Response<User>();
+            Response<Dictionary<string, string>> response = new();
             User? newUser = mapper.Map<User>(user);
 
+            // ensure it's an actual (plausible) email
+            if (!new EmailAddressAttribute().IsValid(user.Email))
+            {
+                response.success = false;
+                response.message = "Invalid email";
+                response.data = new Dictionary<string, string>() {
+                    { "email", user.Email }
+                };
+                response.statusCode = HttpStatusCode.BadRequest;
+
+                return response;
+            }
+
+            // ensure email is unique
+            if (await db_context.Users.AnyAsync(u => u.Email == user.Email))
+            {
+                response.success = false;
+                response.message = "Email already exists";
+                response.data = new Dictionary<string, string>() {
+                    { "email", user.Email }
+                };
+                response.statusCode = HttpStatusCode.BadRequest;
+
+                return response;
+            }
+
+            // store in db
             try
             {
-                // var hashed = _passwordHasher.HashPassword(user, user.Password);
-
                 authentication.CreatePasswordHash(user.Password, out string password_hash);
-                //   newUser.password_salt = password_salt;
 
                 newUser.PasswordHash = password_hash;
                 newUser.IsAdmin = false;
@@ -40,61 +63,75 @@ namespace eagles_food_backend.Services.UserServices
                 await db_context.Users.AddAsync(newUser);
                 await db_context.SaveChangesAsync();
 
-                response.data = newUser;
-                response.message = "Sign up successful";
+                response.success = true;
+                response.data = new Dictionary<string, string>() {
+                    { "id", newUser.Id.ToString() },
+                    { "email", newUser.Email }
+                };
+                response.message = "User signed up successfully";
+                response.statusCode = HttpStatusCode.Created;
             }
+
+            // catch any errors
             catch (Exception ex)
             {
+                response.statusCode = HttpStatusCode.InternalServerError;
                 response.success = false;
-                response.message = ex.Message;
                 response.message = ex.Message;
             }
 
             return response;
         }
 
-        public async Task<Response<string>> Login(UserLoginDTO user)
+        public async Task<Response<Dictionary<string, string>>> Login(UserLoginDTO user)
         {
-            Response<string> response = new Response<string>();
+            Response<Dictionary<string, string>> response = new();
             User? user_login = await db_context.Users.Where(u => u.Email == user.Email).FirstOrDefaultAsync();
             var userindb = mapper.Map<CreateUserDTO>(user_login);
-            if (user_login is not null)
-            {
-                try
-                {
-                    // var result = _passwordHasher.VerifyHashedPassword(userindb, user_login.PasswordHash, user.Password);
-                    var result = authentication.verifyPasswordHash(user.Password, user_login.PasswordHash);
-                    // if (result == PasswordVerificationResult.Failed)
-                    // {
-                    //     response.success = false;
-                    //     response.message = "Incorrect password";
-                    // }
 
-                    if (!authentication.verifyPasswordHash(user.Password, user_login.PasswordHash))
-                    {
-                       response.success = false;
-                       response.message = "Incorrect password";
-                    }
-
-                    else
-                    {
-                        var token = authentication.createToken((user_login.Id).ToString(), "user");
-                        response.data = token;
-                        response.message = "Login succesful";
-                    }
-
-                }
-                catch (Exception ex)
-                {
-                    response.success = false;
-                    response.message = ex.Message;
-
-                }
-            }
-            else
+            // ensure user exists
+            if (user_login is null)
             {
                 response.success = false;
-                response.message = "user not found";
+                response.message = "User not found";
+                response.statusCode = HttpStatusCode.Unauthorized;
+                response.data = new Dictionary<string, string>() {
+                    { "email", user.Email }
+                };
+
+                return response;
+            }
+
+            // ensure password is correct
+            try
+            {
+                var passwordIsValid = authentication.verifyPasswordHash(user.Password, user_login.PasswordHash);
+
+                if (!passwordIsValid)
+                {
+                    response.success = false;
+                    response.message = "Incorrect password";
+                    response.statusCode = HttpStatusCode.Unauthorized;
+                }
+                else
+                {
+                    // get role (even if it's null) and create token
+                    var role = user_login.IsAdmin == true ? "admin" : "user";
+                    var token = authentication.createToken(user_login.Id.ToString(), role);
+
+                    response.success = true;
+                    response.data = new Dictionary<string, string>() {
+                        { "access_token", token }
+                    };
+                    response.message = "User authenticated successfully";
+                    response.statusCode = HttpStatusCode.OK;
+                }
+            }
+            catch (Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+                response.statusCode = HttpStatusCode.InternalServerError;
             }
 
             return response;
