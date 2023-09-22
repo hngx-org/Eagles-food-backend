@@ -22,4 +22,16 @@
         public string Phone { get; set; } = null!;
     }
 
+    public class UpdateOrganizationWalletDTO {
+        public decimal amount { get; set; }
+    }
+
+    public class UpdateOrganizationLunchPriceDTO {
+        public decimal LunchPrice { get; set; }
+    }
+
+    public class InviteToOrganizationDTO {
+        public string Email { get; set; } = null!;
+    }
+
 }

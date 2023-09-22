@@ -80,7 +80,7 @@ namespace eagles_food_backend.Controllers
             {
                 return Unauthorized();
             }
-            
+
             if (int.TryParse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value, out int id))
             {
                 var res = await _organizationService.ModifyOrganization(id, model);
@@ -92,11 +92,83 @@ namespace eagles_food_backend.Controllers
             }
         }
 
-        // [HttpGet("{id}")]
-        // public async Task<IActionResult> GetOrganization(int id)
-        // {
-        //     var org = await _organizationService.GetOrganization(id);
-        //     return Ok(org);
-        // }
+        /// <summary>
+        /// Updates the wallet of an organisation
+        /// </summary>
+        /// <remarks>
+        /// Sample request:
+        ///  <code>
+        ///  PATCH api/organizations/wallet
+        ///  {
+        ///  "amount": "200"
+        ///  }
+        ///  </code>
+        ///  </remarks>
+        ///  <param name="model">The request body with the details</param>
+        ///  <returns>nothing</returns>
+        ///  <response code="200">Returns nothing</response>
+        ///  <response code="400">If valudation fails</response>
+        ///  <response code="404">If unauthorised</response>
+        ///  <response code="500">If there was an error updating</response>
+        ///  <response code="401">If unauthorised</response>
+        [HttpPatch("api/organizations/wallet")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<IActionResult> UpdateOrganizationWallet([FromBody] UpdateOrganizationWalletDTO model)
+        {
+            if (HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value != "admin")
+            {
+                return Unauthorized();
+            }
+
+            if (int.TryParse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value, out int id))
+            {
+                var res = await _organizationService.UpdateOrganizationWallet(id, model);
+                return StatusCode((int)res.statusCode, res);
+            }
+            else
+            {
+                return BadRequest();
+            }
+        }
+
+        /// <summary>
+        /// Updates the lunch price of an organisation
+        /// </summary>
+        /// 
+        /// <remarks>
+        /// Sample request:
+        /// 
+        /// <code>
+        /// PATCH api/organizations/lunch/update
+        /// {
+        /// "lunchPrice": "200"
+        /// }
+        /// </code>
+        /// </remarks>
+        ///  <param name="model">The request body with the details</param>
+        ///  <returns>nothing</returns>
+        ///  <response code="200">Returns nothing</response>
+        ///  <response code="400">If valudation fails</response>
+        ///  <response code="404">If unauthorised</response>
+        ///  <response code="500">If there was an error updating</response>
+        ///  <response code="401">If unauthorised</response>
+        public async Task<IActionResult> UpdateOrganizationLunchPrice([FromBody] UpdateOrganizationLunchPriceDTO model)
+        {
+            if (HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value != "admin")
+            {
+                return Unauthorized();
+            }
+
+            if (int.TryParse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value, out int id))
+            {
+                var res = await _organizationService.UpdateOrganizationLunchPrice(id, model);
+                return StatusCode((int)res.statusCode, res);
+            }
+            else
+            {
+                return BadRequest();
+            }
+        }
+        
     }
 }

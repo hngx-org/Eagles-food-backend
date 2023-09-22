@@ -64,6 +64,15 @@ namespace eagles_food_backend.Services
             await _context.AddAsync(newOrg);
             await _context.SaveChangesAsync();
 
+            var wallet = new OrganizationLunchWallet()
+            {
+                OrgId = newOrg.Id,
+                Balance = 0
+            };
+
+            await _context.AddAsync(wallet);
+            await _context.SaveChangesAsync();
+
             // store in db
             try
             {
@@ -172,17 +181,235 @@ namespace eagles_food_backend.Services
             return response;
         }
 
-        //     public async Task<ServiceResponse<OrganizationDTO>> GetOrganization(int id)
-        //     {
-        //         var organization = await _context.Organizations.FindAsync(id);
-        //         if (organization == null) return _responseService.ErrorResponse<OrganizationDTO>("Organization not found");
-        //         var response = new OrganizationDTO()
-        //         {
-        //             Currency = organization.CurrencyCode,
-        //             LunchPrice = organization.LunchPrice,
-        //             Name = organization.Name,
-        //         };
-        //         return _responseService.SuccessResponse(response);
-        //     }
+        // add money to the organization's wallet
+        public async Task<Response<Dictionary<string, string>>> UpdateOrganizationWallet(int UserID, UpdateOrganizationWalletDTO model) {
+            Response<Dictionary<string, string>> response = new();
+            User? user = await _context.Users.FindAsync(UserID);
+
+            try
+            {
+                // ensure user exists
+                if (user is null)
+                {
+                    response.success = false;
+                    response.message = "User not found";
+                    response.statusCode = HttpStatusCode.NotFound;
+                    response.data = new Dictionary<string, string>() {
+                        { "id", UserID.ToString() }
+                    };
+
+                    return response;
+                }
+
+                // make sure they're an admin
+                if (user.IsAdmin != true)
+                {
+                    response.success = false;
+                    response.message = "User unauthorised";
+                    response.statusCode = HttpStatusCode.Unauthorized;
+                    response.data = new Dictionary<string, string>() {
+                        { "id", UserID.ToString() }
+                    };
+
+                    return response;
+                }
+
+                var orgID = user.OrgId;
+                var org = await _context.Organizations.FindAsync(orgID);
+
+                if (org is null) {
+                    response.success = false;
+                    response.message = "Organisation does not exist";
+                    response.statusCode = HttpStatusCode.BadRequest;
+
+                    return response;
+                }
+
+                var wallet = _context.OrganizationLunchWallets.Where(w => w.OrgId == orgID).FirstOrDefault();
+
+                if (wallet is null) {
+                    response.success = false;
+                    response.message = "Wallet does not exist";
+                    response.statusCode = HttpStatusCode.BadRequest;
+
+                    return response;
+                }
+
+                wallet.Balance += model.amount;
+
+                await _context.SaveChangesAsync();
+
+                response.success = true;
+                response.data = null;
+
+                response.message = "Organisation wallet updated successfully";
+                response.statusCode = HttpStatusCode.OK;
+            }
+
+            // catch any errors
+            catch (Exception ex)
+            {
+                response.statusCode = HttpStatusCode.InternalServerError;
+                response.success = false;
+                response.message = ex.Message;
+            }
+
+            return response;
+        }
+
+        // update the price of lunch for the organization
+        public async Task<Response<Dictionary<string, string>>> UpdateOrganizationLunchPrice(int UserID, UpdateOrganizationLunchPriceDTO model) {
+            Response<Dictionary<string, string>> response = new();
+            User? user = await _context.Users.FindAsync(UserID);
+
+            try
+            {
+                // ensure user exists
+                if (user is null)
+                {
+                    response.success = false;
+                    response.message = "User not found";
+                    response.statusCode = HttpStatusCode.NotFound;
+                    response.data = new Dictionary<string, string>() {
+                        { "id", UserID.ToString() }
+                    };
+
+                    return response;
+                }
+
+                // make sure they're an admin
+                if (user.IsAdmin != true)
+                {
+                    response.success = false;
+                    response.message = "User unauthorised";
+                    response.statusCode = HttpStatusCode.Unauthorized;
+                    response.data = new Dictionary<string, string>() {
+                        { "id", UserID.ToString() }
+                    };
+
+                    return response;
+                }
+
+                var orgID = user.OrgId;
+                var org = await _context.Organizations.FindAsync(orgID);
+
+                if (org is null) {
+                    response.success = false;
+                    response.message = "Organisation does not exist";
+                    response.statusCode = HttpStatusCode.BadRequest;
+
+                    return response;
+                }
+
+                _context.Entry(org).State = EntityState.Modified;
+
+                org.LunchPrice = model.LunchPrice;
+
+                await _context.SaveChangesAsync();
+
+                response.success = true;
+                response.data = null;
+
+                response.message = "Organisation lunch price updated successfully";
+                response.statusCode = HttpStatusCode.OK;
+            }
+
+            // catch any errors
+            catch (Exception ex)
+            {
+                response.statusCode = HttpStatusCode.InternalServerError;
+                response.success = false;
+                response.message = ex.Message;
+            }
+
+            return response;
+        }
+
+        // invite to the organization
+        public async Task<Response<Dictionary<string, string>>> InviteToOrganization(int UserID, InviteToOrganizationDTO model) {
+            Response<Dictionary<string, string>> response = new();
+            User? user = await _context.Users.FindAsync(UserID);
+
+            try
+            {
+                // ensure user exists
+                if (user is null)
+                {
+                    response.success = false;
+                    response.message = "User not found";
+                    response.statusCode = HttpStatusCode.NotFound;
+                    response.data = new Dictionary<string, string>() {
+                        { "id", UserID.ToString() }
+                    };
+
+                    return response;
+                }
+
+                // make sure they're an admin
+                if (user.IsAdmin != true)
+                {
+                    response.success = false;
+                    response.message = "User unauthorised";
+                    response.statusCode = HttpStatusCode.Unauthorized;
+                    response.data = new Dictionary<string, string>() {
+                        { "id", UserID.ToString() }
+                    };
+
+                    return response;
+                }
+
+                // make sure email is unique
+                if (await _context.OrganizationInvites.AnyAsync(i => i.Email == model.Email))
+                {
+                    response.success = false;
+                    response.message = "Email already exists";
+                    response.data = new Dictionary<string, string>() {
+                        { "email", model.Email }
+                    };
+                    response.statusCode = HttpStatusCode.BadRequest;
+
+                    return response;
+                }
+
+                var orgID = user.OrgId;
+                var org = await _context.Organizations.FindAsync(orgID);
+
+                if (org is null) {
+                    response.success = false;
+                    response.message = "Organisation does not exist";
+                    response.statusCode = HttpStatusCode.BadRequest;
+
+                    return response;
+                }
+
+                var invite = new OrganizationInvite() {
+                    Email = model.Email,
+                    OrgId = orgID,
+                    Ttl = DateTime.Now.AddDays(1),
+                    Token = Guid.NewGuid().ToString()
+                };
+
+                await _context.OrganizationInvites.AddAsync(invite);
+                await _context.SaveChangesAsync();
+
+                response.success = true;
+                response.data = null;
+
+                response.message = "Organisation invite sent successfully";
+                response.statusCode = HttpStatusCode.OK;
+            }
+
+            // catch any errors
+            catch (Exception ex)
+            {
+                response.statusCode = HttpStatusCode.InternalServerError;
+                response.success = false;
+                response.message = ex.Message;
+            }
+
+            return response;
+        }
+
+
     }
 }
