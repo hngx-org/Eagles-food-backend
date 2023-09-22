@@ -157,7 +157,7 @@ DROP TABLE IF EXISTS `withdrawals`;
 CREATE TABLE `withdrawals` (
   `id` int NOT NULL AUTO_INCREMENT,
   `user_id` int DEFAULT NULL,
-  `status` enum('redeemed','not_redeemed') NOT NULL,
+  `status` enum('success','pending') NOT NULL,
   `amount` decimal(10,2) NOT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -177,4 +177,4 @@ CREATE TABLE `withdrawals` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-09-21 11:46:39
+-- Dump completed on 2023-09-22 17:32:42
