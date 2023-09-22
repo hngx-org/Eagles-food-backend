@@ -184,6 +184,105 @@ Organizations are like banks, they hold users and allow them to transfer and red
     }
   }
 
+- **PATCH** `api/organizations/lunch/update`, updates the lunch price of an org.
+    
+    takes:
+
+    ```json
+    {
+      "lunchPrice": "200",
+    }
+    ```
+
+    if successful (claims match, user is an admin), returns:
+
+    ```json
+    {
+      "message": "Lunch price updated successfully",
+      "statusCode": 200,
+      "success": true,
+      "data": null
+    }
+    ```
+
+    if invalid (e.g. due to invalid permissions), returns:
+
+    ```json
+    {
+      "message": "User unauthorised",
+      "statusCode": 401,
+      "success": false,
+      "data": {
+          "id": "2",
+      }
+    }
+
+- **PATCH** `api/organizations/wallet`, updates the wallet of an org.
+    
+    takes:
+
+    ```json
+    {
+      "amount": "200",
+    }
+    ```
+
+    if successful (claims match, user is an admin), returns:
+
+    ```json
+    {
+      "message": "Wallet updated successfully",
+      "statusCode": 200,
+      "success": true,
+      "data": null
+    }
+    ```
+
+    if invalid (e.g. due to invalid permissions), returns:
+
+    ```json
+    {
+      "message": "User unauthorised",
+      "statusCode": 401,
+      "success": false,
+      "data": {
+          "id": "2",
+      }
+    }
+
+- **POST** `api/organizations/invite`, invites a user to an org.
+    
+    takes:
+
+    ```json
+    {
+      "email": "john@doe.com"
+    }
+    ```
+
+    if successful (claims match, user is an admin, email not invited before), returns:
+
+    ```json
+    {
+      "message": "User invited successfully",
+      "statusCode": 200,
+      "success": true,
+      "data": null
+    }
+    ```
+
+    if invalid (e.g. due to invalid permissions, email already invited), returns:
+
+    ```json
+    {
+      "message": "User unauthorised",
+      "statusCode": 401,
+      "success": false,
+      "data": {
+          "id": "2",
+      }
+    }
+
 </details>
 
 ## End-point: /api/user/profile
