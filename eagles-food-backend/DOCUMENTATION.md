@@ -1,6 +1,14 @@
 ﻿# Authentication
 
-- POST: `/api/auth/user/signup`
+## Users 
+
+<summary>
+Users are regular users of the app, they cannot transfer, redeem, etc. unless they're in an org.
+</summary>
+
+<details>
+
+- **POST** `/api/auth/user/signup`, make a user
 
   takes:
 
@@ -9,7 +17,6 @@
     "lastName": "john",
     "firstName": "doe",
     "email": "john@doe.com",
-    "address": "123 Main St.",
     "password": "pass",
     "phone": "123456"
   }
@@ -42,7 +49,7 @@
   }
   ```
 
-- POST `/api/auth/login`
+- **POST** `/api/auth/login`, login as a user
 
   takes:
   ```json
@@ -78,6 +85,206 @@
     }
   }
   ```
+
+  > [!WARNING]
+  > TODO: updating user info
+
+</details>
+
+## Organizations
+
+<summary>
+Organizations are like banks, they hold users and allow them to transfer and redeem lunches
+</summary>
+
+<details>
+
+- **POST** `/api/organization/staff/signup`, make an admin of an org.
+
+  this makes a new org. called "name's org." and sets them as an admin over it.
+
+  takes:
+
+  ```json
+  {
+    "lastName": "john",
+    "firstName": "doe",
+    "email": "john@doe.com",
+    "password": "pass",
+    "phone": "123456"
+  }
+  ```
+
+  if successful, returns:
+
+  ```json
+  {
+    "message": "Staff signed up successfully",
+    "statusCode": 201,
+    "success": true,
+    "data": {
+      "email": "john@doe.com",
+      "id": "1",
+      "orgId": "1"
+    }
+  }
+  ```
+
+  if invalid (e.g. due to invalid email, email not unique), returns:
+
+  ```json
+  {
+    "message": "Invalid email",
+    "statusCode": 400,
+    "success": false,
+    "data": {
+        "email": "not-an-email",
+    }
+  }
+  ```
+
+- **PUT** `/api/organization/modify`, modifies an organisation
+
+  after a staff (admin) is signed up, they can modify their org. with this if they want to change the name, currency, etc.
+
+  takes:
+
+  ```json
+  {
+	"organisationName": "Big Bank PLC",
+	"lunchPrice": "200",
+    "currency": "$"
+  }
+  ```
+
+  if successful (claims match, user is an admin), returns:
+
+  ```json
+  {
+    "message": "Staff signed up successfully",
+    "statusCode": 201,
+    "success": true,
+    "data": {
+      "name": "Big Bank PLC",
+      "lunchPrice": "200",
+      "currency": "$"
+    }
+  }
+  ```
+
+  if invalid (e.g. due to invalid permissions), returns:
+
+  ```json
+  {
+    "message": "User unauthorised",
+    "statusCode": 401,
+    "success": false,
+    "data": {
+        "id": "2",
+    }
+  }
+
+- **PATCH** `api/organizations/lunch/update`, updates the lunch price of an org.
+    
+    takes:
+
+    ```json
+    {
+      "lunchPrice": "200",
+    }
+    ```
+
+    if successful (claims match, user is an admin), returns:
+
+    ```json
+    {
+      "message": "Lunch price updated successfully",
+      "statusCode": 200,
+      "success": true,
+      "data": null
+    }
+    ```
+
+    if invalid (e.g. due to invalid permissions), returns:
+
+    ```json
+    {
+      "message": "User unauthorised",
+      "statusCode": 401,
+      "success": false,
+      "data": {
+          "id": "2",
+      }
+    }
+
+- **PATCH** `api/organizations/wallet`, updates the wallet of an org.
+    
+    takes:
+
+    ```json
+    {
+      "amount": "200",
+    }
+    ```
+
+    if successful (claims match, user is an admin), returns:
+
+    ```json
+    {
+      "message": "Wallet updated successfully",
+      "statusCode": 200,
+      "success": true,
+      "data": null
+    }
+    ```
+
+    if invalid (e.g. due to invalid permissions), returns:
+
+    ```json
+    {
+      "message": "User unauthorised",
+      "statusCode": 401,
+      "success": false,
+      "data": {
+          "id": "2",
+      }
+    }
+
+- **POST** `api/organizations/invite`, invites a user to an org.
+    
+    takes:
+
+    ```json
+    {
+      "email": "john@doe.com"
+    }
+    ```
+
+    if successful (claims match, user is an admin, email not invited before), returns:
+
+    ```json
+    {
+      "message": "User invited successfully",
+      "statusCode": 200,
+      "success": true,
+      "data": null
+    }
+    ```
+
+    if invalid (e.g. due to invalid permissions, email already invited), returns:
+
+    ```json
+    {
+      "message": "User unauthorised",
+      "statusCode": 401,
+      "success": false,
+      "data": {
+          "id": "2",
+      }
+    }
+
+</details>
+
 ## End-point: /api/user/profile
 ### Method: GET
 ### Headers

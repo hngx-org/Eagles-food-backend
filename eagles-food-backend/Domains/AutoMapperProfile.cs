@@ -11,6 +11,9 @@ namespace eagles_food_backend.Domains
             CreateMap<User, CreateUserDTO>();
             CreateMap<CreateLunchDTO, Lunch>();
             CreateMap<Lunch, ResponseLunchDTO>();
+            CreateMap<CreateStaffDTO, User>();
+            CreateMap<User, CreateStaffDTO>();
+
         }
     }
 }
