@@ -3,6 +3,7 @@ using eagles_food_backend;
 using eagles_food_backend.Data;
 using eagles_food_backend.Domains.DTOs;
 using eagles_food_backend.Services;
+using eagles_food_backend.Services.LunchRepository;
 using eagles_food_backend.Services.OrganizationRepository;
 using eagles_food_backend.Services.ResponseService;
 using eagles_food_backend.Services.UserServices;
@@ -45,7 +46,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IUserRepository, UserService>();
 builder.Services.AddScoped<IOrganizationService, OrganizationService>();
 builder.Services.AddScoped<IResponseService, ResponseService>();
-
+builder.Services.AddScoped<ILunchRepository, LunchService>();
+builder.Services.AddHttpContextAccessor();
 // builder.Services.AddScoped<IPasswordHasher<CreateUserDTO>, PasswordHasher<CreateUserDTO>>();
 builder.Services.AddSingleton<AuthenticationClass>();
 

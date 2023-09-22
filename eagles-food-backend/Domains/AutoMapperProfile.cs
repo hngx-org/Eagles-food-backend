@@ -9,6 +9,8 @@ namespace eagles_food_backend.Domains
         {
             CreateMap<CreateUserDTO, User>();
             CreateMap<User, CreateUserDTO>();
+            CreateMap<CreateLunchDTO, Lunch>();
+            CreateMap<Lunch, ResponseLunchDTO>();
         }
     }
 }

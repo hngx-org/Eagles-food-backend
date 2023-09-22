@@ -151,3 +151,120 @@
 }
 ```
 ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃
+
+# Lunch
+
+### Endpoints
+
+**POST** `/api/lunch/send`
+
+### Headers
+
+|Content-Type|Value|
+|---|---|
+|Authorization|Bearer <token>|
+
+Creates a new lunch request.
+
+**Request body:**
+
+```json
+{
+  "receivers": [1, 2, 3],
+  "quantity": 5,
+  "note": "This is a note for the lunch request."
+}
+```
+
+**Response:**
+
+```json
+{
+  "message": "Lunch request created successfully",
+  "data": null,
+  "statusCode": 201,
+  "success": true
+}
+```
+⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃
+
+**GET** `/api/lunch/all`
+
+### Headers
+
+|Content-Type|Value|
+|---|---|
+|Authorization|Bearer <token>|
+
+Retrieves all lunch requests for the given user.
+
+**Response:**
+
+```json
+{
+  "message": "Success",
+  "data": [
+    {
+      "Id": 1,
+      "ReceiverName": "John Doe",
+      "SenderName": "Jane Doe",
+      "SenderId": 2,
+      "ReceiverId": 1,
+      "CreatedAt": "2023-09-21T23:05:03.000Z",
+      "Note": "This is a note for the lunch request.",
+      "Quantity": 5,
+      "Redeemed": false
+    },
+    {
+      "Id": 2,
+      "ReceiverName": "Jane Doe",
+      "SenderName": "John Doe",
+      "SenderId": 1,
+      "ReceiverId": 2,
+      "CreatedAt": "2023-09-21T23:05:03.000Z",
+      "Note": "This is another note for the lunch request.",
+      "Quantity": 10,
+      "Redeemed": true
+    }
+  ],
+  "statusCode": 200,
+  "success": true
+}
+```
+⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃
+
+**GET** `/api/lunch/{id}`
+
+### Headers
+
+|Content-Type|Value|
+|---|---|
+|Authorization|Bearer <token>|
+
+Retrieves a single lunch request by its ID.
+
+**Request parameters:**
+
+* `id`: The ID of the lunch request to retrieve.
+
+**Response:**
+
+```json
+{
+  "message": "Success",
+  "data": {
+    "Id": 1,
+    "ReceiverName": "John Doe",
+    "SenderName": "Jane Doe",
+    "SenderId": 2,
+    "ReceiverId": 1,
+    "CreatedAt": "2023-09-21T23:05:03.000Z",
+    "Note": "This is a note for the lunch request.",
+    "Quantity": 5,
+    "Redeemed": false
+  },
+  "statusCode": 200,
+  "success": true
+}
+```
+⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃
