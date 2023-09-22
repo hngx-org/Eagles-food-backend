@@ -46,12 +46,12 @@ namespace eagles_food_backend.Controllers
         }
 
         [HttpPut("update")]
-        public async Task<IActionResult> UpdateUser([FromBody] CreateUserDTO model)
+        public async Task<IActionResult> UpdateUser([FromBody] UpdateUserDTO model)
         {
             if (int.TryParse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value, out int id))
             {
-                var userprofile = await _userService.GetUserProfile(id);
-                return Ok();
+                var userprofile = await _userService.UpdateUserProfile(id, model);
+                return StatusCode((int)userprofile.statusCode, userprofile);
             }
             return BadRequest();
         }

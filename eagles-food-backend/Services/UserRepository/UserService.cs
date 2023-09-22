@@ -105,18 +105,6 @@ namespace eagles_food_backend.Services.UserServices
         public async Task<Response<Dictionary<string, string>>> Login(UserLoginDTO user)
         {
             Response<Dictionary<string, string>> response = new();
-
-            if (!await db_context.Users.AnyAsync(u => u.Email == user.Email))
-            {
-                response.success = false;
-                response.message = "Email already exists";
-                response.data = new Dictionary<string, string>() {
-                    { "email", user.Email }
-                };
-                response.statusCode = HttpStatusCode.BadRequest;
-
-                return response;
-            }
             User? user_login = await db_context.Users.FirstOrDefaultAsync(u => u.Email == user.Email);
             var userindb = mapper.Map<CreateUserDTO>(user_login);
 
@@ -177,6 +165,58 @@ namespace eagles_food_backend.Services.UserServices
                 response.success = false;
                 response.message = ex.Message;
                 response.statusCode = HttpStatusCode.InternalServerError;
+            }
+
+            return response;
+        }
+
+        // update a user
+        public async Task<Response<Dictionary<string, string>>> UpdateUserProfile(
+            int userId, UpdateUserDTO model)
+        {
+            Response<Dictionary<string, string>> response = new();
+            User? user = await db_context.Users.FindAsync(userId);
+
+            try
+            {
+                // ensure user exists
+                if (user is null)
+                {
+                    response.success = false;
+                    response.message = "User not found";
+                    response.statusCode = HttpStatusCode.NotFound;
+                    response.data = new Dictionary<string, string>() {
+                        { "id", userId.ToString() }
+                    };
+
+                    return response;
+                }
+
+                db_context.Entry(user).State = EntityState.Modified;
+                user.LastName = model.LastName ?? user.LastName;
+                user.FirstName = model.FirstName ?? user.FirstName;
+                user.Phone = model.Phone ?? user.Phone;
+                user.ProfilePic = model.ProfilePic ?? user.ProfilePic;
+
+
+                await db_context.SaveChangesAsync();
+
+                response.success = true;
+                response.data = new Dictionary<string, string>() {
+                    { "Email", user.Email },
+                    { "Last name", user.LastName },
+                    { "First name", user.FirstName },
+                    { "Phone", user.Phone }
+                };
+                response.message = "User Profile updated successfully";
+                response.statusCode = HttpStatusCode.OK;
+            }
+            // catch any errors
+            catch (Exception ex)
+            {
+                response.statusCode = HttpStatusCode.InternalServerError;
+                response.success = false;
+                response.message = ex.Message;
             }
 
             return response;
