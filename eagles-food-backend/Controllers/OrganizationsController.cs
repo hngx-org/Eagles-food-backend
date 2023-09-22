@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace eagles_food_backend.Controllers
 {
     [ApiController]
-    [Route("api/organizations")]
+    [Route("api/organization")]
     [Produces("application/json")]
     public class OrganizationsController : ControllerBase
     {
