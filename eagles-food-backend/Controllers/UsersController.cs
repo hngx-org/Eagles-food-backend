@@ -57,6 +57,22 @@ namespace eagles_food_backend.Controllers
 
 
         /// <summary>
+        /// Updates the a user's detail
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPut("update")]
+        public async Task<IActionResult> UpdateUser([FromBody] UpdateUserDTO model)
+        {
+            if (int.TryParse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value, out int id))
+            {
+                var userprofile = await _userService.UpdateUserProfile(id, model);
+                return StatusCode((int)userprofile.statusCode, userprofile);
+            }
+            return BadRequest();
+        }
+
+        /// <summary>
         /// Get all user for an organization
         /// </summary>
         /// <returns>A response containing all the users in an organization</returns>

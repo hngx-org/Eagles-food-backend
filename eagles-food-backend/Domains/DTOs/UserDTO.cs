@@ -11,6 +11,15 @@ namespace eagles_food_backend.Domains.DTOs
         public string Phone { get; set; } = null!;
     }
 
+    public class UpdateUserDTO
+    {
+        public string Email { get; set; } = null!;
+        public string? LastName { get; set; }
+        public string? FirstName { get; set; }
+        public string? Phone { get; set; }
+        public string? ProfilePic { get; set; }
+    }
+
     public class UserLoginDTO
     {
         public string Email { get; set; } = null!;
