@@ -174,7 +174,7 @@ namespace eagles_food_backend.Controllers
         }
         
         /// <summary>
-        /// Invites a user to an organisation
+        /// Adds a user to an organisation
         /// </summary>
         /// <remarks>
         /// Sample request:

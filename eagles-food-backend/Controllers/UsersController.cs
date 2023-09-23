@@ -21,6 +21,10 @@ namespace eagles_food_backend.Controllers
             _userService = userService;
         }
 
+        /// <summary>
+        /// Get a user's profile
+        /// </summary>
+        /// <returns>A response with the user's details</returns>
         [HttpGet("profile")]
         public async Task<IActionResult> GetUserProfile()
         {
@@ -33,6 +37,12 @@ namespace eagles_food_backend.Controllers
 
         }
 
+
+        /// <summary>
+        /// Update a user's bank details
+        /// </summary>
+        /// <param name="userbank">The request body with the bank details</param>
+        /// <returns>nothing</returns>
         [HttpPut("bank")]
         public async Task<IActionResult> UpdateUserBank([FromBody] UserBankUpdateDTO userbank)
         {
@@ -45,6 +55,11 @@ namespace eagles_food_backend.Controllers
             else return BadRequest();
         }
 
+
+        /// <summary>
+        /// Get all user for an organization
+        /// </summary>
+        /// <returns>A response containing all the users in an organization</returns>
         [HttpGet("all")]
         public async Task<IActionResult> GetUsersForOrganization()
         {
@@ -61,6 +76,12 @@ namespace eagles_food_backend.Controllers
             else return BadRequest();
         }
 
+        /// <summary>
+        /// Search for a user by their email
+        /// </summary>
+        /// <param name="email">The email of the user to be retrieved</param>
+        /// <returns>The user that owns the specified email</returns>
+        /// <response code="200">Returns the user</response>
         [HttpGet("search/{email}")]
         public async Task<IActionResult> GetUser(string email)
         {
