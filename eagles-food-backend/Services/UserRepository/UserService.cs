@@ -282,6 +282,9 @@ namespace eagles_food_backend.Services.UserServices
                 x.IsAdmin == null ? "User" : (bool)x.IsAdmin ? "Admin" : "User"
                 )).ToListAsync();
 
+                // remove the current user from the list
+                users.RemoveAll(users => users.user_id == user_id.ToString());
+
                 return new Response<List<UserReadDTO>>() { data = users, message = "Users fetched successfully" };
             }
             catch (Exception)
