@@ -21,6 +21,37 @@ namespace eagles_food_backend.Services.UserServices
             this.authentication = authentication;
         }
 
+        private CreateBankDTO GenerateBankDetails() //Generates new account number for each created user
+        {
+           
+            var usersCount = db_context.Users.ToList().Count;
+            var test = db_context.Users.Any(m => m.BankNumber == "100000000");
+
+            if(usersCount < 1)
+            {
+                CreateBankDTO newUserBankDetails = new() {
+                    BankNumber = "100000000",
+                    BankCode = "257801",
+                    BankName = "FLC",
+                    BankRegion = "Jupiter"
+                };
+
+                return newUserBankDetails;
+            }
+
+            var bankNumber = usersCount + 100000000;
+
+            
+            CreateBankDTO userBankDetails = new() {
+                BankNumber = bankNumber.ToString(),
+                BankCode = "257801",
+                BankName = "FLC",
+                BankRegion = "Jupiter"
+            };
+
+            return userBankDetails;
+        }
+
         // create a new user
         public async Task<Response<Dictionary<string, string>>> CreateUser(CreateUserDTO user)
         {
@@ -60,6 +91,13 @@ namespace eagles_food_backend.Services.UserServices
 
                 newUser.PasswordHash = password_hash;
                 newUser.IsAdmin = false;
+
+                var generatedDetails = GenerateBankDetails();
+
+                newUser.BankName = generatedDetails.BankName;
+                newUser.BankNumber = generatedDetails.BankNumber;
+                newUser.BankCode = generatedDetails.BankCode;
+                newUser.BankRegion = generatedDetails.BankRegion;
 
                 await db_context.Users.AddAsync(newUser);
                 await db_context.SaveChangesAsync();
