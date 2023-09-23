@@ -159,6 +159,7 @@ namespace eagles_food_backend.Services.LunchRepository
                  })
                  .ToListAsync();
 
+                response.message = "Success";
                 response.data = newList;
                 response.success = true;
                 return response;
@@ -181,6 +182,7 @@ namespace eagles_food_backend.Services.LunchRepository
                 response.statusCode = HttpStatusCode.BadRequest;
                 return response;
             }
+            response.message = "Success";
             response.data = _mapper.Map<ResponseLunchDTO>(result);
             response.success = true;
             response.statusCode = HttpStatusCode.OK;

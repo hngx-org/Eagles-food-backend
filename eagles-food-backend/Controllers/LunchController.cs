@@ -18,6 +18,22 @@ namespace eagles_food_backend.Controllers
             _lunchService = lunchService;
         }
 
+        /// <summary>
+        /// Send Lunch to a user
+        /// </summary>
+        /// <remarks>
+        /// Sample request:
+        /// <code>
+        /// POST api/lunch/send
+        /// {
+        ///     "receivers": [1, 2, 3],
+        ///     "quantity": 5,
+        ///     "note": "This is a note for the lunch request."
+        /// }
+        /// </code>
+        /// </remarks>
+        /// <param name="model">Request body containing a note, the quantity and the receivers id</param>
+        /// <returns>A response with 201 and a message</returns>
         [HttpPost("send")]
         public async Task<ActionResult> CreateLunch([FromBody] CreateLunchDTO model)
         {
@@ -25,6 +41,10 @@ namespace eagles_food_backend.Controllers
             return Ok(response);
         }
 
+        /// <summary>
+        /// Gets all lunch
+        /// </summary>
+        /// <returns>A response with 200 and a list of the lunches</returns>
         [HttpGet("all")]
         public async Task<ActionResult> GetAllLunches()
         {
@@ -32,6 +52,11 @@ namespace eagles_food_backend.Controllers
             return Ok(response);
         }
 
+        /// <summary>
+        /// Get a lunch by id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns>A reponse with 200 and the lunch details</returns>
         [HttpGet("{id}")]
         public async Task<ActionResult> GetLunchById(int id)
         {
