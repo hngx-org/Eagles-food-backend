@@ -89,6 +89,7 @@ namespace eagles_food_backend.Services
                 newUser.IsAdmin = true;
                 newUser.Org = eaglesOrg;
                 newUser.OrgId = eaglesOrg.Id;
+                newUser.LunchCreditBalance = 0;
 
                 await _context.Users.AddAsync(newUser);
                 await _context.SaveChangesAsync();

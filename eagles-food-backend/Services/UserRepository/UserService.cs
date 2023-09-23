@@ -119,6 +119,7 @@ namespace eagles_food_backend.Services.UserServices
                 newUser.IsAdmin = false;
                 newUser.Org = eaglesOrg;
                 newUser.OrgId = eaglesOrg.Id;
+                newUser.LunchCreditBalance = 0;
 
                 var generatedDetails = GenerateBankDetails();
 
@@ -339,7 +340,8 @@ namespace eagles_food_backend.Services.UserServices
                     profile_picture: user.ProfilePic,
                     phone_number: user.Phone,
                     isAdmin: user.IsAdmin ?? false,
-                    organization: user.Org?.Name ?? "Unassigned"
+                    organization: user.Org?.Name ?? "Unassigned",
+                    balance: user.LunchCreditBalance.ToString() ?? "0"
                 );
 
                 return new Response<UserProfileReadDTO>() { data = userprofile, message = "User data fetched successfully" };
