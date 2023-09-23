@@ -73,9 +73,9 @@ namespace eagles_food_backend.Controllers
         }
 
         /// <summary>
-        /// Get all user for an organization
+        /// Get all users
         /// </summary>
-        /// <returns>A response containing all the users in an organization</returns>
+        /// <returns>A response containing all the users divided by whether they're in the callers org. or not</returns>
         [HttpGet("all")]
         public async Task<IActionResult> GetUsersForOrganization()
         {
@@ -86,7 +86,7 @@ namespace eagles_food_backend.Controllers
                 //{
                 //    return Unauthorized();
                 //}
-                var response = await _userService.GetAllUsersForOrganization(id);
+                var response = await _userService.GetAllUsersByOrganization(id);
                 return StatusCode((int)response.statusCode, response);
             }
             else return BadRequest();

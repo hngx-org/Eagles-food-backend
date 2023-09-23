@@ -294,31 +294,61 @@ namespace eagles_food_backend.Services.UserServices
             return response;
         }
 
-        public async Task<Response<List<UserReadDTO>>> GetAllUsersForOrganization(int user_id)
+        public async Task<Response<UserReadAllDTO>> GetAllUsersByOrganization(int user_id)
         {
+            List<UserReadDTO> org_people = new();
+            List<UserReadDTO> other_people = new();
+
             try
-            {
+            {   
+                // ensure user exists
+                if (!await db_context.Users.AnyAsync(x => x.Id == user_id))
+                {
+                    return new Response<UserReadAllDTO>() { message = "User not found", success = false, statusCode = HttpStatusCode.NotFound };
+                }
+
                 long? org_id = (await db_context.Users.FirstOrDefaultAsync(x => x.Id == user_id))?.OrgId;
+
                 if (org_id == null)
                 {
-                    return new Response<List<UserReadDTO>>() { message = "Organization not found", success = false, statusCode = HttpStatusCode.NotFound };
+                    // do nothing, the list is already empty
                 }
-                var users = await db_context.Users.Where(x => x.OrgId == org_id).Select(x => new UserReadDTO(
-                $"{x.FirstName} {x.LastName}",
-                x.Email,
-                x.ProfilePic,
-                x.Id.ToString(),
-                x.IsAdmin == null ? "User" : (bool)x.IsAdmin ? "Admin" : "User"
-                )).ToListAsync();
+
+                org_people = await db_context.Users
+                                    .Where(x => x.OrgId == org_id)
+                                    .Select(x => new UserReadDTO(
+                                        $"{x.FirstName} {x.LastName}",
+                                        x.Email,
+                                        x.ProfilePic,
+                                        x.Id.ToString(),
+                                        x.IsAdmin == null ? "User" : (bool)x.IsAdmin ? "Admin" : "User"
+                                    )).ToListAsync();
 
                 // remove the current user from the list
-                users.RemoveAll(users => users.user_id == user_id.ToString());
+                org_people.RemoveAll(users => users.user_id == user_id.ToString());
 
-                return new Response<List<UserReadDTO>>() { data = users, message = "Users fetched successfully" };
+                // get everyone else with a non-null org
+                other_people = await db_context.Users
+                                    .Where(x => x.OrgId != null && x.OrgId != org_id)
+                                    .Select(x => new UserReadDTO(
+                                        $"{x.FirstName} {x.LastName}",
+                                        x.Email,
+                                        x.ProfilePic,
+                                        x.Id.ToString(),
+                                        x.IsAdmin == null ? "User" : (bool)x.IsAdmin ? "Admin" : "User"
+                                    )).ToListAsync();
+
+                var res = new UserReadAllDTO()
+                {
+                    org = org_people,
+                    others = other_people
+                };
+
+                return new Response<UserReadAllDTO>() { data = res, message = "Users fetched successfully" };
             }
             catch (Exception)
             {
-                return new Response<List<UserReadDTO>>() { message = "Internal Server Error", statusCode = HttpStatusCode.InternalServerError };
+                return new Response<UserReadAllDTO>() { message = "Internal Server Error", statusCode = HttpStatusCode.InternalServerError };
             }
         }
 
