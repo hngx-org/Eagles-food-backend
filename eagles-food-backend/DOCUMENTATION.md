@@ -456,6 +456,46 @@ Organizations are like banks, they hold users and allow them to transfer and red
 
 ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃
 
+## End-point: /api/user/update
+
+### Method: PUT
+
+### Headers
+
+| Content-Type  | Value          |
+| ------------- | -------------- |
+| Authorization | Bearer <token> |
+
+### Body (**raw**)
+
+```json
+{
+  "email": "johndoe@gmail.com",
+  "lastname": "Doe",
+  "firstname": "John",
+  "phone": "0803327019",
+  "profilePic": "happy picture"
+}
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "email": "johndoe@gmail.com",
+    "name": "John Doe",
+    "phone": "0803327019",
+    "profile_picture": "happy picture"
+  },
+  "message": "User Profile updated successfully",
+  "success": true,
+  "statusCode": 200
+}
+```
+
+⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃
+
 ## End-point: /api/user/all
 
 ### Method: GET

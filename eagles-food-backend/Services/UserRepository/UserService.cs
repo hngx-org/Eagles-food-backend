@@ -204,10 +204,10 @@ namespace eagles_food_backend.Services.UserServices
 
                 response.success = true;
                 response.data = new Dictionary<string, string>() {
-                    { "Email", user.Email },
-                    { "Last name", user.LastName },
-                    { "First name", user.FirstName },
-                    { "Phone", user.Phone }
+                    { "email", user.Email },
+                    { "name", user.FirstName + " " + user.LastName },
+                    { "phone", user.Phone },
+                    { "profile_picture", user.ProfilePic }
                 };
                 response.message = "User Profile updated successfully";
                 response.statusCode = HttpStatusCode.OK;

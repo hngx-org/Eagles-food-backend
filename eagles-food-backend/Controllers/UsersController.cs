@@ -57,10 +57,10 @@ namespace eagles_food_backend.Controllers
 
 
         /// <summary>
-        /// Updates the a user's detail
+        /// Updates the user's details
         /// </summary>
         /// <param name="model"></param>
-        /// <returns></returns>
+        /// <returns>The updated user details</returns>
         [HttpPut("update")]
         public async Task<IActionResult> UpdateUser([FromBody] UpdateUserDTO model)
         {
