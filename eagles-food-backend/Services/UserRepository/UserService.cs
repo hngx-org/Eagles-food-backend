@@ -21,6 +21,37 @@ namespace eagles_food_backend.Services.UserServices
             this.authentication = authentication;
         }
 
+        private CreateBankDTO GenerateBankDetails() //Generates new account number for each created user
+        {
+           
+            var usersCount = db_context.Users.ToList().Count;
+            var test = db_context.Users.Any(m => m.BankNumber == "100000000");
+
+            if(usersCount < 1)
+            {
+                CreateBankDTO newUserBankDetails = new() {
+                    BankNumber = "100000000",
+                    BankCode = "257801",
+                    BankName = "FLC",
+                    BankRegion = "Jupiter"
+                };
+
+                return newUserBankDetails;
+            }
+
+            var bankNumber = usersCount + 100000000;
+
+            
+            CreateBankDTO userBankDetails = new() {
+                BankNumber = bankNumber.ToString(),
+                BankCode = "257801",
+                BankName = "FLC",
+                BankRegion = "Jupiter"
+            };
+
+            return userBankDetails;
+        }
+
         // create a new user
         public async Task<Response<Dictionary<string, string>>> CreateUser(CreateUserDTO user)
         {
@@ -61,6 +92,13 @@ namespace eagles_food_backend.Services.UserServices
                 newUser.PasswordHash = password_hash;
                 newUser.IsAdmin = false;
 
+                var generatedDetails = GenerateBankDetails();
+
+                newUser.BankName = generatedDetails.BankName;
+                newUser.BankNumber = generatedDetails.BankNumber;
+                newUser.BankCode = generatedDetails.BankCode;
+                newUser.BankRegion = generatedDetails.BankRegion;
+
                 await db_context.Users.AddAsync(newUser);
                 await db_context.SaveChangesAsync();
 
@@ -75,14 +113,16 @@ namespace eagles_food_backend.Services.UserServices
                     .GetType()
                     .GetProperties(BindingFlags.Instance | BindingFlags.Public)
                     .ToDictionary(prop => prop.Name, prop => Convert.ToString(prop.GetValue(newUser, null)));
-                
+
                 // remove sensitive data
                 res.Remove("PasswordHash");
                 res.Remove("LunchReceivers");
                 res.Remove("LunchSenders");
                 res.Remove("Withdrawals");
                 res.Remove("IsDeleted");
-                
+                res.Remove("Org");
+
+                res.Add("organization_name", "Default Organization");
                 res.Add("access_token", token);
 
                 response.data = res!;
@@ -105,7 +145,8 @@ namespace eagles_food_backend.Services.UserServices
         public async Task<Response<Dictionary<string, string>>> Login(UserLoginDTO user)
         {
             Response<Dictionary<string, string>> response = new();
-            User? user_login = await db_context.Users.Where(u => u.Email == user.Email).FirstOrDefaultAsync();
+            User? user_login = await db_context.Users.Where(u => u.Email == user.Email).Include(x => x.Org).FirstOrDefaultAsync();
+
             var userindb = mapper.Map<CreateUserDTO>(user_login);
 
             // ensure user exists
@@ -139,21 +180,23 @@ namespace eagles_food_backend.Services.UserServices
                     var token = authentication.createToken(user_login.Id.ToString(), role);
 
                     response.success = true;
-                    
+
                     // get user data and add token
                     var res = user_login
                         .GetType()
                         .GetProperties(BindingFlags.Instance | BindingFlags.Public)
                         .ToDictionary(prop => prop.Name, prop => Convert.ToString(prop.GetValue(user_login, null)));
-                    
+
                     // remove sensitive data
                     res.Remove("PasswordHash");
                     res.Remove("LunchReceivers");
                     res.Remove("LunchSenders");
                     res.Remove("Withdrawals");
                     res.Remove("IsDeleted");
-                    
+                    res.Remove("Org");
+
                     res.Add("access_token", token);
+                    res.Add("organization_name", user_login.Org?.Name ?? "Default Organization");
 
                     response.data = res!;
                     response.message = "User authenticated successfully";
@@ -165,6 +208,58 @@ namespace eagles_food_backend.Services.UserServices
                 response.success = false;
                 response.message = ex.Message;
                 response.statusCode = HttpStatusCode.InternalServerError;
+            }
+
+            return response;
+        }
+
+        // update a user
+        public async Task<Response<Dictionary<string, string>>> UpdateUserProfile(
+            int userId, UpdateUserDTO model)
+        {
+            Response<Dictionary<string, string>> response = new();
+            User? user = await db_context.Users.FindAsync(userId);
+
+            try
+            {
+                // ensure user exists
+                if (user is null)
+                {
+                    response.success = false;
+                    response.message = "User not found";
+                    response.statusCode = HttpStatusCode.NotFound;
+                    response.data = new Dictionary<string, string>() {
+                        { "id", userId.ToString() }
+                    };
+
+                    return response;
+                }
+
+                db_context.Entry(user).State = EntityState.Modified;
+                user.LastName = model.LastName ?? user.LastName;
+                user.FirstName = model.FirstName ?? user.FirstName;
+                user.Phone = model.Phone ?? user.Phone;
+                user.ProfilePic = model.ProfilePic ?? user.ProfilePic;
+
+
+                await db_context.SaveChangesAsync();
+
+                response.success = true;
+                response.data = new Dictionary<string, string>() {
+                    { "email", user.Email },
+                    { "name", user.FirstName + " " + user.LastName },
+                    { "phone", user.Phone },
+                    { "profile_picture", user.ProfilePic }
+                };
+                response.message = "User Profile updated successfully";
+                response.statusCode = HttpStatusCode.OK;
+            }
+            // catch any errors
+            catch (Exception ex)
+            {
+                response.statusCode = HttpStatusCode.InternalServerError;
+                response.success = false;
+                response.message = ex.Message;
             }
 
             return response;
@@ -183,7 +278,9 @@ namespace eagles_food_backend.Services.UserServices
                 $"{x.FirstName} {x.LastName}",
                 x.Email,
                 x.ProfilePic,
-                x.Id.ToString())).ToListAsync();
+                x.Id.ToString(),
+                x.IsAdmin == null ? "User" : (bool)x.IsAdmin ? "Admin" : "User"
+                )).ToListAsync();
 
                 return new Response<List<UserReadDTO>>() { data = users, message = "Users fetched successfully" };
             }
@@ -197,7 +294,7 @@ namespace eagles_food_backend.Services.UserServices
         {
             try
             {
-                var user = await db_context.Users.FirstOrDefaultAsync(x => x.Id == id);
+                var user = await db_context.Users.Include(x => x.Org).FirstOrDefaultAsync(x => x.Id == id);
                 if (user == null)
                 {
                     return new Response<UserProfileReadDTO>() { message = "User not found", success = false, statusCode = HttpStatusCode.NotFound };
@@ -210,7 +307,8 @@ namespace eagles_food_backend.Services.UserServices
                     email: user.Email,
                     profile_picture: user.ProfilePic,
                     phone_number: user.Phone,
-                    isAdmin: user.IsAdmin ?? false
+                    isAdmin: user.IsAdmin ?? false,
+                    organization: user.Org?.Name ?? "Unassigned"
                 );
 
                 return new Response<UserProfileReadDTO>() { data = userprofile, message = "User data fetched successfully" };
@@ -259,7 +357,9 @@ namespace eagles_food_backend.Services.UserServices
                     name: $"{user.FirstName} {user.LastName}",
                     email: user.Email,
                     profile_picture: user.ProfilePic,
-                    user_id: user.Id.ToString());
+                    user_id: user.Id.ToString(),
+                    role: (bool)user.IsAdmin ? "Admin" : "User"
+                    );
 
                 return new Response<UserReadDTO>() { data = userReadDto, message = "User found" };
             }

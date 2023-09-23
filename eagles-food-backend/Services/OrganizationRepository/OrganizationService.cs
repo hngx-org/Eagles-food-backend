@@ -81,6 +81,7 @@ namespace eagles_food_backend.Services
 
                 newUser.PasswordHash = password_hash;
                 newUser.IsAdmin = true;
+                newUser.Org = newOrg;
                 newUser.OrgId = newOrg.Id;
 
                 await _context.Users.AddAsync(newUser);
@@ -104,7 +105,9 @@ namespace eagles_food_backend.Services
                 res.Remove("LunchSenders");
                 res.Remove("Withdrawals");
                 res.Remove("IsDeleted");
+                res.Remove("Org");
                 
+                res.Add("organization_name", newUser.Org.Name);
                 res.Add("access_token", token);
 
                 response.data = res!;
@@ -346,12 +349,12 @@ namespace eagles_food_backend.Services
         // invite to the organization
         public async Task<Response<Dictionary<string, string>>> InviteToOrganization(int UserID, InviteToOrganizationDTO model) {
             Response<Dictionary<string, string>> response = new();
-            User? user = await _context.Users.FindAsync(UserID);
+            User? admin = await _context.Users.FirstOrDefaultAsync(u => u.Id == UserID);
 
             try
             {
                 // ensure user exists
-                if (user is null)
+                if (admin is null)
                 {
                     response.success = false;
                     response.message = "User not found";
@@ -364,7 +367,7 @@ namespace eagles_food_backend.Services
                 }
 
                 // make sure they're an admin
-                if (user.IsAdmin != true)
+                if (admin.IsAdmin != true)
                 {
                     response.success = false;
                     response.message = "User unauthorised";
@@ -376,11 +379,21 @@ namespace eagles_food_backend.Services
                     return response;
                 }
 
-                // make sure email is unique
+                var invitee = await _context.Users.FirstOrDefaultAsync(x=>x.Email == model.Email);
+
+                if (invitee is null) {
+                    response.success = false;
+                    response.message = "User does not exist";
+                    response.statusCode = HttpStatusCode.BadRequest;
+
+                    return response;
+                }
+
+                // make sure email is unique in invites
                 if (await _context.OrganizationInvites.AnyAsync(i => i.Email == model.Email))
                 {
                     response.success = false;
-                    response.message = "Email already exists";
+                    response.message = "User has already been invited before";
                     response.data = new Dictionary<string, string>() {
                         { "email", model.Email }
                     };
@@ -389,8 +402,8 @@ namespace eagles_food_backend.Services
                     return response;
                 }
 
-                var orgID = user.OrgId;
-                var org = await _context.Organizations.FindAsync(orgID);
+                var orgID = admin.OrgId;
+                var org = await _context.Organizations.Where(o => o.Id == orgID).FirstAsync();
 
                 if (org is null) {
                     response.success = false;
@@ -402,10 +415,13 @@ namespace eagles_food_backend.Services
 
                 var invite = new OrganizationInvite() {
                     Email = model.Email,
-                    OrgId = orgID,
+                    OrgId = org.Id,
                     Ttl = DateTime.Now.AddDays(1),
                     Token = Guid.NewGuid().ToString()
                 };
+
+                invitee.OrgId = org.Id;
+                invitee.Org = org;
 
                 await _context.OrganizationInvites.AddAsync(invite);
                 await _context.SaveChangesAsync();
@@ -413,7 +429,7 @@ namespace eagles_food_backend.Services
                 response.success = true;
                 response.data = null;
 
-                response.message = "Organisation invite sent successfully";
+                response.message = "User Added To Organisation successfully";
                 response.statusCode = HttpStatusCode.OK;
             }
 

@@ -111,7 +111,7 @@ namespace eagles_food_backend.Controllers
         ///  <response code="404">If unauthorised</response>
         ///  <response code="500">If there was an error updating</response>
         ///  <response code="401">If unauthorised</response>
-        [HttpPatch("api/organizations/wallet")]
+        [HttpPatch("wallet")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> UpdateOrganizationWallet([FromBody] UpdateOrganizationWalletDTO model)
         {
@@ -152,7 +152,7 @@ namespace eagles_food_backend.Controllers
         ///  <response code="404">If unauthorised</response>
         ///  <response code="500">If there was an error updating</response>
         ///  <response code="401">If unauthorised</response>
-        [HttpPatch("api/organizations/lunch/update")]
+        [HttpPatch("lunch/update")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 
         public async Task<IActionResult> UpdateOrganizationLunchPrice([FromBody] UpdateOrganizationLunchPriceDTO model)
@@ -174,7 +174,7 @@ namespace eagles_food_backend.Controllers
         }
         
         /// <summary>
-        /// Invites a user to an organisation
+        /// Adds a user to an organisation
         /// </summary>
         /// <remarks>
         /// Sample request:
@@ -192,7 +192,7 @@ namespace eagles_food_backend.Controllers
         ///  <response code="404">If unauthorised</response>
         ///  <response code="500">If there was an error </response>
         ///  <response code="401">If unauthorised</response>
-        [HttpPost("api/organizations/invite")]
+        [HttpPost("invite")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> InviteToOrganization([FromBody] InviteToOrganizationDTO model)
         {
