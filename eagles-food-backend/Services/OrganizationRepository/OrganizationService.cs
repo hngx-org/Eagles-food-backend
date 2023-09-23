@@ -22,11 +22,34 @@ namespace eagles_food_backend.Services
             _authentication = authentication;
         }
 
-        // make a new empty org, add this staff member as the admin
+        // make a eagles org if non-existent, add this staff member as an admin
         public async Task<Response<Dictionary<string, string>>> CreateStaffMember(CreateStaffDTO model)
         {
             Response<Dictionary<string, string>> response = new();
             User? newUser = _mapper.Map<User>(model);
+
+            // make eagles org if non-existent
+            if (!await _context.Organizations.AnyAsync(o => o.Name == "Eagles Food"))
+            {
+                var EaglesOrg = new Organization()
+                {
+                    Name = "Eagles Food",
+                    CurrencyCode = "₦",
+                    LunchPrice = 1000
+                };
+
+                await _context.AddAsync(EaglesOrg);
+                await _context.SaveChangesAsync();
+
+                var EaglesWallet = new OrganizationLunchWallet()
+                {
+                    OrgId = EaglesOrg.Id,
+                    Balance = 0
+                };
+
+                await _context.AddAsync(EaglesWallet);
+                await _context.SaveChangesAsync();
+            }
 
             // ensure it's an actual (plausible) email
             if (!new EmailAddressAttribute().IsValid(newUser.Email))
@@ -54,25 +77,8 @@ namespace eagles_food_backend.Services
                 return response;
             }
 
-            // make their org.
-            var newOrg = new Organization()
-            {
-                Name = model.FirstName + " " + model.LastName + "'s Organization",
-                CurrencyCode = "₦",
-                LunchPrice = 1000
-            };
-
-            await _context.AddAsync(newOrg);
-            await _context.SaveChangesAsync();
-
-            var wallet = new OrganizationLunchWallet()
-            {
-                OrgId = newOrg.Id,
-                Balance = 0
-            };
-
-            await _context.AddAsync(wallet);
-            await _context.SaveChangesAsync();
+            // find eagles org
+            var eaglesOrg = await _context.Organizations.FirstAsync(o => o.Name == "Eagles Food");
 
             // store in db
             try
@@ -81,8 +87,8 @@ namespace eagles_food_backend.Services
 
                 newUser.PasswordHash = password_hash;
                 newUser.IsAdmin = true;
-                newUser.Org = newOrg;
-                newUser.OrgId = newOrg.Id;
+                newUser.Org = eaglesOrg;
+                newUser.OrgId = eaglesOrg.Id;
 
                 await _context.Users.AddAsync(newUser);
                 await _context.SaveChangesAsync();

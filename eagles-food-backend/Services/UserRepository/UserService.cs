@@ -58,6 +58,29 @@ namespace eagles_food_backend.Services.UserServices
             Response<Dictionary<string, string>> response = new();
             User? newUser = mapper.Map<User>(user);
 
+            // make eagles org if non-existent
+            if (!await db_context.Organizations.AnyAsync(o => o.Name == "Eagles Food"))
+            {
+                var EaglesOrg = new Organization()
+                {
+                    Name = "Eagles Food",
+                    CurrencyCode = "₦",
+                    LunchPrice = 1000
+                };
+
+                await db_context.AddAsync(EaglesOrg);
+                await db_context.SaveChangesAsync();
+
+                var EaglesWallet = new OrganizationLunchWallet()
+                {
+                    OrgId = EaglesOrg.Id,
+                    Balance = 0
+                };
+
+                await db_context.AddAsync(EaglesWallet);
+                await db_context.SaveChangesAsync();
+            }
+
             // ensure it's an actual (plausible) email
             if (!new EmailAddressAttribute().IsValid(user.Email))
             {
@@ -84,6 +107,9 @@ namespace eagles_food_backend.Services.UserServices
                 return response;
             }
 
+             // find eagles org
+            var eaglesOrg = await db_context.Organizations.FirstAsync(o => o.Name == "Eagles Food");
+
             // store in db
             try
             {
@@ -91,6 +117,8 @@ namespace eagles_food_backend.Services.UserServices
 
                 newUser.PasswordHash = password_hash;
                 newUser.IsAdmin = false;
+                newUser.Org = eaglesOrg;
+                newUser.OrgId = eaglesOrg.Id;
 
                 var generatedDetails = GenerateBankDetails();
 
@@ -122,7 +150,7 @@ namespace eagles_food_backend.Services.UserServices
                 res.Remove("IsDeleted");
                 res.Remove("Org");
 
-                res.Add("organization_name", "Default Organization");
+                res.Add("organization_name", newUser.Org.Name);
                 res.Add("access_token", token);
 
                 response.data = res!;
