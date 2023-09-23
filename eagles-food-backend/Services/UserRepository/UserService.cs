@@ -120,7 +120,9 @@ namespace eagles_food_backend.Services.UserServices
                 res.Remove("LunchSenders");
                 res.Remove("Withdrawals");
                 res.Remove("IsDeleted");
+                res.Remove("Org");
 
+                res.Add("organization_name", "Default Organization");
                 res.Add("access_token", token);
 
                 response.data = res!;
@@ -192,8 +194,10 @@ namespace eagles_food_backend.Services.UserServices
                     res.Remove("Withdrawals");
                     res.Remove("IsDeleted");
                     res.Remove("Org");
+
                     res.Add("access_token", token);
-                    res.Add("organization_name", user_login?.Org?.Name);
+                    res.Add("organization_name", user_login.Org?.Name ?? "Default Organization");
+
                     response.data = res!;
                     response.message = "User authenticated successfully";
                     response.statusCode = HttpStatusCode.OK;
@@ -275,7 +279,7 @@ namespace eagles_food_backend.Services.UserServices
                 x.Email,
                 x.ProfilePic,
                 x.Id.ToString(),
-                (bool)x.IsAdmin ? "Admin" : "User"
+                x.IsAdmin == null ? "User" : (bool)x.IsAdmin ? "Admin" : "User"
                 )).ToListAsync();
 
                 return new Response<List<UserReadDTO>>() { data = users, message = "Users fetched successfully" };
