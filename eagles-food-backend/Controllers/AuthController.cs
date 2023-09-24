@@ -29,7 +29,6 @@ namespace eagles_food_backend.Controllers
         ///   "lastName": "john",
         ///   "firstName": "doe",
         ///   "email": "john@doe.com",
-        ///   "address": "123 Main St.",
         ///   "password": "pass",
         ///   "phone": "123456"
         /// }
