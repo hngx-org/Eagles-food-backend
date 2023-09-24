@@ -317,7 +317,7 @@ namespace eagles_food_backend.Data
                     .HasDefaultValueSql("'0'");
 
                 entity.Property(e => e.Status)
-                    .HasColumnType("enum('success','pending')")
+                    .HasColumnType("enum('not_redeemed','redeemed')")
                     .HasColumnName("status");
 
                 entity.Property(e => e.UpdatedAt)
