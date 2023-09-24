@@ -1,5 +1,4 @@
-﻿using eagles_food_backend.Domains.Models;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace eagles_food_backend.Domains.DTOs
 {
