@@ -1,20 +1,20 @@
 global using AutoMapper;
+
+using System.Reflection;
+using System.Text;
+
 using eagles_food_backend;
 using eagles_food_backend.Data;
-using eagles_food_backend.Domains.DTOs;
 using eagles_food_backend.Services;
 using eagles_food_backend.Services.LunchRepository;
 using eagles_food_backend.Services.OrganizationRepository;
 using eagles_food_backend.Services.ResponseService;
 using eagles_food_backend.Services.UserServices;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.Filters;
-using System.Reflection;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -48,7 +48,6 @@ builder.Services.AddScoped<IOrganizationService, OrganizationService>();
 builder.Services.AddScoped<IResponseService, ResponseService>();
 builder.Services.AddScoped<ILunchRepository, LunchService>();
 builder.Services.AddHttpContextAccessor();
-// builder.Services.AddScoped<IPasswordHasher<CreateUserDTO>, PasswordHasher<CreateUserDTO>>();
 builder.Services.AddSingleton<AuthenticationClass>();
 
 builder.Services.AddSwaggerGen(opts =>
@@ -78,8 +77,6 @@ builder.Services.AddSwaggerGen(opts =>
         }
     });
 
-    // opts.OperationFilter<SecurityRequirementsOperationFilter>();
-
     var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     opts.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 
@@ -101,9 +98,6 @@ var app = builder.Build();
 
 app.UseSwagger();
 app.UseSwaggerUI();
-// if (app.Environment.IsDevelopment())
-// {
-// }
 
 app.UseHttpsRedirection();
 
