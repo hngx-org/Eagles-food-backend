@@ -65,6 +65,21 @@ namespace eagles_food_backend.Controllers
             return Ok(response);
         }
 
+        /// <summary>
+        /// withdraws from gifted free lunches
+        /// </summary>
+        /// <remarks>
+        /// Sample request:
+        /// <code>
+        /// POST api/lunch/withdrawlunch
+        /// {
+        ///     "quantity": 5,
+        ///     
+        /// }
+        /// </code>
+        /// </remarks>
+        /// <param name="withdrawDTO">Request body containing the quantity to bw withdrawn</param>
+        /// <returns>A response with 200 and withdrawal amount</returns>
         [HttpPost("withdrawlunch")]
         public async Task<ActionResult> WithdrawLunch([FromBody] WithdrawLunchDTO withdrawDTO)
         {
