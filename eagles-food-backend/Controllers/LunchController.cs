@@ -63,5 +63,11 @@ namespace eagles_food_backend.Controllers
             var response = await _lunchService.getById(id);
             return Ok(response);
         }
+
+        [HttpPost("withdrawlunch")]
+        public async Task<ActionResult> WithdrawLunch([FromBody] WithdrawLunchDTO withdrawDTO)
+        {
+            return Ok(await _lunchService.withdrawLunch(withdrawDTO));
+        }
     }
 }

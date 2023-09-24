@@ -8,5 +8,6 @@ namespace eagles_food_backend.Services.LunchRepository
         public Task<Response<ResponseLunchDTO>> create(CreateLunchDTO createLunchDTO);
         public Task<Response<List<ResponseLunchDTO>>> getAll();
         public Task<Response<ResponseLunchDTO>> getById(int id);
+        public Task<Response<ResponseLunchWithdrawalDTO>> withdrawLunch(WithdrawLunchDTO withdrawLunchDTO);
     }
 }
