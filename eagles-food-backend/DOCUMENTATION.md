@@ -168,7 +168,7 @@ Organizations are like banks, they hold users and allow them to transfer and red
       "Email": "john@doe.com",
       "Phone": "123456",
       "IsAdmin": "True",
-      "LunchCreditBalance": "",
+      "LunchCreditBalance": "0",
       "RefreshToken": "",
       "BankNumber": "",
       "BankCode": "",
@@ -512,21 +512,37 @@ Organizations are like banks, they hold users and allow them to transfer and red
 {
   "data": {
     "org" : [
-    {
-      "name": "John Doe",
-      "email": "doe@gmail.com",
-      "profile_picture": null,
-      "user_id": "1",
-      "role": "User"
-    },
-    {
-      "name": "John Doe",
-      "email": "john@gmail.com",
-      "profile_picture": null,
-      "user_id": "2",
-      "role": "Admin"
-    }
-  ],
+      {
+        "name": "John Doe",
+        "email": "doe@gmail.com",
+        "profile_picture": null,
+        "user_id": "1",
+        "role": "User"
+      },
+      {
+        "name": "John Doe",
+        "email": "john@gmail.com",
+        "profile_picture": null,
+        "user_id": "2",
+        "role": "Admin"
+      }
+    ],
+    "others" : [
+      {
+        "name": "John Doe",
+        "email": "doe@gmail.com",
+        "profile_picture": null,
+        "user_id": "1",
+        "role": "User"
+      },
+      {
+        "name": "John Doe",
+        "email": "john@gmail.com",
+        "profile_picture": null,
+        "user_id": "2",
+        "role": "Admin"
+      }
+    ],
   }
   "message": "Users fetched successfully",
   "success": true,
