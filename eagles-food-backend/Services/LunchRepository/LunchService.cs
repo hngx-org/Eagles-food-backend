@@ -1,11 +1,10 @@
-﻿using AutoMapper;
+﻿using System.Net;
+
 using eagles_food_backend.Data;
 using eagles_food_backend.Domains.DTOs;
 using eagles_food_backend.Domains.Models;
-using eagles_food_backend.Services.ResponseService;
+
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Net;
 
 namespace eagles_food_backend.Services.LunchRepository
 {

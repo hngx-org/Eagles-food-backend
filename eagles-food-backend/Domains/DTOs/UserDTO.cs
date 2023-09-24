@@ -31,7 +31,8 @@ namespace eagles_food_backend.Domains.DTOs
     public record UserBankUpdateDTO([Required] string bank_region, [Required] string bank_number, [Required] string bank_code, [Required] string bank_name);
     public record UserReadDTO(string? name, string? email, string? profile_picture, string? user_id, string? role);
 
-    public struct UserReadAllDTO {
+    public struct UserReadAllDTO
+    {
         public List<UserReadDTO> org { get; set; }
         public List<UserReadDTO> others { get; set; }
     }

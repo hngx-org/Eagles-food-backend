@@ -1,15 +1,16 @@
-﻿using eagles_food_backend.Domains.Models;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
+﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+
+using eagles_food_backend.Domains.Models;
+
+using Microsoft.IdentityModel.Tokens;
+
 using BC = BCrypt.Net.BCrypt;
 
 namespace eagles_food_backend
 {
     public class AuthenticationClass
     {
-
-
         public readonly IConfiguration config;
 
         public AuthenticationClass(IConfiguration config)
@@ -19,7 +20,7 @@ namespace eagles_food_backend
         public void CreatePasswordHash(string password, out string password_hash)
         {
             // BCrypt maintains internal salt
-            password_hash = BC.HashPassword(password); 
+            password_hash = BC.HashPassword(password);
         }
 
         //Verifying password
@@ -52,7 +53,6 @@ namespace eagles_food_backend
         public Response<string> ProcessPayment()
         {
             Response<string> res = new Response<string>();
-
 
             return res;
         }

@@ -1,10 +1,12 @@
-﻿using eagles_food_backend.Data;
-using eagles_food_backend.Domains.DTOs;
-using eagles_food_backend.Domains.Models;
-using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Reflection;
+
+using eagles_food_backend.Data;
+using eagles_food_backend.Domains.DTOs;
+using eagles_food_backend.Domains.Models;
+
+using Microsoft.EntityFrameworkCore;
 
 namespace eagles_food_backend.Services.UserServices
 {
@@ -23,13 +25,14 @@ namespace eagles_food_backend.Services.UserServices
 
         private CreateBankDTO GenerateBankDetails() //Generates new account number for each created user
         {
-           
+
             var usersCount = db_context.Users.ToList().Count;
             var test = db_context.Users.Any(m => m.BankNumber == "100000000");
 
-            if(usersCount < 1)
+            if (usersCount < 1)
             {
-                CreateBankDTO newUserBankDetails = new() {
+                CreateBankDTO newUserBankDetails = new()
+                {
                     BankNumber = "100000000",
                     BankCode = "257801",
                     BankName = "FLC",
@@ -41,8 +44,9 @@ namespace eagles_food_backend.Services.UserServices
 
             var bankNumber = usersCount + 100000000;
 
-            
-            CreateBankDTO userBankDetails = new() {
+
+            CreateBankDTO userBankDetails = new()
+            {
                 BankNumber = bankNumber.ToString(),
                 BankCode = "257801",
                 BankName = "FLC",
@@ -107,7 +111,7 @@ namespace eagles_food_backend.Services.UserServices
                 return response;
             }
 
-             // find eagles org
+            // find eagles org
             var eaglesOrg = await db_context.Organizations.FirstAsync(o => o.Name == "Eagles Food");
 
             // store in db
@@ -300,7 +304,7 @@ namespace eagles_food_backend.Services.UserServices
             List<UserReadDTO> other_people = new();
 
             try
-            {   
+            {
                 // ensure user exists
                 if (!await db_context.Users.AnyAsync(x => x.Id == user_id))
                 {

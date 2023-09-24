@@ -1,8 +1,8 @@
 using System.Security.Claims;
+
 using eagles_food_backend.Domains.DTOs;
-using eagles_food_backend.Domains.Models;
-using eagles_food_backend.Services;
 using eagles_food_backend.Services.OrganizationRepository;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -172,7 +172,7 @@ namespace eagles_food_backend.Controllers
                 return BadRequest();
             }
         }
-        
+
         /// <summary>
         /// Adds a user to an organisation
         /// </summary>

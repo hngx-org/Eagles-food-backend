@@ -14,7 +14,8 @@
         public string Currency { get; set; } = null!;
     }
 
-    public class CreateStaffDTO {
+    public class CreateStaffDTO
+    {
         public string LastName { get; set; } = null!;
         public string FirstName { get; set; } = null!;
         public string Email { get; set; } = null!;
@@ -22,15 +23,18 @@
         public string Phone { get; set; } = null!;
     }
 
-    public class UpdateOrganizationWalletDTO {
+    public class UpdateOrganizationWalletDTO
+    {
         public decimal amount { get; set; }
     }
 
-    public class UpdateOrganizationLunchPriceDTO {
+    public class UpdateOrganizationLunchPriceDTO
+    {
         public decimal LunchPrice { get; set; }
     }
 
-    public class InviteToOrganizationDTO {
+    public class InviteToOrganizationDTO
+    {
         public string Email { get; set; } = null!;
     }
 

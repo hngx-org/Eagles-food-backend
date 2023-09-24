@@ -1,5 +1,4 @@
-﻿using eagles_food_backend.Domains.Models;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace eagles_food_backend.Domains.DTOs
 {
@@ -24,6 +23,7 @@ namespace eagles_food_backend.Domains.DTOs
         public string Note { get; set; }
         public DateTime CreatedAt { get; set; }
     }
+<<<<<<< HEAD
 
     public class WithdrawLunchDTO{
         public int Quantity{get; set;}
@@ -34,3 +34,6 @@ namespace eagles_food_backend.Domains.DTOs
         
     }
 }
+=======
+}
+>>>>>>> 49a342507730f60f1689803f1a2fadf3771ea3ce

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace eagles_food_backend.Domains.Models
+﻿namespace eagles_food_backend.Domains.Models
 {
     public partial class Withdrawal
     {
