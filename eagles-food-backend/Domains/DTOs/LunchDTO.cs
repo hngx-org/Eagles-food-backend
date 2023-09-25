@@ -23,4 +23,14 @@ namespace eagles_food_backend.Domains.DTOs
         public string Note { get; set; }
         public DateTime CreatedAt { get; set; }
     }
+
+    public class WithdrawLunchDTO{
+        public int Quantity{get; set;}
+    }
+
+    public class ResponseLunchWithdrawalDTO{
+        public decimal WithdrawalAmount{get; set;} 
+        
+    }
 }
+
