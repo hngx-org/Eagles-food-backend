@@ -221,7 +221,7 @@ namespace eagles_food_backend.Services.LunchRepository
                     return response;
                 }
 
-                var withdrawalAmount = userLunchBalance.Org.LunchPrice * userLunchBalance.LunchCreditBalance;
+                var withdrawalAmount = userLunchBalance.Org.LunchPrice * withdrawDTO.Quantity;
                 var leftCreditBalance = userLunchBalance.LunchCreditBalance - withdrawDTO.Quantity;
 
                 userLunchBalance.LunchCreditBalance = leftCreditBalance;
