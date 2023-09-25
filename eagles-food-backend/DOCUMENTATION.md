@@ -700,3 +700,47 @@ Retrieves a single lunch request by its ID.
 ```
 
 ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃
+
+**POST** `/api/lunch/withdrawlunch`
+
+### Headers
+
+| Content-Type  | Value          |
+| ------------- | -------------- |
+| Authorization | Bearer <token> |
+
+Withdraws from gifted free lunch.
+
+**Request body:**
+
+```json
+{
+  "quantity": 1
+}
+```
+
+**Response:**
+
+```json
+{
+  "data": {
+    "withdrawalAmount": 1000
+  },
+  "message": "withdrawal successful",
+  "success": true,
+  "statusCode": 200
+}
+```
+
+if invalid (e.g. due to withdrawing more than available lunch(s)), returns:
+
+```json
+{
+  "data": null,
+  "message": "Amount specified exceeds the number of gifted lunches you have",
+  "success": false,
+  "statusCode": 400
+}
+```
+
+⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃
