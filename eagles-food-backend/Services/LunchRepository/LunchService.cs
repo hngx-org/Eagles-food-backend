@@ -246,6 +246,7 @@ namespace eagles_food_backend.Services.LunchRepository
             }catch(Exception ex)
             {
                 response.message = "Could not process withdrawal request";
+                response.statusCode = HttpStatusCode.InternalServerError;
                 return response;
             }
             
