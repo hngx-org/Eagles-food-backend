@@ -1,9 +1,11 @@
-﻿using eagles_food_backend.Domains.DTOs;
+﻿using System.Security.Claims;
+
+using eagles_food_backend.Domains.DTOs;
 using eagles_food_backend.Services.UserServices;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -73,9 +75,9 @@ namespace eagles_food_backend.Controllers
         }
 
         /// <summary>
-        /// Get all user for an organization
+        /// Get all users
         /// </summary>
-        /// <returns>A response containing all the users in an organization</returns>
+        /// <returns>A response containing all the users divided by whether they're in the callers org. or not</returns>
         [HttpGet("all")]
         public async Task<IActionResult> GetUsersForOrganization()
         {
@@ -86,7 +88,7 @@ namespace eagles_food_backend.Controllers
                 //{
                 //    return Unauthorized();
                 //}
-                var response = await _userService.GetAllUsersForOrganization(id);
+                var response = await _userService.GetAllUsersByOrganization(id);
                 return StatusCode((int)response.statusCode, response);
             }
             else return BadRequest();

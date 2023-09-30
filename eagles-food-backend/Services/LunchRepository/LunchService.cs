@@ -1,11 +1,10 @@
-﻿using AutoMapper;
+﻿using System.Net;
+
 using eagles_food_backend.Data;
 using eagles_food_backend.Domains.DTOs;
 using eagles_food_backend.Domains.Models;
-using eagles_food_backend.Services.ResponseService;
+
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Net;
 
 namespace eagles_food_backend.Services.LunchRepository
 {
@@ -187,6 +186,72 @@ namespace eagles_food_backend.Services.LunchRepository
             response.success = true;
             response.statusCode = HttpStatusCode.OK;
             return response;
+        }
+
+        public async Task<Response<ResponseLunchWithdrawalDTO>> withdrawLunch(WithdrawLunchDTO withdrawDTO)
+        {
+            Response<ResponseLunchWithdrawalDTO> response = new();
+            try{
+                var id  = _httpContextAccessor.HttpContext.User.Identity.Name;
+                if(id == null)
+                {
+                    response.message = $"UnAuthorized";
+                    response.statusCode = HttpStatusCode.Unauthorized;
+                    response.success = false;
+                    return response;                                        
+                }
+
+                var userLunchBalance = await _context.Users.Include(m => m.Org).Where(m => m.Id == int.Parse(id)).FirstOrDefaultAsync();
+
+                if(userLunchBalance == null)
+                {
+                    response.message = "Error communicating with server";
+                    response.statusCode = HttpStatusCode.InternalServerError;
+                    response.success = false;
+                    return response;
+                }
+
+                bool requestExceedsBalance = withdrawDTO.Quantity > userLunchBalance.LunchCreditBalance;
+                
+                if(requestExceedsBalance)
+                {
+                    response.message = "Amount specified exceeds the number of gifted lunches you have";
+                    response.statusCode = HttpStatusCode.BadRequest;
+                    response.success = false;
+                    return response;
+                }
+
+                var withdrawalAmount = userLunchBalance.Org.LunchPrice * withdrawDTO.Quantity;
+                var leftCreditBalance = userLunchBalance.LunchCreditBalance - withdrawDTO.Quantity;
+
+                userLunchBalance.LunchCreditBalance = leftCreditBalance;
+
+                _context.Users.Update(userLunchBalance);
+                await _context.SaveChangesAsync();
+
+                ResponseLunchWithdrawalDTO responseLunchWithdrawal = new()
+                {
+                    WithdrawalAmount = (decimal)withdrawalAmount
+
+                };
+
+                response.data = responseLunchWithdrawal;
+                response.message = "withdrawal successful";
+                response.statusCode = HttpStatusCode.OK;
+                response.success = true;
+
+                return response;
+
+
+            }catch(Exception ex)
+            {
+                response.message = "Could not process withdrawal request";
+                response.statusCode = HttpStatusCode.InternalServerError;
+                return response;
+            }
+            
+
+            
         }
 
     }

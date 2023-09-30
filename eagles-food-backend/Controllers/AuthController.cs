@@ -1,7 +1,6 @@
-using System.Net;
 using eagles_food_backend.Domains.DTOs;
-using eagles_food_backend.Domains.Models;
 using eagles_food_backend.Services.UserServices;
+
 using Microsoft.AspNetCore.Mvc;
 
 namespace eagles_food_backend.Controllers
@@ -29,7 +28,6 @@ namespace eagles_food_backend.Controllers
         ///   "lastName": "john",
         ///   "firstName": "doe",
         ///   "email": "john@doe.com",
-        ///   "address": "123 Main St.",
         ///   "password": "pass",
         ///   "phone": "123456"
         /// }

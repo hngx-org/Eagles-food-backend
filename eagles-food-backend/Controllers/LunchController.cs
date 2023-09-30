@@ -1,5 +1,6 @@
 ﻿using eagles_food_backend.Domains.DTOs;
 using eagles_food_backend.Services.LunchRepository;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -62,6 +63,27 @@ namespace eagles_food_backend.Controllers
         {
             var response = await _lunchService.getById(id);
             return Ok(response);
+        }
+
+        /// <summary>
+        /// withdraws from gifted free lunches
+        /// </summary>
+        /// <remarks>
+        /// Sample request:
+        /// <code>
+        /// POST api/lunch/withdrawlunch
+        /// {
+        ///     "quantity": 5,
+        ///     
+        /// }
+        /// </code>
+        /// </remarks>
+        /// <param name="withdrawDTO">Request body containing the quantity to bw withdrawn</param>
+        /// <returns>A response with 200 and withdrawal amount</returns>
+        [HttpPost("withdrawlunch")]
+        public async Task<ActionResult> WithdrawLunch([FromBody] WithdrawLunchDTO withdrawDTO)
+        {
+            return Ok(await _lunchService.withdrawLunch(withdrawDTO));
         }
     }
 }

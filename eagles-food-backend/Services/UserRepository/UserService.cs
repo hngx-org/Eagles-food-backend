@@ -1,10 +1,12 @@
-﻿using eagles_food_backend.Data;
-using eagles_food_backend.Domains.DTOs;
-using eagles_food_backend.Domains.Models;
-using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Reflection;
+
+using eagles_food_backend.Data;
+using eagles_food_backend.Domains.DTOs;
+using eagles_food_backend.Domains.Models;
+
+using Microsoft.EntityFrameworkCore;
 
 namespace eagles_food_backend.Services.UserServices
 {
@@ -23,13 +25,14 @@ namespace eagles_food_backend.Services.UserServices
 
         private CreateBankDTO GenerateBankDetails() //Generates new account number for each created user
         {
-           
+
             var usersCount = db_context.Users.ToList().Count;
             var test = db_context.Users.Any(m => m.BankNumber == "100000000");
 
-            if(usersCount < 1)
+            if (usersCount < 1)
             {
-                CreateBankDTO newUserBankDetails = new() {
+                CreateBankDTO newUserBankDetails = new()
+                {
                     BankNumber = "100000000",
                     BankCode = "257801",
                     BankName = "FLC",
@@ -41,8 +44,9 @@ namespace eagles_food_backend.Services.UserServices
 
             var bankNumber = usersCount + 100000000;
 
-            
-            CreateBankDTO userBankDetails = new() {
+
+            CreateBankDTO userBankDetails = new()
+            {
                 BankNumber = bankNumber.ToString(),
                 BankCode = "257801",
                 BankName = "FLC",
@@ -57,6 +61,29 @@ namespace eagles_food_backend.Services.UserServices
         {
             Response<Dictionary<string, string>> response = new();
             User? newUser = mapper.Map<User>(user);
+
+            // make eagles org if non-existent
+            if (!await db_context.Organizations.AnyAsync(o => o.Name == "Eagles Food"))
+            {
+                var EaglesOrg = new Organization()
+                {
+                    Name = "Eagles Food",
+                    CurrencyCode = "₦",
+                    LunchPrice = 1000
+                };
+
+                await db_context.AddAsync(EaglesOrg);
+                await db_context.SaveChangesAsync();
+
+                var EaglesWallet = new OrganizationLunchWallet()
+                {
+                    OrgId = EaglesOrg.Id,
+                    Balance = 0
+                };
+
+                await db_context.AddAsync(EaglesWallet);
+                await db_context.SaveChangesAsync();
+            }
 
             // ensure it's an actual (plausible) email
             if (!new EmailAddressAttribute().IsValid(user.Email))
@@ -84,6 +111,9 @@ namespace eagles_food_backend.Services.UserServices
                 return response;
             }
 
+            // find eagles org
+            var eaglesOrg = await db_context.Organizations.FirstAsync(o => o.Name == "Eagles Food");
+
             // store in db
             try
             {
@@ -91,6 +121,9 @@ namespace eagles_food_backend.Services.UserServices
 
                 newUser.PasswordHash = password_hash;
                 newUser.IsAdmin = false;
+                newUser.Org = eaglesOrg;
+                newUser.OrgId = eaglesOrg.Id;
+                newUser.LunchCreditBalance = 0;
 
                 var generatedDetails = GenerateBankDetails();
 
@@ -122,7 +155,7 @@ namespace eagles_food_backend.Services.UserServices
                 res.Remove("IsDeleted");
                 res.Remove("Org");
 
-                res.Add("organization_name", "Default Organization");
+                res.Add("organization_name", newUser.Org.Name);
                 res.Add("access_token", token);
 
                 response.data = res!;
@@ -265,28 +298,61 @@ namespace eagles_food_backend.Services.UserServices
             return response;
         }
 
-        public async Task<Response<List<UserReadDTO>>> GetAllUsersForOrganization(int user_id)
+        public async Task<Response<UserReadAllDTO>> GetAllUsersByOrganization(int user_id)
         {
+            List<UserReadDTO> org_people = new();
+            List<UserReadDTO> other_people = new();
+
             try
             {
+                // ensure user exists
+                if (!await db_context.Users.AnyAsync(x => x.Id == user_id))
+                {
+                    return new Response<UserReadAllDTO>() { message = "User not found", success = false, statusCode = HttpStatusCode.NotFound };
+                }
+
                 long? org_id = (await db_context.Users.FirstOrDefaultAsync(x => x.Id == user_id))?.OrgId;
+
                 if (org_id == null)
                 {
-                    return new Response<List<UserReadDTO>>() { message = "Organization not found", success = false, statusCode = HttpStatusCode.NotFound };
+                    // do nothing, the list is already empty
                 }
-                var users = await db_context.Users.Where(x => x.OrgId == org_id).Select(x => new UserReadDTO(
-                $"{x.FirstName} {x.LastName}",
-                x.Email,
-                x.ProfilePic,
-                x.Id.ToString(),
-                x.IsAdmin == null ? "User" : (bool)x.IsAdmin ? "Admin" : "User"
-                )).ToListAsync();
 
-                return new Response<List<UserReadDTO>>() { data = users, message = "Users fetched successfully" };
+                org_people = await db_context.Users
+                                    .Where(x => x.OrgId == org_id)
+                                    .Select(x => new UserReadDTO(
+                                        $"{x.FirstName} {x.LastName}",
+                                        x.Email,
+                                        x.ProfilePic,
+                                        x.Id.ToString(),
+                                        x.IsAdmin == null ? "User" : (bool)x.IsAdmin ? "Admin" : "User"
+                                    )).ToListAsync();
+
+                // remove the current user from the list
+                org_people.RemoveAll(users => users.user_id == user_id.ToString());
+
+                // get everyone else with a non-null org
+                other_people = await db_context.Users
+                                    .Where(x => x.OrgId != null && x.OrgId != org_id)
+                                    .Select(x => new UserReadDTO(
+                                        $"{x.FirstName} {x.LastName}",
+                                        x.Email,
+                                        x.ProfilePic,
+                                        x.Id.ToString(),
+                                        x.IsAdmin == null ? "User" : (bool)x.IsAdmin ? "Admin" : "User"
+                                    )).ToListAsync();
+
+                var res = new UserReadAllDTO()
+                {
+                    org = org_people,
+                    others = other_people
+                };
+
+                return new Response<UserReadAllDTO>() { data = res, message = "Users fetched successfully" };
             }
             catch (Exception)
             {
-                return new Response<List<UserReadDTO>>() { message = "Internal Server Error", statusCode = HttpStatusCode.InternalServerError };
+                return new Response<UserReadAllDTO>() { message = "Internal Server Error", statusCode = HttpStatusCode.InternalServerError };
             }
         }
 
@@ -308,7 +374,8 @@ namespace eagles_food_backend.Services.UserServices
                     profile_picture: user.ProfilePic,
                     phone_number: user.Phone,
                     isAdmin: user.IsAdmin ?? false,
-                    organization: user.Org?.Name ?? "Unassigned"
+                    organization: user.Org?.Name ?? "Unassigned",
+                    balance: user.LunchCreditBalance.ToString() ?? "0"
                 );
 
                 return new Response<UserProfileReadDTO>() { data = userprofile, message = "User data fetched successfully" };

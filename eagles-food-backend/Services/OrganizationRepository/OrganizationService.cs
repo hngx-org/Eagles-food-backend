@@ -1,10 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Reflection;
+
 using eagles_food_backend.Data;
 using eagles_food_backend.Domains.DTOs;
 using eagles_food_backend.Domains.Models;
 using eagles_food_backend.Services.OrganizationRepository;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace eagles_food_backend.Services
@@ -22,11 +24,34 @@ namespace eagles_food_backend.Services
             _authentication = authentication;
         }
 
-        // make a new empty org, add this staff member as the admin
+        // make a eagles org if non-existent, add this staff member as an admin
         public async Task<Response<Dictionary<string, string>>> CreateStaffMember(CreateStaffDTO model)
         {
             Response<Dictionary<string, string>> response = new();
             User? newUser = _mapper.Map<User>(model);
+
+            // make eagles org if non-existent
+            if (!await _context.Organizations.AnyAsync(o => o.Name == "Eagles Food"))
+            {
+                var EaglesOrg = new Organization()
+                {
+                    Name = "Eagles Food",
+                    CurrencyCode = "₦",
+                    LunchPrice = 1000
+                };
+
+                await _context.AddAsync(EaglesOrg);
+                await _context.SaveChangesAsync();
+
+                var EaglesWallet = new OrganizationLunchWallet()
+                {
+                    OrgId = EaglesOrg.Id,
+                    Balance = 0
+                };
+
+                await _context.AddAsync(EaglesWallet);
+                await _context.SaveChangesAsync();
+            }
 
             // ensure it's an actual (plausible) email
             if (!new EmailAddressAttribute().IsValid(newUser.Email))
@@ -54,25 +79,8 @@ namespace eagles_food_backend.Services
                 return response;
             }
 
-            // make their org.
-            var newOrg = new Organization()
-            {
-                Name = model.FirstName + " " + model.LastName + "'s Organization",
-                CurrencyCode = "₦",
-                LunchPrice = 1000
-            };
-
-            await _context.AddAsync(newOrg);
-            await _context.SaveChangesAsync();
-
-            var wallet = new OrganizationLunchWallet()
-            {
-                OrgId = newOrg.Id,
-                Balance = 0
-            };
-
-            await _context.AddAsync(wallet);
-            await _context.SaveChangesAsync();
+            // find eagles org
+            var eaglesOrg = await _context.Organizations.FirstAsync(o => o.Name == "Eagles Food");
 
             // store in db
             try
@@ -81,8 +89,9 @@ namespace eagles_food_backend.Services
 
                 newUser.PasswordHash = password_hash;
                 newUser.IsAdmin = true;
-                newUser.Org = newOrg;
-                newUser.OrgId = newOrg.Id;
+                newUser.Org = eaglesOrg;
+                newUser.OrgId = eaglesOrg.Id;
+                newUser.LunchCreditBalance = 0;
 
                 await _context.Users.AddAsync(newUser);
                 await _context.SaveChangesAsync();
@@ -98,7 +107,7 @@ namespace eagles_food_backend.Services
                     .GetType()
                     .GetProperties(BindingFlags.Instance | BindingFlags.Public)
                     .ToDictionary(prop => prop.Name, prop => Convert.ToString(prop.GetValue(newUser, null)));
-                
+
                 // remove sensitive data
                 res.Remove("PasswordHash");
                 res.Remove("LunchReceivers");
@@ -106,7 +115,7 @@ namespace eagles_food_backend.Services
                 res.Remove("Withdrawals");
                 res.Remove("IsDeleted");
                 res.Remove("Org");
-                
+
                 res.Add("organization_name", newUser.Org.Name);
                 res.Add("access_token", token);
 
@@ -164,7 +173,8 @@ namespace eagles_food_backend.Services
                 var orgID = user.OrgId;
                 var org = await _context.Organizations.FindAsync(orgID);
 
-                if (org is null) {
+                if (org is null)
+                {
                     response.success = false;
                     response.message = "Organisation does not exist";
                     response.statusCode = HttpStatusCode.BadRequest;
@@ -203,7 +213,8 @@ namespace eagles_food_backend.Services
         }
 
         // add money to the organization's wallet
-        public async Task<Response<Dictionary<string, string>>> UpdateOrganizationWallet(int UserID, UpdateOrganizationWalletDTO model) {
+        public async Task<Response<Dictionary<string, string>>> UpdateOrganizationWallet(int UserID, UpdateOrganizationWalletDTO model)
+        {
             Response<Dictionary<string, string>> response = new();
             User? user = await _context.Users.FindAsync(UserID);
 
@@ -238,7 +249,8 @@ namespace eagles_food_backend.Services
                 var orgID = user.OrgId;
                 var org = await _context.Organizations.FindAsync(orgID);
 
-                if (org is null) {
+                if (org is null)
+                {
                     response.success = false;
                     response.message = "Organisation does not exist";
                     response.statusCode = HttpStatusCode.BadRequest;
@@ -248,7 +260,8 @@ namespace eagles_food_backend.Services
 
                 var wallet = _context.OrganizationLunchWallets.Where(w => w.OrgId == orgID).FirstOrDefault();
 
-                if (wallet is null) {
+                if (wallet is null)
+                {
                     response.success = false;
                     response.message = "Wallet does not exist";
                     response.statusCode = HttpStatusCode.BadRequest;
@@ -279,7 +292,8 @@ namespace eagles_food_backend.Services
         }
 
         // update the price of lunch for the organization
-        public async Task<Response<Dictionary<string, string>>> UpdateOrganizationLunchPrice(int UserID, UpdateOrganizationLunchPriceDTO model) {
+        public async Task<Response<Dictionary<string, string>>> UpdateOrganizationLunchPrice(int UserID, UpdateOrganizationLunchPriceDTO model)
+        {
             Response<Dictionary<string, string>> response = new();
             User? user = await _context.Users.FindAsync(UserID);
 
@@ -314,7 +328,8 @@ namespace eagles_food_backend.Services
                 var orgID = user.OrgId;
                 var org = await _context.Organizations.FindAsync(orgID);
 
-                if (org is null) {
+                if (org is null)
+                {
                     response.success = false;
                     response.message = "Organisation does not exist";
                     response.statusCode = HttpStatusCode.BadRequest;
@@ -347,7 +362,8 @@ namespace eagles_food_backend.Services
         }
 
         // invite to the organization
-        public async Task<Response<Dictionary<string, string>>> InviteToOrganization(int UserID, InviteToOrganizationDTO model) {
+        public async Task<Response<Dictionary<string, string>>> InviteToOrganization(int UserID, InviteToOrganizationDTO model)
+        {
             Response<Dictionary<string, string>> response = new();
             User? admin = await _context.Users.FirstOrDefaultAsync(u => u.Id == UserID);
 
@@ -379,9 +395,10 @@ namespace eagles_food_backend.Services
                     return response;
                 }
 
-                var invitee = await _context.Users.FirstOrDefaultAsync(x=>x.Email == model.Email);
+                var invitee = await _context.Users.FirstOrDefaultAsync(x => x.Email == model.Email);
 
-                if (invitee is null) {
+                if (invitee is null)
+                {
                     response.success = false;
                     response.message = "User does not exist";
                     response.statusCode = HttpStatusCode.BadRequest;
@@ -405,7 +422,8 @@ namespace eagles_food_backend.Services
                 var orgID = admin.OrgId;
                 var org = await _context.Organizations.Where(o => o.Id == orgID).FirstAsync();
 
-                if (org is null) {
+                if (org is null)
+                {
                     response.success = false;
                     response.message = "Organisation does not exist";
                     response.statusCode = HttpStatusCode.BadRequest;
@@ -413,7 +431,8 @@ namespace eagles_food_backend.Services
                     return response;
                 }
 
-                var invite = new OrganizationInvite() {
+                var invite = new OrganizationInvite()
+                {
                     Email = model.Email,
                     OrgId = org.Id,
                     Ttl = DateTime.Now.AddDays(1),
