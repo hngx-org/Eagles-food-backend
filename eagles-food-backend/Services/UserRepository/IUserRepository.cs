@@ -12,5 +12,6 @@ namespace eagles_food_backend.Services.UserServices
         Task<Response<UserReadAllDTO>> GetAllUsersByOrganization(int user_id);
         Task<Response<UserReadDTO>> SearchForUser(string email);
         Task<Response<Dictionary<string, string>>> UpdateUserProfile(int userId, UpdateUserDTO model);
+        Task<Response<bool>> UploadPhoto(IFormFile photo, int id);
     }
 }
