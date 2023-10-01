@@ -5,6 +5,7 @@ using System.Reflection;
 using eagles_food_backend.Data;
 using eagles_food_backend.Domains.DTOs;
 using eagles_food_backend.Domains.Models;
+using eagles_food_backend.Services.EmailService;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -15,12 +16,20 @@ namespace eagles_food_backend.Services.UserServices
         private readonly LunchDbContext db_context;
         private readonly IMapper mapper;
         private readonly AuthenticationClass authentication;
+        private readonly IEmailService _emailService;
+        public readonly IConfiguration _config;
 
-        public UserService(LunchDbContext db_context, IMapper mapper, AuthenticationClass authentication)
+        public UserService(LunchDbContext db_context,
+            IMapper mapper,
+            AuthenticationClass authentication,
+            IEmailService emailService,
+            IConfiguration config)
         {
             this.db_context = db_context;
             this.mapper = mapper;
             this.authentication = authentication;
+            this._emailService = emailService;
+            this._config = config;
         }
 
         private CreateBankDTO GenerateBankDetails() //Generates new account number for each created user
@@ -434,6 +443,66 @@ namespace eagles_food_backend.Services.UserServices
             {
                 return new Response<UserReadDTO>() { message = "Internal Server Error", statusCode = HttpStatusCode.InternalServerError };
             }
+        }
+
+        public async Task<Response<UserReadDTO>> ForgotUserPassword(string email)
+        {
+            try
+            {
+                var user = await db_context.Users.FirstOrDefaultAsync(x => x.Email == email);
+                if (user == null)
+                {
+                    return new Response<UserReadDTO>() { message = "User not found", success = false, statusCode = HttpStatusCode.NotFound };
+                }
+                Random rnd = new();
+                int reset_token = rnd.Next(1000, 9999);
+                user.ResetToken = reset_token.ToString();
+                await db_context.SaveChangesAsync();
+                _emailService.SendEmail(new MailData
+                {
+                    EmailBody = reset_token.ToString(),
+                    EmailSubject = "Refresh Token",
+                    EmailToName = $"{user.FirstName}",
+                    EmailToId = email
+                });
+                return new Response<UserReadDTO>() { message = "Link sent to email address", success = false, statusCode = HttpStatusCode.OK };
+            }
+            catch (Exception)
+            {
+                return new Response<UserReadDTO>() { message = "Internal Server Error", success = false, statusCode = HttpStatusCode.InternalServerError };
+            }
+        }
+
+        public async Task<Response<UserReadDTO>> ResetUserPassword(ResetPasswordDTO resetDto)
+        {
+            try
+            {
+                var user = await db_context.Users.FirstOrDefaultAsync(x => x.Email == resetDto.Email);
+                if (user == null)
+                {
+                    return new Response<UserReadDTO>() { message = "User not found", success = false, statusCode = HttpStatusCode.NotFound };
+                }
+
+                if (resetDto.ResetToken != user.ResetToken)
+                {
+                    return new Response<UserReadDTO>() { message = "Token is invalid", success = false, statusCode = HttpStatusCode.BadRequest };
+                }
+
+                if (resetDto.NewPassword != resetDto.ConfirmPassword)
+                {
+                    return new Response<UserReadDTO>() { message = "Password do not match", success = false, statusCode = HttpStatusCode.BadRequest };
+                }
+
+                authentication.CreatePasswordHash(resetDto.NewPassword, out string password_hash);
+                user.PasswordHash = password_hash;
+                await db_context.SaveChangesAsync();
+                return new Response<UserReadDTO>() { message = "Password changed successfully", success = true, statusCode = HttpStatusCode.OK };
+            }
+            catch (Exception)
+            {
+                return new Response<UserReadDTO>() { message = "Internal Server Error", success = false, statusCode = HttpStatusCode.InternalServerError };
+            }
+
         }
     }
 }

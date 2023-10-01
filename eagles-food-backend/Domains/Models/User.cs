@@ -20,6 +20,7 @@
         public bool? IsAdmin { get; set; }
         public int? LunchCreditBalance { get; set; }
         public string? RefreshToken { get; set; }
+        public string? ResetToken { get; set; }
         public string? BankNumber { get; set; }
         public string? BankCode { get; set; }
         public string? BankName { get; set; }

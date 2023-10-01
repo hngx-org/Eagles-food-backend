@@ -69,5 +69,19 @@ namespace eagles_food_backend.Controllers
             var res = await _userService.Login(model);
             return StatusCode((int)res.statusCode, res);
         }
+
+        [HttpPost("forgot-password")]
+        public async Task<ActionResult> ForgotPassword([FromBody] ForgotPasswordDTO passwordDto)
+        {
+            var response = await _userService.ForgotUserPassword(passwordDto.Email);
+            return new OkObjectResult(response);
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<ActionResult> ResetPassword([FromBody] ResetPasswordDTO resetDto)
+        {
+            var response = await _userService.ResetUserPassword(resetDto);
+            return new OkObjectResult(response);
+        }
     }
 }
