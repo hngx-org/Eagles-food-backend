@@ -6,6 +6,7 @@ using System.Text;
 using eagles_food_backend;
 using eagles_food_backend.Data;
 using eagles_food_backend.Services;
+using eagles_food_backend.Services.EmailService;
 using eagles_food_backend.Services.LunchRepository;
 using eagles_food_backend.Services.OrganizationRepository;
 using eagles_food_backend.Services.ResponseService;
@@ -47,9 +48,10 @@ builder.Services.AddScoped<IUserRepository, UserService>();
 builder.Services.AddScoped<IOrganizationService, OrganizationService>();
 builder.Services.AddScoped<IResponseService, ResponseService>();
 builder.Services.AddScoped<ILunchRepository, LunchService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<AuthenticationClass>();
-
+builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 builder.Services.AddSwaggerGen(opts =>
 {
     opts.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
