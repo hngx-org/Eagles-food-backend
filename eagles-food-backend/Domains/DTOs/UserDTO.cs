@@ -43,4 +43,10 @@ namespace eagles_food_backend.Domains.DTOs
         public List<UserReadDTO> org { get; set; }
         public List<UserReadDTO> others { get; set; }
     }
+
+    public class ToggleInviteDTO
+    {
+        public int InviteId { get; set; }
+        public bool Status { get; set; }
+    }
 }

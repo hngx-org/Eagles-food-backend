@@ -38,4 +38,12 @@
         public string Email { get; set; } = null!;
     }
 
+    public class OrganizationInviteDTO
+    {
+        public int Id { get; set; }
+        public int? OrgId { get; set; }
+        public string? Org { get; set; }
+        public DateTime? CreatedAt { get; set; }
+    }
+
 }
