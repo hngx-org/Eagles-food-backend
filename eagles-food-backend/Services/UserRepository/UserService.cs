@@ -5,6 +5,7 @@ using System.Reflection;
 using eagles_food_backend.Data;
 using eagles_food_backend.Domains.DTOs;
 using eagles_food_backend.Domains.Models;
+using eagles_food_backend.Services.EmailService;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -15,12 +16,20 @@ namespace eagles_food_backend.Services.UserServices
         private readonly LunchDbContext db_context;
         private readonly IMapper mapper;
         private readonly AuthenticationClass authentication;
+        private readonly IEmailService _emailService;
+        public readonly IConfiguration _config;
 
-        public UserService(LunchDbContext db_context, IMapper mapper, AuthenticationClass authentication)
+        public UserService(LunchDbContext db_context,
+            IMapper mapper,
+            AuthenticationClass authentication,
+            IEmailService emailService,
+            IConfiguration config)
         {
             this.db_context = db_context;
             this.mapper = mapper;
             this.authentication = authentication;
+            this._emailService = emailService;
+            this._config = config;
         }
 
         private CreateBankDTO GenerateBankDetails() //Generates new account number for each created user
@@ -264,7 +273,7 @@ namespace eagles_food_backend.Services.UserServices
                 response.message = "Invalid File Format";
                 return response;
             }
-            if((photo.Length / (1024.0 * 1024.0)) > 1.0)
+            if ((photo.Length / (1024.0 * 1024.0)) > 1.0)
             {
                 response.success = false;
                 response.message = "Image cannot be larger than 1MB";
@@ -276,7 +285,7 @@ namespace eagles_food_backend.Services.UserServices
             }
             var photoExtension = Path.GetExtension(photo.FileName);
             var photoNewName = $"{user.Email}{photoExtension}";
-            var path = Path.Combine("storage",photoNewName);
+            var path = Path.Combine("storage", photoNewName);
             using (var stream = new FileStream(path, FileMode.Create))
             {
                 await photo.CopyToAsync(stream);
@@ -296,7 +305,8 @@ namespace eagles_food_backend.Services.UserServices
         {
             Response<Dictionary<string, string>> response = new();
             User? user = await db_context.Users.FindAsync(userId);
-            if(model.ProfilePic == string.Empty || model.ProfilePic == "string") {
+            if (model.ProfilePic == string.Empty || model.ProfilePic == "string")
+            {
                 model.ProfilePic = null;
             }
             try
@@ -354,7 +364,12 @@ namespace eagles_food_backend.Services.UserServices
                 // ensure user exists
                 if (!await db_context.Users.AnyAsync(x => x.Id == user_id))
                 {
-                    return new Response<UserReadAllDTO>() { message = "User not found", success = false, statusCode = HttpStatusCode.NotFound };
+                    return new Response<UserReadAllDTO>()
+                    {
+                        message = "User not found",
+                        success = false,
+                        statusCode = HttpStatusCode.NotFound
+                    };
                 }
 
                 long? org_id = (await db_context.Users.FirstOrDefaultAsync(x => x.Id == user_id))?.OrgId;
@@ -394,11 +409,19 @@ namespace eagles_food_backend.Services.UserServices
                     others = other_people
                 };
 
-                return new Response<UserReadAllDTO>() { data = res, message = "Users fetched successfully" };
+                return new Response<UserReadAllDTO>()
+                {
+                    data = res,
+                    message = "Users fetched successfully"
+                };
             }
             catch (Exception)
             {
-                return new Response<UserReadAllDTO>() { message = "Internal Server Error", statusCode = HttpStatusCode.InternalServerError };
+                return new Response<UserReadAllDTO>()
+                {
+                    message = "Internal Server Error",
+                    statusCode = HttpStatusCode.InternalServerError
+                };
             }
         }
 
@@ -409,7 +432,12 @@ namespace eagles_food_backend.Services.UserServices
                 var user = await db_context.Users.Include(x => x.Org).FirstOrDefaultAsync(x => x.Id == id);
                 if (user == null)
                 {
-                    return new Response<UserProfileReadDTO>() { message = "User not found", success = false, statusCode = HttpStatusCode.NotFound };
+                    return new Response<UserProfileReadDTO>()
+                    {
+                        message = "User not found",
+                        success = false,
+                        statusCode = HttpStatusCode.NotFound
+                    };
                 }
 
                 var userprofile = new UserProfileReadDTO
@@ -424,11 +452,19 @@ namespace eagles_food_backend.Services.UserServices
                     balance: user.LunchCreditBalance.ToString() ?? "0"
                 );
 
-                return new Response<UserProfileReadDTO>() { data = userprofile, message = "User data fetched successfully" };
+                return new Response<UserProfileReadDTO>()
+                {
+                    data = userprofile,
+                    message = "User data fetched successfully"
+                };
             }
             catch (Exception)
             {
-                return new Response<UserProfileReadDTO>() { message = "Internal Server Error", statusCode = HttpStatusCode.InternalServerError };
+                return new Response<UserProfileReadDTO>()
+                {
+                    message = "Internal Server Error",
+                    statusCode = HttpStatusCode.InternalServerError
+                };
             }
         }
 
@@ -439,7 +475,12 @@ namespace eagles_food_backend.Services.UserServices
                 var user = await db_context.Users.FirstOrDefaultAsync(x => x.Id == user_id);
                 if (user == null)
                 {
-                    return new Response<UserBankUpdateDTO>() { message = "User not found", success = false, statusCode = HttpStatusCode.NotFound };
+                    return new Response<UserBankUpdateDTO>()
+                    {
+                        message = "User not found",
+                        success = false,
+                        statusCode = HttpStatusCode.NotFound
+                    };
                 }
                 user.BankRegion = userbank.bank_region;
                 user.BankNumber = userbank.bank_number;
@@ -447,11 +488,19 @@ namespace eagles_food_backend.Services.UserServices
                 user.BankCode = userbank.bank_code;
                 await db_context.SaveChangesAsync();
 
-                return new Response<UserBankUpdateDTO>() { data = null, message = "Successfully created bank account" };
+                return new Response<UserBankUpdateDTO>()
+                {
+                    data = null,
+                    message = "Successfully created bank account"
+                };
             }
             catch (Exception)
             {
-                return new Response<UserBankUpdateDTO>() { message = "Internal Server Error", statusCode = HttpStatusCode.InternalServerError };
+                return new Response<UserBankUpdateDTO>()
+                {
+                    message = "Internal Server Error",
+                    statusCode = HttpStatusCode.InternalServerError
+                };
             }
 
         }
@@ -463,7 +512,12 @@ namespace eagles_food_backend.Services.UserServices
                 var user = await db_context.Users.FirstOrDefaultAsync(x => x.Email == email);
                 if (user == null)
                 {
-                    return new Response<UserReadDTO>() { message = "User not found", success = false, statusCode = HttpStatusCode.NotFound };
+                    return new Response<UserReadDTO>()
+                    {
+                        message = "User not found",
+                        success = false,
+                        statusCode = HttpStatusCode.NotFound
+                    };
                 }
 
                 var userReadDto = new UserReadDTO(
@@ -474,11 +528,118 @@ namespace eagles_food_backend.Services.UserServices
                     role: (bool)user.IsAdmin ? "Admin" : "User"
                     );
 
-                return new Response<UserReadDTO>() { data = userReadDto, message = "User found" };
+                return new Response<UserReadDTO>()
+                {
+                    data = userReadDto,
+                    message = "User found"
+                };
             }
             catch (Exception)
             {
-                return new Response<UserReadDTO>() { message = "Internal Server Error", statusCode = HttpStatusCode.InternalServerError };
+                return new Response<UserReadDTO>()
+                {
+                    message = "Internal Server Error",
+                    statusCode = HttpStatusCode.InternalServerError
+                };
+            }
+        }
+
+        public async Task<Response<UserReadDTO>> ForgotUserPassword(string email)
+        {
+            try
+            {
+                var user = await db_context.Users.FirstOrDefaultAsync(x => x.Email == email);
+                if (user == null)
+                {
+                    return new Response<UserReadDTO>()
+                    {
+                        message = "User not found",
+                        success = false,
+                        statusCode = HttpStatusCode.NotFound
+                    };
+                }
+                Random rnd = new();
+                int reset_token = rnd.Next(1000, 9999);
+                user.ResetToken = reset_token.ToString();
+                await db_context.SaveChangesAsync();
+                _emailService.SendEmail(new MailData
+                {
+                    EmailBody = reset_token.ToString(),
+                    EmailSubject = "Refresh Token",
+                    EmailToName = $"{user.FirstName}",
+                    EmailToId = email
+                });
+                return new Response<UserReadDTO>()
+                {
+                    message = "Link sent to email address",
+                    success = false,
+                    statusCode = HttpStatusCode.OK
+                };
+            }
+            catch (Exception)
+            {
+                return new Response<UserReadDTO>()
+                {
+                    message = "Internal Server Error",
+                    success = false,
+                    statusCode = HttpStatusCode.InternalServerError
+                };
+            }
+        }
+
+        public async Task<Response<UserReadDTO>> ResetUserPassword(ResetPasswordDTO resetDto)
+        {
+            try
+            {
+                var user = await db_context.Users.FirstOrDefaultAsync(x => x.Email == resetDto.Email);
+                if (user == null)
+                {
+                    return new Response<UserReadDTO>()
+                    {
+                        message = "User not found",
+                        success = false,
+                        statusCode = HttpStatusCode.NotFound
+                    };
+                }
+
+                if (resetDto.ResetToken != user.ResetToken)
+                {
+                    return new Response<UserReadDTO>()
+                    {
+                        message = "Token is invalid",
+                        success = false,
+                        statusCode = HttpStatusCode.BadRequest
+                    };
+                }
+
+                if (resetDto.NewPassword != resetDto.ConfirmPassword)
+                {
+                    return new Response<UserReadDTO>()
+                    {
+                        message = "Password do not match",
+                        success = false,
+                        statusCode = HttpStatusCode.BadRequest
+                    };
+                }
+
+                authentication.CreatePasswordHash(resetDto.NewPassword, out string password_hash);
+                user.PasswordHash = password_hash;
+                await db_context.SaveChangesAsync();
+                return new Response<UserReadDTO>()
+                {
+                    message = "Password changed successfully",
+                    success = true,
+                    statusCode = HttpStatusCode.OK
+                };
+            }
+            catch (Exception)
+            {
+                return new Response<UserReadDTO>()
+                {
+                    message = "Internal Server Error",
+                    success = false,
+                    statusCode = HttpStatusCode.InternalServerError
+                };
             }
         }
 
@@ -527,7 +688,7 @@ namespace eagles_food_backend.Services.UserServices
 
 
                         Dictionary<string, string> data = new();
-                        
+
                         data.Add("FirstName", user_exists.FirstName!);
                         data.Add("LastName", user_exists.LastName!);
                         data.Add("Organization", user_exists.Org!.Name);

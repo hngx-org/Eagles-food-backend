@@ -14,5 +14,7 @@ namespace eagles_food_backend.Services.UserServices
         Task<Response<Dictionary<string, string>>> UpdateUserProfile(int userId, UpdateUserDTO model);
         Task<Response<bool>> UploadPhoto(IFormFile photo, int id);
         Task<Response<Dictionary<string, string>>> ChagePassword(ChangePasswordDTO model);
+        Task<Response<UserReadDTO>> ForgotUserPassword(string email);
+        Task<Response<UserReadDTO>> ResetUserPassword(ResetPasswordDTO resetDto);
     }
 }
