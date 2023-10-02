@@ -49,7 +49,6 @@ namespace eagles_food_backend
             return jwt;
         }
 
-
         public Response<string> ProcessPayment()
         {
             Response<string> res = new Response<string>();

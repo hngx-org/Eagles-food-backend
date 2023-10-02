@@ -367,3 +367,4 @@ FodyWeavers.xsd
 
 # Development application settings
 eagles-food-backend/appsettings.Development.json
+/eagles-food-backend/appsettings.Development.json
