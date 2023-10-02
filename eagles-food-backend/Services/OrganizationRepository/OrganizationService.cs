@@ -439,16 +439,13 @@ namespace eagles_food_backend.Services
                     Token = Guid.NewGuid().ToString()
                 };
 
-                invitee.OrgId = org.Id;
-                invitee.Org = org;
-
                 await _context.OrganizationInvites.AddAsync(invite);
                 await _context.SaveChangesAsync();
 
                 response.success = true;
                 response.data = null;
 
-                response.message = "User Added To Organisation successfully";
+                response.message = "Organisation Invite sent out successfully";
                 response.statusCode = HttpStatusCode.OK;
             }
 

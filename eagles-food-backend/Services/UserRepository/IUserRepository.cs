@@ -16,5 +16,7 @@ namespace eagles_food_backend.Services.UserServices
         Task<Response<Dictionary<string, string>>> ChagePassword(ChangePasswordDTO model);
         Task<Response<UserReadDTO>> ForgotUserPassword(string email);
         Task<Response<UserReadDTO>> ResetUserPassword(ResetPasswordDTO resetDto);
+        Task<Response<List<OrganizationInviteDTO>>> UserInvites(int userId);
+        Task<Response<bool>> ToggleInvite(int userId, ToggleInviteDTO model);
     }
 }

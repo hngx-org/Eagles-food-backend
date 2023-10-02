@@ -119,5 +119,38 @@ namespace eagles_food_backend.Controllers
             var response = await _userService.SearchForUser(email);
             return StatusCode((int)response.statusCode, response);
         }
+
+        /// <summary>
+        /// This end point is for users to see all thier pending invites
+        /// </summary>
+        /// <returns>It returns all the invites a person has unattended to </returns>
+        /// <response code="200">Returns the user</response>
+        [HttpGet("userinvites")]
+        public async Task<IActionResult> GetUserInvites()
+        {
+            if (int.TryParse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value, out int id))
+            {
+                var response = await _userService.UserInvites(id);
+                return StatusCode((int)response.statusCode, response);
+            }
+            else return BadRequest();
+        }
+
+        /// <summary>
+        /// This end point is for users accept invites
+        /// send true for yes(acceptance) and false for no(rejection)
+        /// </summary>
+        /// <returns>It returns all the invites a person has unattended to </returns>
+        /// <response code="200">Returns the user</response>
+        [HttpPost("toggleinvite")]
+        public async Task<IActionResult> Invite([FromBody] ToggleInviteDTO model)
+        {
+            if (int.TryParse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value, out int id))
+            {
+                var response = await _userService.ToggleInvite(id, model);
+                return StatusCode((int)response.statusCode, response);
+            }
+            else return BadRequest();
+        }
     }
 }
