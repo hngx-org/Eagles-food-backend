@@ -13,10 +13,6 @@ namespace eagles_food_backend.Services.EmailService
         {
             _mailSettings = mailSettingsOptions.Value;
         }
-        public void SendEmail(string to, string from, string subject, string message)
-        {
-            throw new NotImplementedException();
-        }
 
         public bool SendEmail(MailData mailData)
         {
