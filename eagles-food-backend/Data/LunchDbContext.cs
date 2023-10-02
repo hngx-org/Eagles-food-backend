@@ -263,7 +263,8 @@ namespace eagles_food_backend.Data
                     .HasMaxLength(255)
                     .HasColumnName("last_name");
 
-                entity.Property(e => e.LunchCreditBalance).HasColumnName("lunch_credit_balance");
+                entity.Property(e => e.LunchCreditBalance).HasColumnName("lunch_credit_balance")
+                    .HasDefaultValue(50);
 
                 entity.Property(e => e.OrgId).HasColumnName("org_id");
 

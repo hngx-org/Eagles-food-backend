@@ -123,7 +123,7 @@ namespace eagles_food_backend.Services.UserServices
                 newUser.IsAdmin = false;
                 newUser.Org = eaglesOrg;
                 newUser.OrgId = eaglesOrg.Id;
-                newUser.LunchCreditBalance = 0;
+                newUser.LunchCreditBalance = 100;
 
                 var generatedDetails = GenerateBankDetails();
 
@@ -480,6 +480,83 @@ namespace eagles_food_backend.Services.UserServices
             {
                 return new Response<UserReadDTO>() { message = "Internal Server Error", statusCode = HttpStatusCode.InternalServerError };
             }
+        }
+
+        public async Task<Response<Dictionary<string, string>>> ChagePassword(ChangePasswordDTO model)
+        {
+            Response<Dictionary<string, string>> response = new();
+            User? user_exists = await db_context.Users.Where(u => u.Email == model.Email).Include(x => x.Org).FirstOrDefaultAsync();
+
+            var userindb = mapper.Map<CreateUserDTO>(user_exists);
+
+            // ensure user exists
+            if (user_exists is null)
+            {
+                response.success = false;
+                response.message = "User not found";
+                response.statusCode = HttpStatusCode.Unauthorized;
+                response.data = new Dictionary<string, string>() {
+                    { "email", model.Email }
+                };
+
+                return response;
+            }
+
+
+            // ensure password is correct
+            try
+            {
+                var passwordIsValid = authentication.verifyPasswordHash(model.OldPassword, user_exists.PasswordHash);
+
+                if (!passwordIsValid)
+                {
+                    response.success = false;
+                    response.message = "Incorrect password";
+                    response.statusCode = HttpStatusCode.Unauthorized;
+                }
+                else
+                {
+                    try
+                    {
+                        authentication.CreatePasswordHash(model.NewPassword, out string password_hash);
+
+                        user_exists.PasswordHash = password_hash;
+
+                        db_context.Users.Update(user_exists);
+                        await db_context.SaveChangesAsync();
+
+
+                        Dictionary<string, string> data = new();
+                        
+                        data.Add("FirstName", user_exists.FirstName!);
+                        data.Add("LastName", user_exists.LastName!);
+                        data.Add("Organization", user_exists.Org!.Name);
+
+                        response.success = true;
+                        response.message = "User successfuly changed password";
+                        response.statusCode = HttpStatusCode.OK;
+                        response.data = data;
+                    }
+
+                    // catch any errors
+                    catch (Exception ex)
+                    {
+                        response.statusCode = HttpStatusCode.InternalServerError;
+                        response.success = false;
+                        response.message = ex.Message;
+                    }
+
+                }
+
+            }
+            catch (Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+                response.statusCode = HttpStatusCode.InternalServerError;
+            }
+
+            return response;
         }
     }
 }
