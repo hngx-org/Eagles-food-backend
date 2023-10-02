@@ -132,7 +132,7 @@ namespace eagles_food_backend.Services.UserServices
                 newUser.IsAdmin = false;
                 newUser.Org = eaglesOrg;
                 newUser.OrgId = eaglesOrg.Id;
-                newUser.LunchCreditBalance = 0;
+                newUser.LunchCreditBalance = 100;
 
                 var generatedDetails = GenerateBankDetails();
 
@@ -255,13 +255,60 @@ namespace eagles_food_backend.Services.UserServices
             return response;
         }
 
+        public async Task<Response<bool>> UploadPhoto(IFormFile photo, int id)
+        {
+            Response<bool> response = new();
+            User? user = await db_context.Users.FindAsync(id);
+            if (user is null)
+            {
+                response.success = false;
+                response.message = "User not found";
+                response.statusCode = HttpStatusCode.NotFound;
+                return response;
+            }
+            var allowedFormats = new List<string>() { "image/jpeg", "image/png" };
+            if (!allowedFormats.Contains(photo.ContentType))
+            {
+                response.success = false;
+                response.message = "Invalid File Format";
+                return response;
+            }
+            if ((photo.Length / (1024.0 * 1024.0)) > 1.0)
+            {
+                response.success = false;
+                response.message = "Image cannot be larger than 1MB";
+                return response;
+            }
+            if (!Directory.Exists("storage"))
+            {
+                Directory.CreateDirectory("storage");
+            }
+            var photoExtension = Path.GetExtension(photo.FileName);
+            var photoNewName = $"{user.Email}{photoExtension}";
+            var path = Path.Combine("storage", photoNewName);
+            using (var stream = new FileStream(path, FileMode.Create))
+            {
+                await photo.CopyToAsync(stream);
+            }
+            user.ProfilePic = photoNewName;
+            await db_context.SaveChangesAsync();
+            response.success = true;
+            response.data = true;
+            response.message = "User Photo updated successfully";
+            response.statusCode = HttpStatusCode.OK;
+            return response;
+        }
+
         // update a user
         public async Task<Response<Dictionary<string, string>>> UpdateUserProfile(
             int userId, UpdateUserDTO model)
         {
             Response<Dictionary<string, string>> response = new();
             User? user = await db_context.Users.FindAsync(userId);
-
+            if (model.ProfilePic == string.Empty || model.ProfilePic == "string")
+            {
+                model.ProfilePic = null;
+            }
             try
             {
                 // ensure user exists
@@ -594,7 +641,83 @@ namespace eagles_food_backend.Services.UserServices
                     statusCode = HttpStatusCode.InternalServerError
                 };
             }
+        }
 
+        public async Task<Response<Dictionary<string, string>>> ChagePassword(ChangePasswordDTO model)
+        {
+            Response<Dictionary<string, string>> response = new();
+            User? user_exists = await db_context.Users.Where(u => u.Email == model.Email).Include(x => x.Org).FirstOrDefaultAsync();
+
+            var userindb = mapper.Map<CreateUserDTO>(user_exists);
+
+            // ensure user exists
+            if (user_exists is null)
+            {
+                response.success = false;
+                response.message = "User not found";
+                response.statusCode = HttpStatusCode.Unauthorized;
+                response.data = new Dictionary<string, string>() {
+                    { "email", model.Email }
+                };
+
+                return response;
+            }
+
+
+            // ensure password is correct
+            try
+            {
+                var passwordIsValid = authentication.verifyPasswordHash(model.OldPassword, user_exists.PasswordHash);
+
+                if (!passwordIsValid)
+                {
+                    response.success = false;
+                    response.message = "Incorrect password";
+                    response.statusCode = HttpStatusCode.Unauthorized;
+                }
+                else
+                {
+                    try
+                    {
+                        authentication.CreatePasswordHash(model.NewPassword, out string password_hash);
+
+                        user_exists.PasswordHash = password_hash;
+
+                        db_context.Users.Update(user_exists);
+                        await db_context.SaveChangesAsync();
+
+
+                        Dictionary<string, string> data = new();
+
+                        data.Add("FirstName", user_exists.FirstName!);
+                        data.Add("LastName", user_exists.LastName!);
+                        data.Add("Organization", user_exists.Org!.Name);
+
+                        response.success = true;
+                        response.message = "User successfuly changed password";
+                        response.statusCode = HttpStatusCode.OK;
+                        response.data = data;
+                    }
+
+                    // catch any errors
+                    catch (Exception ex)
+                    {
+                        response.statusCode = HttpStatusCode.InternalServerError;
+                        response.success = false;
+                        response.message = ex.Message;
+                    }
+
+                }
+
+            }
+            catch (Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+                response.statusCode = HttpStatusCode.InternalServerError;
+            }
+
+            return response;
         }
     }
 }

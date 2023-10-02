@@ -1,3 +1,4 @@
+
 using eagles_food_backend.Domains.DTOs;
 using eagles_food_backend.Services.UserServices;
 
@@ -67,6 +68,32 @@ namespace eagles_food_backend.Controllers
         public async Task<ActionResult> Login([FromBody] UserLoginDTO model)
         {
             var res = await _userService.Login(model);
+            return StatusCode((int)res.statusCode, res);
+        }
+
+        /// <summary>
+        /// Change password
+        /// </summary>
+        /// <remarks>
+        /// Sample request:
+        /// <code>
+        /// POST api/auth/changePassword
+        /// {
+        ///   "email": "john@doe.com",
+        ///   "oldPassword": "pass",
+        ///   "newPassword": "pass",
+        /// }
+        /// </code>
+        /// </remarks>
+        /// <param name="model">Request body with user's details</param>
+        /// <returns>A response with 200 and the token</returns>
+        /// <response code="200">Returns the token</response>
+        /// <response code="404">If the email or password is incorrect</response>
+        /// <response code="500">If there was an error logging in</response>
+        [HttpPost("changePassword")]
+        public async Task<ActionResult> ChangePassword([FromBody] ChangePasswordDTO model)
+        {
+            var res = await _userService.ChagePassword(model);
             return StatusCode((int)res.statusCode, res);
         }
 
