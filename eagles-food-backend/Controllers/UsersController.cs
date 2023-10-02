@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
 
 using eagles_food_backend.Domains.DTOs;
 using eagles_food_backend.Services.UserServices;
@@ -72,6 +73,18 @@ namespace eagles_food_backend.Controllers
                 return StatusCode((int)userprofile.statusCode, userprofile);
             }
             return BadRequest();
+        }
+
+        [HttpPost("photo")]
+        public async Task<IActionResult> UpdatePhoto([Required]IFormFile file)
+        {
+            if (int.TryParse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value, out int id))
+            {
+                var userprofile = await _userService.UploadPhoto(file, id);
+                return StatusCode((int)userprofile.statusCode, userprofile);
+            }
+            return BadRequest();
+
         }
 
         /// <summary>

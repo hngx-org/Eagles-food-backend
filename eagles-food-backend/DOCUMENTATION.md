@@ -744,3 +744,30 @@ if invalid (e.g. due to withdrawing more than available lunch(s)), returns:
 ```
 
 ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃
+
+**POST** `/api/user/photo`
+
+### Headers
+
+| Content-Type  | Value          |
+| ------------- | -------------- |
+| Authorization | Bearer <token> |
+
+Upload photos.
+
+**form data:**
+
+```
+  "file": attach a file
+```
+
+**Response:**
+
+```json
+{
+    "data": true,
+    "message": "User Photo updated successfully",
+    "success": true,
+    "statusCode": 200
+}
+```
