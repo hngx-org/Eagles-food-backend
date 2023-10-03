@@ -612,11 +612,11 @@ namespace eagles_food_backend.Services.UserServices
                     };
                 }
 
-                if (resetDto.NewPassword != resetDto.ConfirmPassword)
+                if (string.IsNullOrWhiteSpace(resetDto.NewPassword))
                 {
                     return new Response<UserReadDTO>()
                     {
-                        message = "Password do not match",
+                        message = "Password is invalid",
                         success = false,
                         statusCode = HttpStatusCode.BadRequest
                     };
@@ -718,6 +718,39 @@ namespace eagles_food_backend.Services.UserServices
             }
 
             return response;
+        }
+
+        public async Task<Response<UserReadDTO>> VerifyResetToken(string email, string code)
+        {
+            try
+            {
+                var user = await db_context.Users.FirstOrDefaultAsync(x => x.Email == email);
+                if (user == null)
+                {
+                    return new Response<UserReadDTO>()
+                    {
+                        message = "User not found",
+                        success = false,
+                        statusCode = HttpStatusCode.NotFound
+                    };
+                }
+                bool equal = user.ResetToken == code;
+                return new Response<UserReadDTO>()
+                {
+                    message = equal ? "Token is valid" : "Token is invalid",
+                    success = equal,
+                    statusCode = equal ? HttpStatusCode.OK : HttpStatusCode.BadRequest
+                };
+            }
+            catch (Exception)
+            {
+                return new Response<UserReadDTO>()
+                {
+                    message = "Internal Server Error",
+                    success = false,
+                    statusCode = HttpStatusCode.InternalServerError
+                };
+            }
         }
     }
 }
