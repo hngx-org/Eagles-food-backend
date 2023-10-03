@@ -70,30 +70,6 @@ namespace eagles_food_backend.Services.UserServices
         {
             Response<Dictionary<string, string>> response = new();
             User? newUser = mapper.Map<User>(user);
-
-            // make eagles org if non-existent
-            if (!await db_context.Organizations.AnyAsync(o => o.Name == "Eagles Food"))
-            {
-                var EaglesOrg = new Organization()
-                {
-                    Name = "Eagles Food",
-                    CurrencyCode = "₦",
-                    LunchPrice = 1000
-                };
-
-                await db_context.AddAsync(EaglesOrg);
-                await db_context.SaveChangesAsync();
-
-                var EaglesWallet = new OrganizationLunchWallet()
-                {
-                    OrgId = EaglesOrg.Id,
-                    Balance = 0
-                };
-
-                await db_context.AddAsync(EaglesWallet);
-                await db_context.SaveChangesAsync();
-            }
-
             // ensure it's an actual (plausible) email
             if (!new EmailAddressAttribute().IsValid(user.Email))
             {
@@ -121,7 +97,7 @@ namespace eagles_food_backend.Services.UserServices
             }
 
             // find eagles org
-            var eaglesOrg = await db_context.Organizations.FirstAsync(o => o.Name == "Eagles Food");
+            //var eaglesOrg = await db_context.Organizations.FirstAsync(o => o.Name == "Eagles Food");
 
             // store in db
             try
@@ -130,8 +106,6 @@ namespace eagles_food_backend.Services.UserServices
 
                 newUser.PasswordHash = password_hash;
                 newUser.IsAdmin = false;
-                newUser.Org = eaglesOrg;
-                newUser.OrgId = eaglesOrg.Id;
                 newUser.LunchCreditBalance = 100;
 
                 var generatedDetails = GenerateBankDetails();
@@ -164,7 +138,6 @@ namespace eagles_food_backend.Services.UserServices
                 res.Remove("IsDeleted");
                 res.Remove("Org");
 
-                res.Add("organization_name", newUser.Org.Name);
                 res.Add("access_token", token);
 
                 response.data = res!;
@@ -296,6 +269,67 @@ namespace eagles_food_backend.Services.UserServices
             response.data = true;
             response.message = "User Photo updated successfully";
             response.statusCode = HttpStatusCode.OK;
+            return response;
+        }
+
+        public async Task<Response<List<OrganizationInviteDTO>>> UserInvites(int userId)
+        {
+            Response<List<OrganizationInviteDTO>> response = new();
+            User? user = await db_context.Users.FindAsync(userId);
+            if (user is null)
+            {
+                response.success = false;
+                response.message = "User not found";
+                response.statusCode = HttpStatusCode.NotFound;
+                response.data = default;
+                return response;
+            }
+            var userinvites = await db_context.OrganizationInvites.Where(x => x.Email == user.Email && x.IsDeleted == false).Include(x => x.Org).ToListAsync();
+            response.success = true;
+            response.message = userinvites.Count > 0 ? "Invites Fetched Successfuuly" : "You dont have any Pending Invites";
+            response.statusCode = HttpStatusCode.OK;
+            response.data = userinvites.Select(x => new OrganizationInviteDTO()
+            {
+                CreatedAt = x.CreatedAt,
+                Id = x.Id,
+                OrgId = x.OrgId,
+                Org = x.Org.Name,
+            }).ToList();
+            return response;
+        }
+
+        public async Task<Response<bool>> ToggleInvite(int userId, ToggleInviteDTO model)
+        {
+            Response<bool> response = new();
+            User? user = await db_context.Users.FindAsync(userId);
+            if (user is null)
+            {
+                response.success = false;
+                response.message = "User not found";
+                response.statusCode = HttpStatusCode.NotFound;
+                response.data = false;
+                return response;
+            }
+            var invite = await db_context.OrganizationInvites.Where(x => x.Id == model.InviteId && x.IsDeleted == false).FirstOrDefaultAsync();
+            var organization = await db_context.Organizations.FindAsync(invite?.OrgId);
+            if (invite is null || organization is null)
+            {
+                response.success = false;
+                response.message = "Invite/Organization not found";
+                response.statusCode = HttpStatusCode.NotFound;
+                response.data = false;
+                return response;
+            }
+            if (model.Status)
+            {
+                user.Org = organization;
+                user.OrgId = organization.Id;
+            }
+            invite.IsDeleted = true;
+            await db_context.SaveChangesAsync();
+            response.message = "Successful Operation";
+            response.statusCode = HttpStatusCode.OK;
+            response.data = true;
             return response;
         }
 
