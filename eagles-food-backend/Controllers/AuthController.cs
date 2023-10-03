@@ -1,4 +1,3 @@
-
 using eagles_food_backend.Domains.DTOs;
 using eagles_food_backend.Services.UserServices;
 
@@ -100,15 +99,22 @@ namespace eagles_food_backend.Controllers
         [HttpPost("forgot-password")]
         public async Task<ActionResult> ForgotPassword([FromBody] ForgotPasswordDTO passwordDto)
         {
-            var response = await _userService.ForgotUserPassword(passwordDto.Email);
-            return new OkObjectResult(response);
+            var res = await _userService.ForgotUserPassword(passwordDto.Email);
+            return StatusCode((int)res.statusCode, res);
         }
 
         [HttpPost("reset-password")]
         public async Task<ActionResult> ResetPassword([FromBody] ResetPasswordDTO resetDto)
         {
-            var response = await _userService.ResetUserPassword(resetDto);
-            return new OkObjectResult(response);
+            var res = await _userService.ResetUserPassword(resetDto);
+            return StatusCode((int)res.statusCode, res);
+        }
+
+        [HttpGet("verify-reset-token")]
+        public async Task<ActionResult> VerifyResetToken([FromQuery] string email, [FromQuery] string token)
+        {
+            var res = await _userService.VerifyResetToken(email, token);
+            return StatusCode((int)res.statusCode, res);
         }
     }
 }

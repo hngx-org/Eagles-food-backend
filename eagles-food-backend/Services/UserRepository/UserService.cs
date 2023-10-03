@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Reflection;
 
@@ -285,21 +284,21 @@ namespace eagles_food_backend.Services.UserServices
                 response.data = default;
                 return response;
             }
-            var userinvites = await db_context.OrganizationInvites.Where(x=>x.Email == user.Email && x.IsDeleted == false).Include(x=>x.Org).ToListAsync();
+            var userinvites = await db_context.OrganizationInvites.Where(x => x.Email == user.Email && x.IsDeleted == false).Include(x => x.Org).ToListAsync();
             response.success = true;
             response.message = userinvites.Count > 0 ? "Invites Fetched Successfuuly" : "You dont have any Pending Invites";
             response.statusCode = HttpStatusCode.OK;
             response.data = userinvites.Select(x => new OrganizationInviteDTO()
             {
-                 CreatedAt = x.CreatedAt,
-                 Id = x.Id,
-                 OrgId = x.OrgId,
-                 Org = x.Org.Name,
+                CreatedAt = x.CreatedAt,
+                Id = x.Id,
+                OrgId = x.OrgId,
+                Org = x.Org.Name,
             }).ToList();
             return response;
         }
 
-        public async Task<Response<bool>> ToggleInvite(int userId,ToggleInviteDTO model)
+        public async Task<Response<bool>> ToggleInvite(int userId, ToggleInviteDTO model)
         {
             Response<bool> response = new();
             User? user = await db_context.Users.FindAsync(userId);
@@ -311,7 +310,7 @@ namespace eagles_food_backend.Services.UserServices
                 response.data = false;
                 return response;
             }
-            var invite = await db_context.OrganizationInvites.Where(x=>x.Id == model.InviteId && x.IsDeleted == false).FirstOrDefaultAsync();
+            var invite = await db_context.OrganizationInvites.Where(x => x.Id == model.InviteId && x.IsDeleted == false).FirstOrDefaultAsync();
             var organization = await db_context.Organizations.FindAsync(invite?.OrgId);
             if (invite is null || organization is null)
             {
@@ -647,11 +646,11 @@ namespace eagles_food_backend.Services.UserServices
                     };
                 }
 
-                if (resetDto.NewPassword != resetDto.ConfirmPassword)
+                if (string.IsNullOrWhiteSpace(resetDto.NewPassword))
                 {
                     return new Response<UserReadDTO>()
                     {
-                        message = "Password do not match",
+                        message = "Password is invalid",
                         success = false,
                         statusCode = HttpStatusCode.BadRequest
                     };
@@ -753,6 +752,39 @@ namespace eagles_food_backend.Services.UserServices
             }
 
             return response;
+        }
+
+        public async Task<Response<UserReadDTO>> VerifyResetToken(string email, string code)
+        {
+            try
+            {
+                var user = await db_context.Users.FirstOrDefaultAsync(x => x.Email == email);
+                if (user == null)
+                {
+                    return new Response<UserReadDTO>()
+                    {
+                        message = "User not found",
+                        success = false,
+                        statusCode = HttpStatusCode.NotFound
+                    };
+                }
+                bool equal = user.ResetToken == code;
+                return new Response<UserReadDTO>()
+                {
+                    message = equal ? "Token is valid" : "Token is invalid",
+                    success = equal,
+                    statusCode = equal ? HttpStatusCode.OK : HttpStatusCode.BadRequest
+                };
+            }
+            catch (Exception)
+            {
+                return new Response<UserReadDTO>()
+                {
+                    message = "Internal Server Error",
+                    success = false,
+                    statusCode = HttpStatusCode.InternalServerError
+                };
+            }
         }
     }
 }

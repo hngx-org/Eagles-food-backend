@@ -10,7 +10,5 @@ namespace eagles_food_backend.Domains.DTOs
         public string? ResetToken { get; set; }
         [Required]
         public string? NewPassword { get; set; }
-        [Required]
-        public string? ConfirmPassword { get; set; }
     }
 }

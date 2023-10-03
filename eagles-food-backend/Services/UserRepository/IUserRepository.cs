@@ -18,5 +18,6 @@ namespace eagles_food_backend.Services.UserServices
         Task<Response<UserReadDTO>> ResetUserPassword(ResetPasswordDTO resetDto);
         Task<Response<List<OrganizationInviteDTO>>> UserInvites(int userId);
         Task<Response<bool>> ToggleInvite(int userId, ToggleInviteDTO model);
+        Task<Response<UserReadDTO>> VerifyResetToken(string email, string code);
     }
 }
