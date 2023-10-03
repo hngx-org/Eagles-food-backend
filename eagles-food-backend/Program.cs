@@ -98,6 +98,12 @@ builder.Services.AddControllersWithViews()
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var dataContext = scope.ServiceProvider.GetRequiredService<LunchDbContext>();
+    dataContext.Database.Migrate();
+}
+
 app.UseSwagger();
 app.UseSwaggerUI();
 
