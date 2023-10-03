@@ -1,5 +1,6 @@
 global using AutoMapper;
 
+using System;
 using System.Reflection;
 using System.Text;
 
@@ -11,6 +12,8 @@ using eagles_food_backend.Services.LunchRepository;
 using eagles_food_backend.Services.OrganizationRepository;
 using eagles_food_backend.Services.ResponseService;
 using eagles_food_backend.Services.UserServices;
+
+using Exceptionless;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +28,7 @@ builder.Services.AddDbContext<LunchDbContext>(options =>
     options.UseMySql(
         connectionString, ServerVersion.AutoDetect(connectionString)));
 builder.Services.AddControllers();
+builder.Services.AddExceptionless("h0Ei4DuXml3wSbmoGQl9rUWy5FvZvpZ87btWaiRQ");
 
 var config = builder.Configuration;
 
@@ -111,8 +115,10 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
-
+app.UseExceptionless();
 app.MapControllers();
+
+ExceptionlessClient.Default.SubmitLog(connectionString);
 
 Console.WriteLine("Connected to db: " + connectionString);
 
