@@ -22,7 +22,8 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+//var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var connectionString = "Server=MYSQL8002.site4now.net;Database=db_a9ef58_teagle;Uid=a9ef58_teagle;Pwd=c7b9@r.jDR7.ZKW";
 
 builder.Services.AddDbContext<LunchDbContext>(options =>
     options.UseMySql(
