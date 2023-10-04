@@ -13,6 +13,8 @@ using eagles_food_backend.Services.OrganizationRepository;
 using eagles_food_backend.Services.ResponseService;
 using eagles_food_backend.Services.UserServices;
 
+using Exceptionless;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
