@@ -462,20 +462,21 @@ Organizations are like banks, they hold users and allow them to transfer and red
 
 ### Headers
 
+only upload what you need to change, but the email must always be present
+
 | Content-Type  | Value          |
 | ------------- | -------------- |
 | Authorization | Bearer <token> |
 
-### Body (**raw**)
+### Form Data (**raw**)
 
-```json
-{
+```
   "email": "johndoe@gmail.com",
   "lastname": "Doe",
   "firstname": "John",
   "phone": "0803327019",
   "profilePic": "happy picture"
-}
+  "photo":*attach a file here*
 ```
 
 ### Response
