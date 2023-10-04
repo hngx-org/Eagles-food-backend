@@ -236,7 +236,7 @@ namespace eagles_food_backend.Services.UserServices
             {
                 response.success = false;
                 response.message = "User not found";
-                response.statusCode = HttpStatusCode.NotFound;
+                response.statusCode = HttpStatusCode.BadRequest;
                 return response;
             }
             var allowedFormats = new List<string>() { "image/jpeg", "image/png" };
@@ -244,12 +244,14 @@ namespace eagles_food_backend.Services.UserServices
             {
                 response.success = false;
                 response.message = "Invalid File Format";
+                response.statusCode = HttpStatusCode.BadRequest;
                 return response;
             }
             if ((photo.Length / (1024.0 * 1024.0)) > 1.0)
             {
                 response.success = false;
                 response.message = "Image cannot be larger than 1MB";
+                response.statusCode = HttpStatusCode.BadRequest;
                 return response;
             }
             if (!Directory.Exists("storage"))
@@ -338,6 +340,18 @@ namespace eagles_food_backend.Services.UserServices
             int userId, UpdateUserDTO model)
         {
             Response<Dictionary<string, string>> response = new();
+            if (model.Photo != null)
+            {
+                model.ProfilePic = null;
+                var uploadImage = await UploadPhoto(model.Photo, userId);
+                if (!uploadImage.success)
+                {
+                    response.success = false;
+                    response.message = uploadImage.message;
+                    response.statusCode = uploadImage.statusCode;
+                    return response;
+                }
+            }
             User? user = await db_context.Users.FindAsync(userId);
             if (model.ProfilePic == string.Empty || model.ProfilePic == "string")
             {

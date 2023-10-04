@@ -65,7 +65,7 @@ namespace eagles_food_backend.Controllers
         /// <param name="model"></param>
         /// <returns>The updated user details</returns>
         [HttpPut("update")]
-        public async Task<IActionResult> UpdateUser([FromBody] UpdateUserDTO model)
+        public async Task<IActionResult> UpdateUser([FromForm]UpdateUserDTO model)
         {
             if (int.TryParse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value, out int id))
             {
