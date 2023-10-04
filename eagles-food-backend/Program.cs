@@ -29,8 +29,6 @@ builder.Services.AddDbContext<LunchDbContext>(options =>
     options.UseMySql(
         connectionString, ServerVersion.AutoDetect(connectionString)));
 builder.Services.AddControllers();
-builder.Services.AddExceptionless("h0Ei4DuXml3wSbmoGQl9rUWy5FvZvpZ87btWaiRQ");
-
 var config = builder.Configuration;
 
 
@@ -111,15 +109,10 @@ using (var scope = app.Services.CreateScope())
 
 app.UseSwagger();
 app.UseSwaggerUI();
-
 app.UseHttpsRedirection();
-
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseExceptionless();
 app.MapControllers();
-
-ExceptionlessClient.Default.SubmitLog(connectionString);
 
 Console.WriteLine("Connected to db: " + connectionString);
 

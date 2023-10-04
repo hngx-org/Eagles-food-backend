@@ -18,6 +18,7 @@ namespace eagles_food_backend.Domains.DTOs
         public string? FirstName { get; set; }
         public string? Phone { get; set; }
         public string? ProfilePic { get; set; }
+        public IFormFile? Photo { get; set; }
     }
 
     public class UserLoginDTO
