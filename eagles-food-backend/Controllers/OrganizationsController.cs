@@ -2,6 +2,7 @@ using System.Security.Claims;
 
 using eagles_food_backend.Domains.DTOs;
 using eagles_food_backend.Services.OrganizationRepository;
+using eagles_food_backend.Services.UserServices;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -210,6 +211,22 @@ namespace eagles_food_backend.Controllers
             {
                 return BadRequest();
             }
+        }
+
+        /// <summary>
+        /// This end point is for users to see all thier pending invites
+        /// </summary>
+        /// <returns>It returns all the invites a person has unattended to </returns>
+        /// <response code="200">Returns the user</response>
+        [HttpGet("organizationinvites")]
+        public async Task<IActionResult> GetUserInvites()
+        {
+            if (int.TryParse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value, out int id))
+            {
+                var response = await _organizationService.OrganizationInvites(id);
+                return StatusCode((int)response.statusCode, response);
+            }
+            else return BadRequest();
         }
     }
 }

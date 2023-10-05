@@ -44,6 +44,13 @@
         public int? OrgId { get; set; }
         public string? Org { get; set; }
         public DateTime? CreatedAt { get; set; }
+        public bool? Status { get; set; }
+    }
+
+    public class OrganizationInvitationDTO : OrganizationInviteDTO
+    {
+        public string? Email { get; set; }
+
     }
 
 }
