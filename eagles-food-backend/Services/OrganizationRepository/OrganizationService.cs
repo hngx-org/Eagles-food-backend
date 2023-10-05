@@ -361,6 +361,54 @@ namespace eagles_food_backend.Services
             return response;
         }
 
+        //Get all Organization Invites
+        public async Task<Response<List<OrganizationInvitationDTO>>> OrganizationInvites(int userId)
+        {
+            Response<List<OrganizationInvitationDTO>> response = new();
+            User? user = await _context.Users.FindAsync(userId);
+            if (user is null)
+            {
+                response.success = false;
+                response.message = "User not found";
+                response.statusCode = HttpStatusCode.NotFound;
+                response.data = default;
+                return response;
+            }
+            if ((bool)!user.IsAdmin || user.IsAdmin == null)
+            {
+                response.success = false;
+                response.message = "You do not have access to this resource";
+                response.statusCode = HttpStatusCode.NotFound;
+                response.data = default;
+                return response;
+            }
+            var organization = await _context.Organizations.FirstOrDefaultAsync(x => x.Id == user.OrgId);
+            if(organization is null)
+            {
+                response.success = false;
+                response.message = "Organization not found";
+                response.statusCode = HttpStatusCode.NotFound;
+                response.data = default;
+                return response;
+            }
+            List<User>? users = await _context.Users.Where(x => x.Email != user.Email && x.IsAdmin == false).ToListAsync();
+            var organizationInvites = await _context.OrganizationInvites.Where(x => x.OrgId == user.OrgId).ToListAsync();
+            response.success = true;
+            response.message = organizationInvites.Count > 0 ? "Invites Fetched Successfuuly" : "You have any Invitations";
+            response.statusCode = HttpStatusCode.OK;
+            response.data = organizationInvites.Select(x => new OrganizationInvitationDTO()
+            {
+                CreatedAt = x.CreatedAt,
+                Id = x.Id,
+                OrgId = organization.Id,
+                Org = organization.Name,
+                Email = x.Email,
+                Status = x.Status
+            }).ToList();
+            return response;
+        }
+
+
         // invite to the organization
         public async Task<Response<Dictionary<string, string>>> InviteToOrganization(int UserID, InviteToOrganizationDTO model)
         {
