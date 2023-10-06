@@ -98,7 +98,6 @@ builder.Services.AddControllersWithViews()
     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
 );
 
-
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
