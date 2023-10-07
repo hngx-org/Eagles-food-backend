@@ -5,6 +5,7 @@
         public string Name { get; set; }
         public decimal LunchPrice { get; set; }
         public string Currency { get; set; }
+        public bool Hidden { get; set; }
     }
 
     public class ModifyOrganizationDTO
@@ -44,6 +45,13 @@
         public int? OrgId { get; set; }
         public string? Org { get; set; }
         public DateTime? CreatedAt { get; set; }
+        public bool? Status { get; set; }
+    }
+
+    public class OrganizationInvitationDTO : OrganizationInviteDTO
+    {
+        public string? Email { get; set; }
+
     }
 
 }
