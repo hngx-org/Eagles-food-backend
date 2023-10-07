@@ -286,7 +286,7 @@ namespace eagles_food_backend.Services.UserServices
                 response.data = default;
                 return response;
             }
-            var userinvites = await db_context.OrganizationInvites.Where(x => x.Email == user.Email && x.IsDeleted == false).Include(x => x.Org).ToListAsync();
+            var userinvites = await db_context.OrganizationInvites.Where(x => x.Email == user.Email && x.IsDeleted == false && x.Status == null).Include(x => x.Org).ToListAsync();
             response.success = true;
             response.message = userinvites.Count > 0 ? "Invites Fetched Successfuuly" : "You dont have any Pending Invites";
             response.statusCode = HttpStatusCode.OK;
@@ -296,6 +296,7 @@ namespace eagles_food_backend.Services.UserServices
                 Id = x.Id,
                 OrgId = x.OrgId,
                 Org = x.Org.Name,
+                Status = x.Status
             }).ToList();
             return response;
         }
@@ -322,12 +323,25 @@ namespace eagles_food_backend.Services.UserServices
                 response.data = false;
                 return response;
             }
+            if(invite.Status != null)
+            {
+                if ((bool)invite.Status)
+                {
+                    response.success = true;
+                    response.message = "Invite Already Accepted";
+                    response.statusCode = HttpStatusCode.OK;
+                    response.data = true;
+                    return response;
+                }
+            }
+            
+            invite.Status = model.Status;
             if (model.Status)
             {
                 user.Org = organization;
                 user.OrgId = organization.Id;
             }
-            invite.IsDeleted = true;
+
             await db_context.SaveChangesAsync();
             response.message = "Successful Operation";
             response.statusCode = HttpStatusCode.OK;
@@ -739,7 +753,7 @@ namespace eagles_food_backend.Services.UserServices
 
                         data.Add("FirstName", user_exists.FirstName!);
                         data.Add("LastName", user_exists.LastName!);
-                        data.Add("Organization", user_exists.Org!.Name);
+                        data.Add("Organization", user_exists.Org?.Name ?? "");
 
                         response.success = true;
                         response.message = "User successfuly changed password";

@@ -383,7 +383,7 @@ namespace eagles_food_backend.Services
                 return response;
             }
             var organization = await _context.Organizations.FirstOrDefaultAsync(x => x.Id == user.OrgId);
-            if (organization is null)
+            if(organization is null)
             {
                 response.success = false;
                 response.message = "Organization not found";
@@ -394,7 +394,7 @@ namespace eagles_food_backend.Services
             List<User>? users = await _context.Users.Where(x => x.Email != user.Email && x.IsAdmin == false).ToListAsync();
             var organizationInvites = await _context.OrganizationInvites.Where(x => x.OrgId == user.OrgId).ToListAsync();
             response.success = true;
-            response.message = organizationInvites.Count > 0 ? "Invites Fetched Successfully" : "You have any Invitations";
+            response.message = organizationInvites.Count > 0 ? "Invites Fetched Successfuuly" : "You have any Invitations";
             response.statusCode = HttpStatusCode.OK;
             response.data = organizationInvites.Select(x => new OrganizationInvitationDTO()
             {
