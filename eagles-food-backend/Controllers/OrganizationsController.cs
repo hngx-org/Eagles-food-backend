@@ -252,5 +252,41 @@ namespace eagles_food_backend.Controllers
             }
             else return BadRequest();
         }
+
+         /// <summary>
+ /// Hides an Organization
+ /// </summary>
+ /// <remarks>
+ /// Sample request:
+ /// <code>
+ /// POST api/organizations/{status}
+ /// </code>
+ /// </remarks>
+ ///  <param name="model">The request body with the details</param>
+ ///  <returns>nothing</returns>
+ ///  <response code="200">Returns success</response>
+ ///  <response code="400">If valudation fails</response>
+ ///  <response code="404">If unauthorised</response>
+ ///  <response code="500">If there was an error </response>
+ ///  <response code="401">If unauthorised</response>
+ [HttpGet("invite/{hide}")]
+ [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+ public async Task<IActionResult> HideOrganization(bool hide)
+ {
+     if (HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value != "admin")
+     {
+         return Unauthorized();
+     }
+
+     if (int.TryParse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value, out int id))
+     {
+         var res = await _organizationService.HideOrganization(id, hide);
+         return StatusCode((int)res.statusCode, res);
+     }
+     else
+     {
+         return BadRequest();
+     }
+ }
     }
 }
