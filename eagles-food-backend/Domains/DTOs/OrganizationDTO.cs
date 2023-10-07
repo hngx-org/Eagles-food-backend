@@ -5,6 +5,7 @@
         public string Name { get; set; }
         public decimal LunchPrice { get; set; }
         public string Currency { get; set; }
+        public bool Hidden { get; set; }
     }
 
     public class ModifyOrganizationDTO

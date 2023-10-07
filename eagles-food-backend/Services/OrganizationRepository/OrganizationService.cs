@@ -508,6 +508,127 @@ namespace eagles_food_backend.Services
             return response;
         }
 
+        public async Task<Response<string>> HideOrganization(int userId, bool hide)
+        {
+            Response<string> response = new();
+            User? user = await _context.Users.FindAsync(userId);
+
+            try
+            {
+                // ensure user exists
+                if (user is null)
+                {
+                    response.success = false;
+                    response.message = "User not found";
+                    response.statusCode = HttpStatusCode.NotFound;
+                    response.data = null;
+                    return response;
+                }
+
+                // make sure they're an admin
+                if (user.IsAdmin != true)
+                {
+                    response.success = false;
+                    response.message = "User unauthorised";
+                    response.statusCode = HttpStatusCode.Unauthorized;
+                    response.data = null;
+                    return response;
+                }
+
+                var orgID = user.OrgId;
+                var org = await _context.Organizations.FindAsync(orgID);
+
+                if (org is null)
+                {
+                    response.success = false;
+                    response.message = "Organisation does not exist";
+                    response.statusCode = HttpStatusCode.BadRequest;
+
+                    return response;
+                }
+                org.Hidden = hide;
+                _context.Update(org);
+                await _context.SaveChangesAsync();
+                response.success = true;
+                response.message = "Successful Operation";
+                response.statusCode = HttpStatusCode.OK;
+                response.data = "Success";
+                return response;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                response.statusCode = HttpStatusCode.InternalServerError;
+                response.success = false;
+                response.message = ex.Message;
+                return response;
+            }
+        }
+
+        public async Task<Response<OrganizationDTO>> GetOrganization(int userId)
+        {
+            Response<OrganizationDTO> response = new();
+            User? user = await _context.Users.FindAsync(userId);
+
+            try
+            {
+                // ensure user exists
+                if (user is null)
+                {
+                    response.success = false;
+                    response.message = "User not found";
+                    response.statusCode = HttpStatusCode.NotFound;
+                    response.data = null;
+                    return response;
+                }
+
+                // make sure they're an admin
+                if (user.IsAdmin != true)
+                {
+                    response.success = false;
+                    response.message = "User unauthorised";
+                    response.statusCode = HttpStatusCode.Unauthorized;
+                    response.data = null;
+                    return response;
+                }
+
+                var orgID = user.OrgId;
+                var org = await _context.Organizations.FindAsync(orgID);
+
+                if (org is null || user.OrgId != org.Id)
+                {
+                    response.success = false;
+                    response.message = "Organisation does not exist";
+                    response.statusCode = HttpStatusCode.BadRequest;
+
+                    return response;
+                }
+
+                var orgResponse = new OrganizationDTO()
+                {
+                    Name = org.Name,
+                    Currency = org.CurrencyCode,
+                    LunchPrice = org.LunchPrice,
+                    Hidden = org.Hidden
+                };
+                response.success = true;
+                response.message = "Successful Operation";
+                response.statusCode = HttpStatusCode.OK;
+                response.data = orgResponse;
+                return response;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                response.statusCode = HttpStatusCode.InternalServerError;
+                response.success = false;
+                response.message = ex.Message;
+                return response;
+            }
+        }
+
+
+
 
     }
 }
