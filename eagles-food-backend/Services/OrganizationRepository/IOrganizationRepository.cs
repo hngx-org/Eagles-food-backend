@@ -13,7 +13,6 @@ namespace eagles_food_backend.Services.OrganizationRepository
         Task<Response<List<OrganizationInvitationDTO>>> OrganizationInvites(int userId);
         Task<Response<string>> HideOrganization(int userId, bool hide);
         Task<Response<OrganizationDTO>> GetOrganization(int userId);
-        Task<Response<List<OrganizationInvitationDTO>>> OrganizationInvites(int userId);
         Task<Response<List<OrganizationReadDTO>>> GetAllOrganizations();
     }
 }
