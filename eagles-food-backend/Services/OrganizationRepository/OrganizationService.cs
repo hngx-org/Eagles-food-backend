@@ -361,6 +361,54 @@ namespace eagles_food_backend.Services
             return response;
         }
 
+        //Get all Organization Invites
+        public async Task<Response<List<OrganizationInvitationDTO>>> OrganizationInvites(int userId)
+        {
+            Response<List<OrganizationInvitationDTO>> response = new();
+            User? user = await _context.Users.FindAsync(userId);
+            if (user is null)
+            {
+                response.success = false;
+                response.message = "User not found";
+                response.statusCode = HttpStatusCode.NotFound;
+                response.data = default;
+                return response;
+            }
+            if ((bool)!user.IsAdmin || user.IsAdmin == null)
+            {
+                response.success = false;
+                response.message = "You do not have access to this resource";
+                response.statusCode = HttpStatusCode.NotFound;
+                response.data = default;
+                return response;
+            }
+            var organization = await _context.Organizations.FirstOrDefaultAsync(x => x.Id == user.OrgId);
+            if(organization is null)
+            {
+                response.success = false;
+                response.message = "Organization not found";
+                response.statusCode = HttpStatusCode.NotFound;
+                response.data = default;
+                return response;
+            }
+            List<User>? users = await _context.Users.Where(x => x.Email != user.Email && x.IsAdmin == false).ToListAsync();
+            var organizationInvites = await _context.OrganizationInvites.Where(x => x.OrgId == user.OrgId).ToListAsync();
+            response.success = true;
+            response.message = organizationInvites.Count > 0 ? "Invites Fetched Successfuuly" : "You have any Invitations";
+            response.statusCode = HttpStatusCode.OK;
+            response.data = organizationInvites.Select(x => new OrganizationInvitationDTO()
+            {
+                CreatedAt = x.CreatedAt,
+                Id = x.Id,
+                OrgId = organization.Id,
+                Org = organization.Name,
+                Email = x.Email,
+                Status = x.Status
+            }).ToList();
+            return response;
+        }
+
+
         // invite to the organization
         public async Task<Response<Dictionary<string, string>>> InviteToOrganization(int UserID, InviteToOrganizationDTO model)
         {
@@ -459,6 +507,127 @@ namespace eagles_food_backend.Services
 
             return response;
         }
+
+        public async Task<Response<string>> HideOrganization(int userId, bool hide)
+        {
+            Response<string> response = new();
+            User? user = await _context.Users.FindAsync(userId);
+
+            try
+            {
+                // ensure user exists
+                if (user is null)
+                {
+                    response.success = false;
+                    response.message = "User not found";
+                    response.statusCode = HttpStatusCode.NotFound;
+                    response.data = null;
+                    return response;
+                }
+
+                // make sure they're an admin
+                if (user.IsAdmin != true)
+                {
+                    response.success = false;
+                    response.message = "User unauthorised";
+                    response.statusCode = HttpStatusCode.Unauthorized;
+                    response.data = null;
+                    return response;
+                }
+
+                var orgID = user.OrgId;
+                var org = await _context.Organizations.FindAsync(orgID);
+
+                if (org is null)
+                {
+                    response.success = false;
+                    response.message = "Organisation does not exist";
+                    response.statusCode = HttpStatusCode.BadRequest;
+
+                    return response;
+                }
+                org.Hidden = hide;
+                _context.Update(org);
+                await _context.SaveChangesAsync();
+                response.success = true;
+                response.message = "Successful Operation";
+                response.statusCode = HttpStatusCode.OK;
+                response.data = "Success";
+                return response;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                response.statusCode = HttpStatusCode.InternalServerError;
+                response.success = false;
+                response.message = ex.Message;
+                return response;
+            }
+        }
+
+        public async Task<Response<OrganizationDTO>> GetOrganization(int userId)
+        {
+            Response<OrganizationDTO> response = new();
+            User? user = await _context.Users.FindAsync(userId);
+
+            try
+            {
+                // ensure user exists
+                if (user is null)
+                {
+                    response.success = false;
+                    response.message = "User not found";
+                    response.statusCode = HttpStatusCode.NotFound;
+                    response.data = null;
+                    return response;
+                }
+
+                // make sure they're an admin
+                if (user.IsAdmin != true)
+                {
+                    response.success = false;
+                    response.message = "User unauthorised";
+                    response.statusCode = HttpStatusCode.Unauthorized;
+                    response.data = null;
+                    return response;
+                }
+
+                var orgID = user.OrgId;
+                var org = await _context.Organizations.FindAsync(orgID);
+
+                if (org is null || user.OrgId != org.Id)
+                {
+                    response.success = false;
+                    response.message = "Organisation does not exist";
+                    response.statusCode = HttpStatusCode.BadRequest;
+
+                    return response;
+                }
+
+                var orgResponse = new OrganizationDTO()
+                {
+                    Name = org.Name,
+                    Currency = org.CurrencyCode,
+                    LunchPrice = org.LunchPrice,
+                    Hidden = org.Hidden
+                };
+                response.success = true;
+                response.message = "Successful Operation";
+                response.statusCode = HttpStatusCode.OK;
+                response.data = orgResponse;
+                return response;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                response.statusCode = HttpStatusCode.InternalServerError;
+                response.success = false;
+                response.message = ex.Message;
+                return response;
+            }
+        }
+
+
 
 
     }

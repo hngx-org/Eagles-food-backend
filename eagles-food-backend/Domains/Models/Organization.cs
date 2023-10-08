@@ -17,6 +17,7 @@
         public DateTime? CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public bool? IsDeleted { get; set; }
+        public bool Hidden { get; set; }
 
         public virtual ICollection<Lunch> Lunches { get; set; }
         public virtual ICollection<OrganizationInvite> OrganizationInvites { get; set; }

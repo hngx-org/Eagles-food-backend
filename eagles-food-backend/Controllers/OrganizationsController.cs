@@ -2,6 +2,7 @@ using System.Security.Claims;
 
 using eagles_food_backend.Domains.DTOs;
 using eagles_food_backend.Services.OrganizationRepository;
+using eagles_food_backend.Services.UserServices;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -21,6 +22,30 @@ namespace eagles_food_backend.Controllers
         {
             _logger = logger;
             _organizationService = organizationService;
+        }
+
+        /// <summary>
+        /// Get an organization
+        /// </summary>
+        /// <returns>The Organization of the Logged in User</returns>
+        /// <response code="200">Returns the Organization of Logged In user</response>
+        [HttpGet]
+        public async Task<IActionResult> GetOrganization()
+        {
+            if (HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value != "admin")
+            {
+                return Unauthorized();
+            }
+
+            if (int.TryParse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value, out int id))
+            {
+                var response = await _organizationService.GetOrganization(id);
+                return StatusCode((int)response.statusCode, response);
+            }
+            else
+            {
+                return BadRequest();
+            }
         }
 
         /// <summary>
@@ -211,5 +236,57 @@ namespace eagles_food_backend.Controllers
                 return BadRequest();
             }
         }
+
+        /// <summary>
+        /// This end point is for users to see all thier pending invites
+        /// </summary>
+        /// <returns>It returns all the invites a person has unattended to </returns>
+        /// <response code="200">Returns the user</response>
+        [HttpGet("organizationinvites")]
+        public async Task<IActionResult> GetUserInvites()
+        {
+            if (int.TryParse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value, out int id))
+            {
+                var response = await _organizationService.OrganizationInvites(id);
+                return StatusCode((int)response.statusCode, response);
+            }
+            else return BadRequest();
+        }
+
+         /// <summary>
+ /// Hides an Organization
+ /// </summary>
+ /// <remarks>
+ /// Sample request:
+ /// <code>
+ /// POST api/organizations/{status}
+ /// </code>
+ /// </remarks>
+ ///  <param name="model">The request body with the details</param>
+ ///  <returns>nothing</returns>
+ ///  <response code="200">Returns success</response>
+ ///  <response code="400">If valudation fails</response>
+ ///  <response code="404">If unauthorised</response>
+ ///  <response code="500">If there was an error </response>
+ ///  <response code="401">If unauthorised</response>
+ [HttpGet("invite/{hide}")]
+ [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+ public async Task<IActionResult> HideOrganization(bool hide)
+ {
+     if (HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value != "admin")
+     {
+         return Unauthorized();
+     }
+
+     if (int.TryParse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value, out int id))
+     {
+         var res = await _organizationService.HideOrganization(id, hide);
+         return StatusCode((int)res.statusCode, res);
+     }
+     else
+     {
+         return BadRequest();
+     }
+ }
     }
 }

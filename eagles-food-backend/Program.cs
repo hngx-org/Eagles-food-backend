@@ -1,5 +1,6 @@
 global using AutoMapper;
 
+using System;
 using System.Reflection;
 using System.Text;
 
@@ -12,6 +13,8 @@ using eagles_food_backend.Services.OrganizationRepository;
 using eagles_food_backend.Services.ResponseService;
 using eagles_food_backend.Services.UserServices;
 
+using Exceptionless;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -19,13 +22,13 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+//var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var connectionString = "Server=MYSQL8002.site4now.net;Database=db_a9ef58_teagle;Uid=a9ef58_teagle;Pwd=c7b9@r.jDR7.ZKW";
 
 builder.Services.AddDbContext<LunchDbContext>(options =>
     options.UseMySql(
         connectionString, ServerVersion.AutoDetect(connectionString)));
 builder.Services.AddControllers();
-
 var config = builder.Configuration;
 
 
@@ -95,17 +98,19 @@ builder.Services.AddControllersWithViews()
     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
 );
 
-
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var dataContext = scope.ServiceProvider.GetRequiredService<LunchDbContext>();
+    dataContext.Database.Migrate();
+}
 
 app.UseSwagger();
 app.UseSwaggerUI();
-
 app.UseHttpsRedirection();
-
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 
 Console.WriteLine("Connected to db: " + connectionString);
