@@ -22,6 +22,10 @@
         public string Email { get; set; } = null!;
         public string Password { get; set; } = null!;
         public string Phone { get; set; } = null!;
+        public string OrgName { get; set; } = null!;
+        public decimal OrgLunchPrice { get; set; }
+        public string OrgCurrencyCode { get; set; } = null!;
+        public bool OrgHidden { get; set; }
     }
 
     public class UpdateOrganizationWalletDTO
@@ -52,6 +56,14 @@
     {
         public string? Email { get; set; }
 
+    }
+
+    public class OrganizationReadDTO
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = null!;
+        public decimal LunchPrice { get; set; }
+        public string? CurrencyCode { get; set; } = null!;
     }
 
 }
