@@ -92,7 +92,7 @@ namespace eagles_food_backend.Controllers
         [HttpPost("changePassword")]
         public async Task<ActionResult> ChangePassword([FromBody] ChangePasswordDTO model)
         {
-            var res = await _userService.ChagePassword(model);
+            var res = await _userService.ChangePassword(model);
             return StatusCode((int)res.statusCode, res);
         }
 

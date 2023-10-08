@@ -152,5 +152,22 @@ namespace eagles_food_backend.Controllers
             }
             else return BadRequest();
         }
+
+        /// <summary>
+        /// This end point is for users accept invites
+        /// send true for yes(acceptance) and false for no(rejection)
+        /// </summary>
+        /// <returns>It returns all the invites a person has unattended to </returns>
+        /// <response code="200">Returns the user</response>
+        [HttpPost("requesttojoinOrg/{orgId}")]
+        public async Task<IActionResult> SendOrganizationInviteRequest(int orgId)
+        {
+            if (int.TryParse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value, out int id))
+            {
+                var response = await _userService.SendInvitationRequest(id, orgId);
+                return StatusCode((int)response.statusCode, response);
+            }
+            else return BadRequest();
+        }
     }
 }
