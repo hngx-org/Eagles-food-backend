@@ -5,7 +5,10 @@ using System.Reflection;
 using eagles_food_backend.Data;
 using eagles_food_backend.Domains.DTOs;
 using eagles_food_backend.Domains.Models;
+using eagles_food_backend.Services.EmailService;
 using eagles_food_backend.Services.OrganizationRepository;
+
+using Exceptionless.Utility;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -16,12 +19,14 @@ namespace eagles_food_backend.Services
         private readonly LunchDbContext _context;
         private readonly IMapper _mapper;
         private readonly AuthenticationClass _authentication;
+        private readonly IEmailService _emailService;
 
-        public OrganizationService(LunchDbContext context, IMapper mapper, AuthenticationClass authentication)
+        public OrganizationService(LunchDbContext context, IMapper mapper, AuthenticationClass authentication, IEmailService emailService)
         {
             _context = context;
             _mapper = mapper;
             _authentication = authentication;
+            _emailService = emailService;
         }
 
         public async Task<Response<Dictionary<string, string>>> CreateStaffMember(CreateStaffDTO model)
@@ -541,18 +546,6 @@ namespace eagles_food_backend.Services
 
                     return response;
                 }
-
-                var invitee = await _context.Users.FirstOrDefaultAsync(x => x.Email == model.Email);
-
-                if (invitee is null)
-                {
-                    response.success = false;
-                    response.message = "User does not exist";
-                    response.statusCode = HttpStatusCode.BadRequest;
-
-                    return response;
-                }
-
                 // make sure email is unique in invites
                 if (await _context.OrganizationInvites.AnyAsync(i => i.Email == model.Email))
                 {
@@ -577,14 +570,27 @@ namespace eagles_food_backend.Services
 
                     return response;
                 }
-
+                var token = Guid.NewGuid().ToString();
                 var invite = new OrganizationInvite()
                 {
                     Email = model.Email,
                     OrgId = org.Id,
                     Ttl = DateTime.Now.AddDays(1),
-                    Token = Guid.NewGuid().ToString()
+                    Token = token
                 };
+                var invitee = await _context.Users.FirstOrDefaultAsync(x => x.Email == model.Email);
+
+                if (invitee is null)
+                {
+                    _emailService.SendEmail(new MailData()
+                    {
+                        EmailBody = $"Hi {model.Email}, You have received an invite from {org.Name} to join their lunch Space. Use this code when you register {token}",
+                        EmailSubject = "Invitation to SignUp on Lunch",
+                        EmailToId = model.Email,
+                        EmailToName = model.Email
+                    });
+                }
+                   
 
                 await _context.OrganizationInvites.AddAsync(invite);
                 await _context.SaveChangesAsync();
