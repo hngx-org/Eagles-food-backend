@@ -3,6 +3,7 @@
 using eagles_food_backend.Data;
 using eagles_food_backend.Domains.DTOs;
 using eagles_food_backend.Domains.Models;
+using eagles_food_backend.Services.EmailService;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -13,11 +14,13 @@ namespace eagles_food_backend.Services.LunchRepository
         private readonly LunchDbContext _context;
         private readonly IMapper _mapper;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        public LunchService(LunchDbContext context, IMapper mapper, IHttpContextAccessor httpContextAccessor)
+        private readonly IEmailService _emailService;
+        public LunchService(LunchDbContext context, IMapper mapper, IHttpContextAccessor httpContextAccessor, IEmailService emailService)
         {
             _context = context;
             _mapper = mapper;
             _httpContextAccessor = httpContextAccessor;
+            _emailService = emailService;
         }
         public async Task<Response<ResponseLunchDTO>> create(CreateLunchDTO createLunchDTO)
         {
@@ -114,6 +117,16 @@ namespace eagles_food_backend.Services.LunchRepository
                 _context.Lunches.AddRange(lunchList);
                 await _context.SaveChangesAsync();
 
+                foreach (var lun in lunchList)
+                {
+                    _emailService.SendEmail(new MailData()
+                    {
+                        EmailBody = $"Hi {lun.Receiver.FirstName}, You have received {lun.Quantity} lunch(es)",
+                        EmailSubject = "New lunch",
+                        EmailToId = lun.Receiver.Email,
+                        EmailToName = lun.Receiver.FirstName
+                    });
+                }
                 response.message = "Lunch request created successfully";
                 response.data = null;
                 response.statusCode = HttpStatusCode.Created;
@@ -191,19 +204,20 @@ namespace eagles_food_backend.Services.LunchRepository
         public async Task<Response<ResponseLunchWithdrawalDTO>> withdrawLunch(WithdrawLunchDTO withdrawDTO)
         {
             Response<ResponseLunchWithdrawalDTO> response = new();
-            try{
-                var id  = _httpContextAccessor.HttpContext.User.Identity.Name;
-                if(id == null)
+            try
+            {
+                var id = _httpContextAccessor.HttpContext.User.Identity.Name;
+                if (id == null)
                 {
                     response.message = $"UnAuthorized";
                     response.statusCode = HttpStatusCode.Unauthorized;
                     response.success = false;
-                    return response;                                        
+                    return response;
                 }
 
                 var userLunchBalance = await _context.Users.Include(m => m.Org).Where(m => m.Id == int.Parse(id)).FirstOrDefaultAsync();
 
-                if(userLunchBalance == null)
+                if (userLunchBalance == null)
                 {
                     response.message = "Error communicating with server";
                     response.statusCode = HttpStatusCode.InternalServerError;
@@ -212,8 +226,8 @@ namespace eagles_food_backend.Services.LunchRepository
                 }
 
                 bool requestExceedsBalance = withdrawDTO.Quantity > userLunchBalance.LunchCreditBalance;
-                
-                if(requestExceedsBalance)
+
+                if (requestExceedsBalance)
                 {
                     response.message = "Amount specified exceeds the number of gifted lunches you have";
                     response.statusCode = HttpStatusCode.BadRequest;
@@ -243,15 +257,16 @@ namespace eagles_food_backend.Services.LunchRepository
                 return response;
 
 
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 response.message = "Could not process withdrawal request";
                 response.statusCode = HttpStatusCode.InternalServerError;
                 return response;
             }
-            
 
-            
+
+
         }
 
     }

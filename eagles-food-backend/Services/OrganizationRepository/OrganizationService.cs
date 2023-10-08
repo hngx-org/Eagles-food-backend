@@ -24,34 +24,11 @@ namespace eagles_food_backend.Services
             _authentication = authentication;
         }
 
-        // make a eagles org if non-existent, add this staff member as an admin
         public async Task<Response<Dictionary<string, string>>> CreateStaffMember(CreateStaffDTO model)
         {
             Response<Dictionary<string, string>> response = new();
             User? newUser = _mapper.Map<User>(model);
-
-            // make eagles org if non-existent
-            if (!await _context.Organizations.AnyAsync(o => o.Name == "Eagles Food"))
-            {
-                var EaglesOrg = new Organization()
-                {
-                    Name = "Eagles Food",
-                    CurrencyCode = "₦",
-                    LunchPrice = 1000
-                };
-
-                await _context.AddAsync(EaglesOrg);
-                await _context.SaveChangesAsync();
-
-                var EaglesWallet = new OrganizationLunchWallet()
-                {
-                    OrgId = EaglesOrg.Id,
-                    Balance = 0
-                };
-
-                await _context.AddAsync(EaglesWallet);
-                await _context.SaveChangesAsync();
-            }
+            newUser.IsAdmin = true;
 
             // ensure it's an actual (plausible) email
             if (!new EmailAddressAttribute().IsValid(newUser.Email))
@@ -79,8 +56,40 @@ namespace eagles_food_backend.Services
                 return response;
             }
 
+            var newOrg = new Organization()
+            {
+                Name = model.OrgName,
+                CurrencyCode = model.OrgCurrencyCode ?? "₦",
+                LunchPrice = model.OrgLunchPrice == 0 ? 1000 : model.OrgLunchPrice,
+                Hidden = model.OrgHidden
+            };
+
+            if (_context.Organizations.Any(x => x.Name == newOrg.Name && x.IsDeleted == false))
+            {
+                return new Response<Dictionary<string, string>>()
+                {
+                    success = false,
+                    statusCode = HttpStatusCode.BadRequest,
+                    message = "Organization already exists",
+                    data = null
+                };
+            }
+            await _context.AddAsync(newOrg);
+            await _context.SaveChangesAsync();
+
+            var newWallet = new OrganizationLunchWallet()
+            {
+                OrgId = newOrg.Id,
+                Balance = 0
+            };
+
+            await _context.AddAsync(newWallet);
+            await _context.SaveChangesAsync();
+
+
+
             // find eagles org
-            var eaglesOrg = await _context.Organizations.FirstAsync(o => o.Name == "Eagles Food");
+            var resOrg = await _context.Organizations.FirstAsync(o => o.Name == newOrg.Name);
 
             // store in db
             try
@@ -89,8 +98,8 @@ namespace eagles_food_backend.Services
 
                 newUser.PasswordHash = password_hash;
                 newUser.IsAdmin = true;
-                newUser.Org = eaglesOrg;
-                newUser.OrgId = eaglesOrg.Id;
+                newUser.Org = resOrg;
+                newUser.OrgId = resOrg.Id;
                 newUser.LunchCreditBalance = 0;
 
                 await _context.Users.AddAsync(newUser);
@@ -121,7 +130,7 @@ namespace eagles_food_backend.Services
 
                 response.data = res!;
 
-                response.message = "Staff signed up successfully";
+                response.message = "Staff/Organization created up successfully";
                 response.statusCode = HttpStatusCode.Created;
             }
 
@@ -383,7 +392,7 @@ namespace eagles_food_backend.Services
                 return response;
             }
             var organization = await _context.Organizations.FirstOrDefaultAsync(x => x.Id == user.OrgId);
-            if(organization is null)
+            if (organization is null)
             {
                 response.success = false;
                 response.message = "Organization not found";
@@ -627,8 +636,31 @@ namespace eagles_food_backend.Services
             }
         }
 
+        public async Task<Response<List<OrganizationReadDTO>>> GetAllOrganizations()
+        {
+            try
+            {
+                var orgs = await _context.Organizations.Where(x => x.IsDeleted == false && x.Hidden == false).ToListAsync();
+                var orgsDTO = _mapper.Map<List<OrganizationReadDTO>>(orgs);
+                return new Response<List<OrganizationReadDTO>>()
+                {
+                    data = orgsDTO,
+                    success = true,
+                    statusCode = HttpStatusCode.OK,
+                    message = "Organizations returned successfully"
+                };
+            }
+            catch (Exception)
+            {
+                return new Response<List<OrganizationReadDTO>>()
+                {
+                    data = null,
+                    success = false,
+                    statusCode = HttpStatusCode.InternalServerError,
+                    message = "Internal Server Error"
+                };
+            }
 
-
-
+        }
     }
 }
