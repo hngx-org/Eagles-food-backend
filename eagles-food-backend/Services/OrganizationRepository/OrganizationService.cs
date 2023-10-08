@@ -473,7 +473,7 @@ namespace eagles_food_backend.Services
                 if (org is null)
                 {
                     response.success = false;
-                    response.message = "Organisation does not exist";
+                    response.message = "Organization does not exist";
                     response.statusCode = HttpStatusCode.BadRequest;
 
                     return response;

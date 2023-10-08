@@ -21,6 +21,7 @@ namespace eagles_food_backend.Data
         public virtual DbSet<OrganizationLunchWallet> OrganizationLunchWallets { get; set; } = null!;
         public virtual DbSet<User> Users { get; set; } = null!;
         public virtual DbSet<Withdrawal> Withdrawals { get; set; } = null!;
+        public virtual DbSet<InvitationRequest> InvitationRequests { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -169,6 +170,46 @@ namespace eagles_food_backend.Data
                     .HasForeignKey(d => d.OrgId)
                     .OnDelete(DeleteBehavior.Cascade)
                     .HasConstraintName("organization_invites_ibfk_1");
+            });
+
+            modelBuilder.Entity<InvitationRequest>(entity =>
+            {
+                entity.ToTable("organization_invites");
+
+                entity.HasIndex(e => e.OrgId, "org_id");
+
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.CreatedAt)
+                    .HasColumnType("timestamp")
+                    .HasColumnName("created_at")
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                entity.Property(e => e.UserEmail)
+                    .HasMaxLength(255)
+                    .HasColumnName("user_email");
+
+                entity.Property(e => e.IsDeleted)
+                    .HasColumnName("is_deleted")
+                    .HasDefaultValueSql("'0'");
+
+                entity.Property(e => e.OrgId).HasColumnName("org_id");
+
+                entity.Property(e => e.Token)
+                    .HasMaxLength(255)
+                    .HasColumnName("token");
+
+                entity.Property(e => e.UpdatedAt)
+                    .HasColumnType("timestamp")
+                    .ValueGeneratedOnAddOrUpdate()
+                    .HasColumnName("updated_at")
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                //entity.HasOne(d => d.Org)
+                //    .WithMany(p => p.OrganizationInvites)
+                //    .HasForeignKey(d => d.OrgId)
+                //    .OnDelete(DeleteBehavior.Cascade)
+                //    .HasConstraintName("organization_invites_ibfk_1");
             });
 
             modelBuilder.Entity<OrganizationLunchWallet>(entity =>
