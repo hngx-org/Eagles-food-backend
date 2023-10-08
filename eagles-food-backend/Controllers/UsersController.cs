@@ -159,8 +159,8 @@ namespace eagles_food_backend.Controllers
         /// </summary>
         /// <returns>It returns all the invites a person has unattended to </returns>
         /// <response code="200">Returns the user</response>
-        [HttpPost("requestToJoinOrg/{orgId}")]
-        public async Task<IActionResult> SendOrganizationInviteRequest([FromBody] int orgId)
+        [HttpPost("requesttojoinOrg/{orgId}")]
+        public async Task<IActionResult> SendOrganizationInviteRequest(int orgId)
         {
             if (int.TryParse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value, out int id))
             {

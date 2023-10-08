@@ -835,7 +835,7 @@ namespace eagles_food_backend.Services.UserServices
                 if(requested != null)
                 {
                     response.success = false;
-                    response.message = "YOu already sent this organization an invite";
+                    response.message = "You already sent this organization an invite";
                     response.statusCode = HttpStatusCode.BadRequest;
                     response.data = false;
                     return response;
@@ -862,7 +862,7 @@ namespace eagles_food_backend.Services.UserServices
             {
                 OrgId = orgId,
                 UserEmail = user.Email,
-                Status = false, 
+                Status = false
             };
             await db_context.AddAsync(inviteRequest);
             await db_context.SaveChangesAsync();

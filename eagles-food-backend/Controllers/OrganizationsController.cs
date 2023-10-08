@@ -2,6 +2,7 @@ using System.Security.Claims;
 
 using eagles_food_backend.Domains.DTOs;
 using eagles_food_backend.Services.OrganizationRepository;
+using eagles_food_backend.Services.UserServices;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -237,7 +238,7 @@ namespace eagles_food_backend.Controllers
         }
 
         /// <summary>
-        /// This end point is for users to see all thier pending invites
+        /// This end point is for orgnizations to see all thier invites
         /// </summary>
         /// <returns>It returns all the invites a person has unattended to </returns>
         /// <response code="200">Returns the user</response>
@@ -247,6 +248,40 @@ namespace eagles_food_backend.Controllers
             if (int.TryParse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value, out int id))
             {
                 var response = await _organizationService.OrganizationInvites(id);
+                return StatusCode((int)response.statusCode, response);
+            }
+            else return BadRequest();
+        }
+
+
+        /// <summary>
+        /// This end point is for organization to see all invites request for thier account
+        /// </summary>
+        /// <returns>It returns all the invites a person has unattended to </returns>
+        /// <response code="200">Returns the user</response>
+        [HttpGet("organizationinviterequest")]
+        public async Task<IActionResult> GetUserInviteRequests()
+        {
+            if (int.TryParse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value, out int id))
+            {
+                var response = await _organizationService.OrganizationInviteRequests(id);
+                return StatusCode((int)response.statusCode, response);
+            }
+            else return BadRequest();
+        }
+
+        /// <summary>
+        /// This end point is for organization to accept invite Request
+        /// send true for yes(acceptance) and false for no(rejection)
+        /// </summary>
+        /// <returns>it returns the state of the Invite Request </returns>
+        /// <response code="200">Returns the user</response>
+        [HttpPost("toggleinvite")]
+        public async Task<IActionResult> Invite([FromBody] ToggleInviteDTO model)
+        {
+            if (int.TryParse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value, out int id))
+            {
+                var response = await _organizationService.ToggleInviteRequest(id, model);
                 return StatusCode((int)response.statusCode, response);
             }
             else return BadRequest();

@@ -174,7 +174,7 @@ namespace eagles_food_backend.Data
 
             modelBuilder.Entity<InvitationRequest>(entity =>
             {
-                entity.ToTable("organization_invites");
+                entity.ToTable("invitation_request");
 
                 entity.HasIndex(e => e.OrgId, "org_id");
 
@@ -194,10 +194,6 @@ namespace eagles_food_backend.Data
                     .HasDefaultValueSql("'0'");
 
                 entity.Property(e => e.OrgId).HasColumnName("org_id");
-
-                entity.Property(e => e.Token)
-                    .HasMaxLength(255)
-                    .HasColumnName("token");
 
                 entity.Property(e => e.UpdatedAt)
                     .HasColumnType("timestamp")
