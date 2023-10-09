@@ -2,7 +2,6 @@ using System.Security.Claims;
 
 using eagles_food_backend.Domains.DTOs;
 using eagles_food_backend.Services.OrganizationRepository;
-using eagles_food_backend.Services.UserServices;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;

@@ -35,7 +35,7 @@ namespace eagles_food_backend
             List<Claim> claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, id),
-                new Claim(ClaimTypes.Role, role),
+                new Claim(ClaimTypes.Role, role)
             };
             var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(config.GetSection("JwtSettings:secretKey").Value));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);

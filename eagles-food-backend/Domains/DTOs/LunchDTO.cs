@@ -5,7 +5,7 @@ namespace eagles_food_backend.Domains.DTOs
     public class CreateLunchDTO
     {
         [Required]
-        public int[] receivers { get; set; }
+        public string[] receivers { get; set; }
         [Required]
         public int quantity { get; set; }
         [Required]
@@ -24,13 +24,15 @@ namespace eagles_food_backend.Domains.DTOs
         public DateTime CreatedAt { get; set; }
     }
 
-    public class WithdrawLunchDTO{
-        public int Quantity{get; set;}
+    public class WithdrawLunchDTO
+    {
+        public int Quantity { get; set; }
     }
 
-    public class ResponseLunchWithdrawalDTO{
-        public decimal WithdrawalAmount{get; set;} 
-        
+    public class ResponseLunchWithdrawalDTO
+    {
+        public decimal WithdrawalAmount { get; set; }
+
     }
 }
 

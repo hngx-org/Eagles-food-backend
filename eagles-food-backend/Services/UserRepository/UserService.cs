@@ -96,8 +96,9 @@ namespace eagles_food_backend.Services.UserServices
                 return response;
             }
 
+          
             // find eagles org
-            //var eaglesOrg = await db_context.Organizations.FirstAsync(o => o.Name == "Eagles Food");
+            var org = await db_context.Organizations.FirstAsync(o => o.Name == "Eagles Food");
 
             // store in db
             try
@@ -114,6 +115,24 @@ namespace eagles_food_backend.Services.UserServices
                 newUser.BankNumber = generatedDetails.BankNumber;
                 newUser.BankCode = generatedDetails.BankCode;
                 newUser.BankRegion = generatedDetails.BankRegion;
+                if (user.InviteCode != null)
+                {
+                    var invitation = db_context.OrganizationInvites.Where(x=>x.Token == user.InviteCode && x.Email == user.Email).FirstOrDefault();
+                    if(invitation == null)
+                    {
+                        response.success = false;
+                        response.message = "Invalid Invite Code";
+                        response.data = new Dictionary<string, string>() {
+                    { "email", user.Email }
+                };
+                        response.statusCode = HttpStatusCode.BadRequest;
+
+                        return response;
+                    }
+                    newUser.OrgId = invitation.OrgId;
+                    invitation.Status = true;
+                    db_context.Update(invitation);
+                }
 
                 await db_context.Users.AddAsync(newUser);
                 await db_context.SaveChangesAsync();
@@ -323,7 +342,7 @@ namespace eagles_food_backend.Services.UserServices
                 response.data = false;
                 return response;
             }
-            if(invite.Status != null)
+            if (invite.Status != null)
             {
                 if ((bool)invite.Status)
                 {
@@ -334,7 +353,7 @@ namespace eagles_food_backend.Services.UserServices
                     return response;
                 }
             }
-            
+
             invite.Status = model.Status;
             if (model.Status)
             {
