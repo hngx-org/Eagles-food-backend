@@ -5,7 +5,10 @@ using System.Reflection;
 using eagles_food_backend.Data;
 using eagles_food_backend.Domains.DTOs;
 using eagles_food_backend.Domains.Models;
+using eagles_food_backend.Services.EmailService;
 using eagles_food_backend.Services.OrganizationRepository;
+
+using Exceptionless.Utility;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -16,12 +19,14 @@ namespace eagles_food_backend.Services
         private readonly LunchDbContext _context;
         private readonly IMapper _mapper;
         private readonly AuthenticationClass _authentication;
+        private readonly IEmailService _emailService;
 
-        public OrganizationService(LunchDbContext context, IMapper mapper, AuthenticationClass authentication)
+        public OrganizationService(LunchDbContext context, IMapper mapper, AuthenticationClass authentication, IEmailService emailService)
         {
             _context = context;
             _mapper = mapper;
             _authentication = authentication;
+            _emailService = emailService;
         }
 
         public async Task<Response<Dictionary<string, string>>> CreateStaffMember(CreateStaffDTO model)
@@ -417,6 +422,96 @@ namespace eagles_food_backend.Services
             return response;
         }
 
+        //Get all Organization Invite Request from User
+        public async Task<Response<List<OrganizationInvitationDTO>>> OrganizationInviteRequests(int userId)
+        {
+            Response<List<OrganizationInvitationDTO>> response = new();
+            User? user = await _context.Users.FindAsync(userId);
+            if (user is null)
+            {
+                response.success = false;
+                response.message = "User not found";
+                response.statusCode = HttpStatusCode.NotFound;
+                response.data = default;
+                return response;
+            }
+            if ((bool)!user.IsAdmin || user.IsAdmin == null)
+            {
+                response.success = false;
+                response.message = "You do not have access to this resource";
+                response.statusCode = HttpStatusCode.NotFound;
+                response.data = default;
+                return response;
+            }
+            var organization = await _context.Organizations.FirstOrDefaultAsync(x => x.Id == user.OrgId);
+            if (organization is null)
+            {
+                response.success = false;
+                response.message = "Organization not found";
+                response.statusCode = HttpStatusCode.NotFound;
+                response.data = default;
+                return response;
+            }
+            List<User>? users = await _context.Users.Where(x => x.Email != user.Email && x.IsAdmin == false).ToListAsync();
+            var organizationInviteRequest = await _context.InvitationRequests.Where(x => x.OrgId == user.OrgId).ToListAsync();
+            response.success = true;
+            response.message = organizationInviteRequest.Count > 0 ? "Invites Fetched Successfuuly" : "You have any pending invites";
+            response.statusCode = HttpStatusCode.OK;
+            response.data = organizationInviteRequest.Select(x => new OrganizationInvitationDTO()
+            {
+                CreatedAt = x.CreatedAt,
+                Id = x.Id,
+                OrgId = organization.Id,
+                Org = organization.Name,
+                Email = x.UserEmail,
+                Status = x.Status
+            }).ToList();
+            return response;
+        }
+
+        public async Task<Response<bool>> ToggleInviteRequest(int userId, ToggleInviteDTO model)
+        {
+            Response<bool> response = new();
+            User? user = await _context.Users.FindAsync(userId);
+            if (user is null)
+            {
+                response.success = false;
+                response.message = "User not found";
+                response.statusCode = HttpStatusCode.NotFound;
+                response.data = false;
+                return response;
+            }
+            var invite = await _context.InvitationRequests.Where(x => x.Id == model.InviteId && x.IsDeleted == false).FirstOrDefaultAsync();
+            var organization = await _context.Organizations.FindAsync(invite?.OrgId);
+            if (invite is null || organization is null)
+            {
+                response.success = false;
+                response.message = "Invite Request not found";
+                response.statusCode = HttpStatusCode.NotFound;
+                response.data = false;
+                return response;
+            }
+                if ((bool)invite.Status)
+                {
+                    response.success = true;
+                    response.message = "Invite Already Accepted";
+                    response.statusCode = HttpStatusCode.OK;
+                    response.data = true;
+                    return response;
+                }
+            invite.Status = model.Status;
+            if (model.Status)
+            {
+                user.Org = organization;
+                user.OrgId = organization.Id;
+            }
+
+            await _context.SaveChangesAsync();
+            response.message = "Successful Operation";
+            response.statusCode = HttpStatusCode.OK;
+            response.data = true;
+            return response;
+        }
 
         // invite to the organization
         public async Task<Response<Dictionary<string, string>>> InviteToOrganization(int UserID, InviteToOrganizationDTO model)
@@ -451,18 +546,6 @@ namespace eagles_food_backend.Services
 
                     return response;
                 }
-
-                var invitee = await _context.Users.FirstOrDefaultAsync(x => x.Email == model.Email);
-
-                if (invitee is null)
-                {
-                    response.success = false;
-                    response.message = "User does not exist";
-                    response.statusCode = HttpStatusCode.BadRequest;
-
-                    return response;
-                }
-
                 // make sure email is unique in invites
                 if (await _context.OrganizationInvites.AnyAsync(i => i.Email == model.Email))
                 {
@@ -482,19 +565,32 @@ namespace eagles_food_backend.Services
                 if (org is null)
                 {
                     response.success = false;
-                    response.message = "Organisation does not exist";
+                    response.message = "Organization does not exist";
                     response.statusCode = HttpStatusCode.BadRequest;
 
                     return response;
                 }
-
+                var token = Guid.NewGuid().ToString();
                 var invite = new OrganizationInvite()
                 {
                     Email = model.Email,
                     OrgId = org.Id,
                     Ttl = DateTime.Now.AddDays(1),
-                    Token = Guid.NewGuid().ToString()
+                    Token = token
                 };
+                var invitee = await _context.Users.FirstOrDefaultAsync(x => x.Email == model.Email);
+
+                if (invitee is null)
+                {
+                    _emailService.SendEmail(new MailData()
+                    {
+                        EmailBody = $"Hi {model.Email}, You have received an invite from {org.Name} to join their lunch Space. Use this code when you register {token}",
+                        EmailSubject = "Invitation to SignUp on Lunch",
+                        EmailToId = model.Email,
+                        EmailToName = model.Email
+                    });
+                }
+                   
 
                 await _context.OrganizationInvites.AddAsync(invite);
                 await _context.SaveChangesAsync();

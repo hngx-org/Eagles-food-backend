@@ -96,8 +96,9 @@ namespace eagles_food_backend.Services.UserServices
                 return response;
             }
 
+          
             // find eagles org
-            //var eaglesOrg = await db_context.Organizations.FirstAsync(o => o.Name == "Eagles Food");
+            var org = await db_context.Organizations.FirstAsync(o => o.Name == "Eagles Food");
 
             // store in db
             try
@@ -114,6 +115,24 @@ namespace eagles_food_backend.Services.UserServices
                 newUser.BankNumber = generatedDetails.BankNumber;
                 newUser.BankCode = generatedDetails.BankCode;
                 newUser.BankRegion = generatedDetails.BankRegion;
+                if (user.InviteCode != null)
+                {
+                    var invitation = db_context.OrganizationInvites.Where(x=>x.Token == user.InviteCode && x.Email == user.Email).FirstOrDefault();
+                    if(invitation == null)
+                    {
+                        response.success = false;
+                        response.message = "Invalid Invite Code";
+                        response.data = new Dictionary<string, string>() {
+                    { "email", user.Email }
+                };
+                        response.statusCode = HttpStatusCode.BadRequest;
+
+                        return response;
+                    }
+                    newUser.OrgId = invitation.OrgId;
+                    invitation.Status = true;
+                    db_context.Update(invitation);
+                }
 
                 await db_context.Users.AddAsync(newUser);
                 await db_context.SaveChangesAsync();
@@ -705,7 +724,7 @@ namespace eagles_food_backend.Services.UserServices
             }
         }
 
-        public async Task<Response<Dictionary<string, string>>> ChagePassword(ChangePasswordDTO model)
+        public async Task<Response<Dictionary<string, string>>> ChangePassword(ChangePasswordDTO model)
         {
             Response<Dictionary<string, string>> response = new();
             User? user_exists = await db_context.Users.Where(u => u.Email == model.Email).Include(x => x.Org).FirstOrDefaultAsync();
@@ -813,6 +832,63 @@ namespace eagles_food_backend.Services.UserServices
                     statusCode = HttpStatusCode.InternalServerError
                 };
             }
+        }
+    
+        public async Task<Response<bool>> SendInvitationRequest(int userId, int orgId)
+        {
+            Response<bool> response = new();
+            User? user = await db_context.Users.FindAsync(userId);
+           
+            if (user is null)
+            {
+                response.success = false;
+                response.message = "User not found";
+                response.statusCode = HttpStatusCode.NotFound;
+                response.data = false;
+                return response;
+            }
+            var sentInviteRequest = db_context.InvitationRequests.Where(x => x.UserEmail == user.Email).ToList();
+            if(sentInviteRequest.Any())
+            {
+                var requested = sentInviteRequest.FirstOrDefault(x => x.OrgId == orgId);
+                if(requested != null)
+                {
+                    response.success = false;
+                    response.message = "You already sent this organization an invite";
+                    response.statusCode = HttpStatusCode.BadRequest;
+                    response.data = false;
+                    return response;
+                }
+            }
+            if (user.OrgId != null)
+            {
+                response.success = false;
+                response.message = "You already belong to an organization";
+                response.statusCode = HttpStatusCode.NotFound;
+                response.data = false;
+                return response;
+            }
+            var organization = await db_context.Organizations.FindAsync(orgId);
+            if (organization is null)
+            {
+                response.success = false;
+                response.message = "Invite/Organization not found";
+                response.statusCode = HttpStatusCode.NotFound;
+                response.data = false;
+                return response;
+            }
+            var inviteRequest = new InvitationRequest()
+            {
+                OrgId = orgId,
+                UserEmail = user.Email,
+                Status = false
+            };
+            await db_context.AddAsync(inviteRequest);
+            await db_context.SaveChangesAsync();
+            response.message = "Successful Operation";
+            response.statusCode = HttpStatusCode.OK;
+            response.data = true;
+            return response;
         }
     }
 }

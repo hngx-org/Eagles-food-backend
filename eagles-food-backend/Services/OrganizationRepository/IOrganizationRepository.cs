@@ -10,9 +10,11 @@ namespace eagles_food_backend.Services.OrganizationRepository
         Task<Response<Dictionary<string, string>>> UpdateOrganizationWallet(int UserID, UpdateOrganizationWalletDTO model);
         Task<Response<Dictionary<string, string>>> UpdateOrganizationLunchPrice(int UserID, UpdateOrganizationLunchPriceDTO model);
         Task<Response<Dictionary<string, string>>> InviteToOrganization(int UserID, InviteToOrganizationDTO model);
+        Task<Response<List<OrganizationInvitationDTO>>> OrganizationInvites(int userId);
         Task<Response<string>> HideOrganization(int userId, bool hide);
         Task<Response<OrganizationDTO>> GetOrganization(int userId);
-        Task<Response<List<OrganizationInvitationDTO>>> OrganizationInvites(int userId);
         Task<Response<List<OrganizationReadDTO>>> GetAllOrganizations();
+        Task<Response<List<OrganizationInvitationDTO>>> OrganizationInviteRequests(int userId);
+        Task<Response<bool>> ToggleInviteRequest(int userId, ToggleInviteDTO model);
     }
 }

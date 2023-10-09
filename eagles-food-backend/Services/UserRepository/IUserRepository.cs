@@ -13,11 +13,12 @@ namespace eagles_food_backend.Services.UserServices
         Task<Response<UserReadDTO>> SearchForUser(string email);
         Task<Response<Dictionary<string, string>>> UpdateUserProfile(int userId, UpdateUserDTO model);
         Task<Response<bool>> UploadPhoto(IFormFile photo, int id);
-        Task<Response<Dictionary<string, string>>> ChagePassword(ChangePasswordDTO model);
+        Task<Response<Dictionary<string, string>>> ChangePassword(ChangePasswordDTO model);
         Task<Response<UserReadDTO>> ForgotUserPassword(string email);
         Task<Response<UserReadDTO>> ResetUserPassword(ResetPasswordDTO resetDto);
         Task<Response<List<OrganizationInviteDTO>>> UserInvites(int userId);
         Task<Response<bool>> ToggleInvite(int userId, ToggleInviteDTO model);
         Task<Response<UserReadDTO>> VerifyResetToken(string email, string code);
+        Task<Response<bool>> SendInvitationRequest(int userId, int orgId);
     }
 }

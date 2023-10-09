@@ -240,13 +240,26 @@ namespace eagles_food_backend.Services.LunchRepository
 
                 userLunchBalance.LunchCreditBalance = leftCreditBalance;
 
+                var lunchRecord = new Lunch
+                {
+                    ReceiverId = userLunchBalance.Id,
+                    SenderId = userLunchBalance.Id,
+                    OrgId = userLunchBalance.OrgId,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                    IsDeleted = false,
+                    Redeemed = false,
+                    Quantity = withdrawDTO.Quantity,
+                    Note = "Lunch Withdrawal",
+
+                };
+                await _context.AddAsync(lunchRecord);
                 _context.Users.Update(userLunchBalance);
                 await _context.SaveChangesAsync();
 
                 ResponseLunchWithdrawalDTO responseLunchWithdrawal = new()
                 {
                     WithdrawalAmount = (decimal)withdrawalAmount
-
                 };
 
                 response.data = responseLunchWithdrawal;
@@ -255,8 +268,6 @@ namespace eagles_food_backend.Services.LunchRepository
                 response.success = true;
 
                 return response;
-
-
             }
             catch (Exception ex)
             {
