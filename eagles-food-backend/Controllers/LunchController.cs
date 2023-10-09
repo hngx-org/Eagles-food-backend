@@ -39,7 +39,7 @@ namespace eagles_food_backend.Controllers
         public async Task<ActionResult> CreateLunch([FromBody] CreateLunchDTO model)
         {
             var response = await _lunchService.create(model);
-            return Ok(response);
+            return StatusCode((int)response.statusCode, response);
         }
 
         /// <summary>
@@ -50,7 +50,7 @@ namespace eagles_food_backend.Controllers
         public async Task<ActionResult> GetAllLunches()
         {
             var response = await _lunchService.getAll();
-            return Ok(response);
+            return StatusCode((int)response.statusCode, response);
         }
 
         /// <summary>
@@ -62,7 +62,7 @@ namespace eagles_food_backend.Controllers
         public async Task<ActionResult> GetLunchById(int id)
         {
             var response = await _lunchService.getById(id);
-            return Ok(response);
+            return StatusCode((int)response.statusCode ,response);
         }
 
         /// <summary>
@@ -83,7 +83,8 @@ namespace eagles_food_backend.Controllers
         [HttpPost("withdrawlunch")]
         public async Task<ActionResult> WithdrawLunch([FromBody] WithdrawLunchDTO withdrawDTO)
         {
-            return Ok(await _lunchService.withdrawLunch(withdrawDTO));
+            var response = await _lunchService.withdrawLunch(withdrawDTO);
+            return StatusCode((int)response.statusCode, response);
         }
     }
 }
