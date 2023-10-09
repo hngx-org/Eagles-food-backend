@@ -36,7 +36,7 @@ namespace eagles_food_backend.Services.LunchRepository
                     return response;
                 }
                 int senderId = int.Parse(id);
-
+                string? senderEmail = _context.Users.FirstOrDefault(x => x.Id == senderId)?.Email;
                 #region Check for Invalid Request
                 if (!createLunchDTO.receivers.Any())
                 {
@@ -46,7 +46,7 @@ namespace eagles_food_backend.Services.LunchRepository
                     return response;
                 }
                 createLunchDTO.receivers = createLunchDTO.receivers.Distinct().ToArray();
-                if (createLunchDTO.receivers.Contains(senderId))
+                if (createLunchDTO.receivers.Contains(senderEmail))
                 {
                     response.message = "Sender cannot be among the receivers. Invalid request.";
                     response.success = false;
@@ -55,13 +55,13 @@ namespace eagles_food_backend.Services.LunchRepository
                 }
                 #endregion
                 #region check receiver id
-                var nonExistentUserIds = createLunchDTO.receivers
-                    .Where(id => !_context.Users.Any(x => x.Id == id))
+                var nonExistentUserEmails = createLunchDTO.receivers
+                    .Where(email => !_context.Users.Any(x => x.Email == email))
                     .ToList();
 
-                if (nonExistentUserIds.Any())
+                if (nonExistentUserEmails.Any())
                 {
-                    response.message = "Users with the following IDs do not exist: " + string.Join(", ", nonExistentUserIds);
+                    response.message = "Users with the following emails do not exist: " + string.Join(", ", nonExistentUserEmails);
                     response.success = false;
                     response.statusCode = HttpStatusCode.BadRequest;
                     return response;
@@ -96,9 +96,9 @@ namespace eagles_food_backend.Services.LunchRepository
                 #endregion
 
                 #region save lunch
-                var lunchList = createLunchDTO.receivers.Select(id => new Lunch
+                var lunchList = createLunchDTO.receivers.Select(email => new Lunch
                 {
-                    ReceiverId = id,
+                    ReceiverId = _context.Users.FirstOrDefault(x => x.Email == email).Id,
                     SenderId = senderId,
                     OrgId = sender.OrgId,
                     CreatedAt = DateTime.UtcNow,
@@ -107,7 +107,7 @@ namespace eagles_food_backend.Services.LunchRepository
                     Redeemed = false,
                     Quantity = createLunchDTO.quantity,
                     Note = createLunchDTO.note,
-                    Receiver = _context.Users.FirstOrDefault(x => x.Id == id)
+                    Receiver = _context.Users.FirstOrDefault(x => x.Email == email)
                 }).ToList();
                 foreach (var lun in lunchList)
                 {

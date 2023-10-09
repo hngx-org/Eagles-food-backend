@@ -323,7 +323,7 @@ namespace eagles_food_backend.Services.UserServices
                 response.data = false;
                 return response;
             }
-            if(invite.Status != null)
+            if (invite.Status != null)
             {
                 if ((bool)invite.Status)
                 {
@@ -334,7 +334,7 @@ namespace eagles_food_backend.Services.UserServices
                     return response;
                 }
             }
-            
+
             invite.Status = model.Status;
             if (model.Status)
             {
