@@ -204,26 +204,29 @@ namespace eagles_food_backend.Services.LunchRepository
                     response.success = false;
                     return response;
                 }
-                int userId = int.Parse(id);
-                var newList = await _context.Lunches
-                 .Where(x => x.ReceiverId == userId || x.SenderId == userId)
-                 .Select(x => new ResponseLunchDTO()
-                 {
-                     Id = x.Id,
-                     ReceiverName = _context.Users.FirstOrDefault(y => y.Id == x.ReceiverId).FirstName,
-                     SenderName = _context.Users.FirstOrDefault(y => y.Id == x.SenderId).FirstName,
-                     SenderId = x.SenderId ?? 0,
-                     ReceiverId = x.ReceiverId ?? 0,
-                     CreatedAt = x.CreatedAt ?? DateTime.Now,
-                     Note = x.Note,
-                     LunchStatus = x.LunchStatus,
-                     Quantity = x.Quantity,
-                     Redeemed = x.Redeemed ?? false
-                 })
-                 .ToListAsync();
+                var lunches = await _context.Lunches
+                 .Where(x => x.LunchStatus != LunchStatus.Withdrawal).ToListAsync();
 
-                response.message = "Success";
-                response.data = newList;
+                
+
+                // .Select(x => new ResponseLunchDTO()
+                // {
+                //     Id = x.Id,
+                //     ReceiverName = _context.Users.FirstOrDefault(y => y.Id == x.ReceiverId).FirstName,
+                //     SenderName = _context.Users.FirstOrDefault(y => y.Id == x.SenderId).FirstName,
+                //     SenderId = x.SenderId ?? 0,
+                //     ReceiverId = x.ReceiverId ?? 0,
+                //     CreatedAt = x.CreatedAt ?? DateTime.Now,
+                //     Note = x.Note,
+                //     LunchStatus = x.LunchStatus,
+                //     Quantity = x.Quantity,
+                //     Redeemed = x.Redeemed ?? false
+                // })
+                // .ToListAsync();
+
+                //response.message = "Success";
+                //response.data = newList;
+
                 response.success = true;
                 return response;
             }
