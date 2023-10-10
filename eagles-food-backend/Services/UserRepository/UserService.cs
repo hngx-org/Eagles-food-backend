@@ -435,7 +435,7 @@ namespace eagles_food_backend.Services.UserServices
                     OrgId = user.OrgId,
                     Phone = user.Phone,
                     RefreshToken = user.RefreshToken,
-                    ResetToken = user.ResetToken,
+                    ResetToken = user.ResetToken
                      
                 };
                 await db_context.SaveChangesAsync();
