@@ -12,6 +12,8 @@ using eagles_food_backend.Services.EmailService;
 
 using Microsoft.EntityFrameworkCore;
 
+using Newtonsoft.Json.Linq;
+
 namespace eagles_food_backend.Services.UserServices
 {
     public class UserService : IUserRepository
@@ -395,10 +397,10 @@ namespace eagles_food_backend.Services.UserServices
         }
 
         // update a user
-        public async Task<Response<UserDTO>> UpdateUserProfile(
+        public async Task<Response<Dictionary<string, string>>> UpdateUserProfile(
             int userId, UpdateUserDTO model)
         {
-            Response<UserDTO> response = new();
+            Response<Dictionary<string, string>> response = new();
             if (model.Photo != null)
             {
                 model.ProfilePic = null;
@@ -411,7 +413,7 @@ namespace eagles_food_backend.Services.UserServices
                     return response;
                 }
             }
-            User? user = await db_context.Users.Where(x=>x.Id == userId).Include(x=>x.Org).FirstOrDefaultAsync();
+            User? user = await db_context.Users.Where(x => x.Id == userId).Include(x => x.Org).FirstOrDefaultAsync();
             if (model.ProfilePic == string.Empty || model.ProfilePic == "string")
             {
                 model.ProfilePic = null;
@@ -435,42 +437,34 @@ namespace eagles_food_backend.Services.UserServices
                 user.Phone = model.Phone ?? user.Phone;
                 user.ProfilePic = model.ProfilePic ?? user.ProfilePic;
 
-                var userDTO =  new UserDTO()
-                {
-                    FirstName = user.FirstName,
-                    LastName = user.LastName ,
-                    Email = user.Email,
-                    ProfilePic = user.ProfilePic,
-                    Role = (bool)user.IsAdmin ? "Admin" : "User",
-                    UserId = user.Id.ToString(),
-                    BankCode = user.BankCode,
-                    BankName = user.BankName,
-                    BankNumber = user.BankNumber,
-                    BankRegion = user.BankRegion,
-                    CreatedAt = user.CreatedAt,
-                    UpdatedAt = user.UpdatedAt,
-                    Currency = user.Currency,
-                    CurrencyCode = user.CurrencyCode,
-                    IsAdmin = user.IsAdmin,
-                    LunchCreditBalance = user.LunchCreditBalance,
-                    Organization_Name = user?.Org.Name ?? "",
-                    OrgId = user.OrgId,
-                    Phone = user.Phone,
-                    RefreshToken = user.RefreshToken,
-                    ResetToken = user.ResetToken,
-                     
-                };
+                var res = user
+                     .GetType()
+                     .GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                     .ToDictionary(prop => prop.Name, prop => Convert.ToString(prop.GetValue(user, null)));
+
+                // remove sensitive data
+                res.Remove("PasswordHash");
+                res.Remove("LunchReceivers");
+                res.Remove("LunchSenders");
+                res.Remove("Withdrawals");
+                res.Remove("IsDeleted");
+                res.Remove("Org");
+
+                //                res.Add("access_token", token);
+                res.Add("organization_name", user.Org?.Name ?? "");
+
+                response.data = res!;
+                response.message = "User authenticated successfully";
+                response.statusCode = HttpStatusCode.OK;
+
                 await db_context.SaveChangesAsync();
 
-                return new Response<UserDTO>
-                {
-                    success = true,
-                    data = userDTO,
-                    message = "User Profile updated successfully",
-                    statusCode = HttpStatusCode.OK,
-                };
-                }
-                
+
+                response.success = true;
+                response.data = res;
+                response.message = "User Profile updated successfully";
+                response.statusCode = HttpStatusCode.OK;
+            }            
             // catch any errors
             catch (Exception ex)
             {

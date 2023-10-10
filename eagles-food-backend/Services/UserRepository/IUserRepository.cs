@@ -19,6 +19,6 @@ namespace eagles_food_backend.Services.UserServices
         Task<Response<bool>> ToggleInvite(int userId, ToggleInviteDTO model);
         Task<Response<UserReadDTO>> VerifyResetToken(string email, string code);
         Task<Response<bool>> SendInvitationRequest(int userId, int orgId);
-        Task<Response<UserDTO>> UpdateUserProfile(int userId, UpdateUserDTO model);
+        Task<Response<Dictionary<string,string>>> UpdateUserProfile(int userId, UpdateUserDTO model);
     }
 }
