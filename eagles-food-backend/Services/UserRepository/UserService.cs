@@ -2,6 +2,9 @@
 using System.Net;
 using System.Reflection;
 
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
+
 using eagles_food_backend.Data;
 using eagles_food_backend.Domains.DTOs;
 using eagles_food_backend.Domains.Models;
@@ -19,6 +22,8 @@ namespace eagles_food_backend.Services.UserServices
         private readonly IEmailService _emailService;
         public readonly IConfiguration _config;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly Cloudinary _cloudinary;
+
 
         public UserService(LunchDbContext db_context,
             IMapper mapper,
@@ -33,6 +38,8 @@ namespace eagles_food_backend.Services.UserServices
             this._emailService = emailService;
             this._config = config;
             _webHostEnvironment = webHostEnvironment;
+            Account account = new Account("dw5cv0yz0", "356162485995848", "LZVFaS2ZtE8JAf_GVT0sDWdtGQA");
+            _cloudinary = new Cloudinary(account);
         }
 
         private CreateBankDTO GenerateBankDetails() //Generates new account number for each created user
@@ -284,11 +291,26 @@ namespace eagles_food_backend.Services.UserServices
             var photoNewName = $"{user.Email}{photoExtension}";
             var webHostPath =  _webHostEnvironment.ContentRootPath;
             var path = Path.Combine("storage", photoNewName);
-            using (var stream = new FileStream(path, FileMode.Create))
+            var uploadUrl = String.Empty;
+            using (var stream = photo.OpenReadStream())
             {
-                await photo.CopyToAsync(stream);
+                var uploadParams = new ImageUploadParams()
+                {
+                    File = new FileDescription(photoNewName, stream),
+                    PublicId = photoNewName
+                };
+                var uploadResult = _cloudinary.Upload(uploadParams);
+                if(uploadResult.StatusCode != HttpStatusCode.OK)
+                {
+                    response.success = false;
+                    response.message = "Image could not be uploaded";
+                    response.statusCode = HttpStatusCode.BadRequest;
+                    return response;
+                }
+                uploadUrl = uploadResult.SecureUri.OriginalString; 
+              //  await photo.CopyToAsync(stream);
             }
-            user.ProfilePic = webHostPath+path;
+            user.ProfilePic = uploadUrl;
             await db_context.SaveChangesAsync();
             response.success = true;
             response.data = true;
@@ -435,7 +457,7 @@ namespace eagles_food_backend.Services.UserServices
                     OrgId = user.OrgId,
                     Phone = user.Phone,
                     RefreshToken = user.RefreshToken,
-                    ResetToken = user.ResetToken
+                    ResetToken = user.ResetToken,
                      
                 };
                 await db_context.SaveChangesAsync();

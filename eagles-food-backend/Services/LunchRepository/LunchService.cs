@@ -1,5 +1,7 @@
 ﻿using System.Net;
 
+using CloudinaryDotNet;
+
 using eagles_food_backend.Data;
 using eagles_food_backend.Domains.DTOs;
 using eagles_food_backend.Domains.Models;
@@ -21,6 +23,7 @@ namespace eagles_food_backend.Services.LunchRepository
             _mapper = mapper;
             _httpContextAccessor = httpContextAccessor;
             _emailService = emailService;
+
         }
         public async Task<Response<ResponseLunchDTO>> create(CreateLunchDTO createLunchDTO)
         {
@@ -186,6 +189,53 @@ namespace eagles_food_backend.Services.LunchRepository
                 return response;
             }
         }
+
+
+        public async Task<Response<List<ResponseLunchDTO>>> Leaderboard()
+        {
+            Response<List<ResponseLunchDTO>> response = new Response<List<ResponseLunchDTO>>();
+            try
+            {
+                var id = _httpContextAccessor.HttpContext.User.Identity.Name;
+                if (id == null)
+                {
+                    response.message = $"UnAuthorized";
+                    response.statusCode = HttpStatusCode.Unauthorized;
+                    response.success = false;
+                    return response;
+                }
+                int userId = int.Parse(id);
+                var newList = await _context.Lunches
+                 .Where(x => x.ReceiverId == userId || x.SenderId == userId)
+                 .Select(x => new ResponseLunchDTO()
+                 {
+                     Id = x.Id,
+                     ReceiverName = _context.Users.FirstOrDefault(y => y.Id == x.ReceiverId).FirstName,
+                     SenderName = _context.Users.FirstOrDefault(y => y.Id == x.SenderId).FirstName,
+                     SenderId = x.SenderId ?? 0,
+                     ReceiverId = x.ReceiverId ?? 0,
+                     CreatedAt = x.CreatedAt ?? DateTime.Now,
+                     Note = x.Note,
+                     LunchStatus = x.LunchStatus,
+                     Quantity = x.Quantity,
+                     Redeemed = x.Redeemed ?? false
+                 })
+                 .ToListAsync();
+
+                response.message = "Success";
+                response.data = newList;
+                response.success = true;
+                return response;
+            }
+            catch (Exception ex)
+            {
+                response.message = "Error getting all lunches";
+                response.statusCode = HttpStatusCode.InternalServerError;
+                response.success = false;
+                return response;
+            }
+        }
+
 
         public async Task<Response<ResponseLunchDTO>> getById(int id)
         {

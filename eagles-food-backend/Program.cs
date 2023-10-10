@@ -110,7 +110,6 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-app.UseStaticFiles();
 Console.WriteLine("Connected to db: " + connectionString);
 
 app.Run();
