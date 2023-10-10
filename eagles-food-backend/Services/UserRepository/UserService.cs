@@ -18,18 +18,21 @@ namespace eagles_food_backend.Services.UserServices
         private readonly AuthenticationClass authentication;
         private readonly IEmailService _emailService;
         public readonly IConfiguration _config;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
         public UserService(LunchDbContext db_context,
             IMapper mapper,
             AuthenticationClass authentication,
             IEmailService emailService,
-            IConfiguration config)
+            IConfiguration config,
+            IWebHostEnvironment webHostEnvironment)
         {
             this.db_context = db_context;
             this.mapper = mapper;
             this.authentication = authentication;
             this._emailService = emailService;
             this._config = config;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         private CreateBankDTO GenerateBankDetails() //Generates new account number for each created user
@@ -279,12 +282,13 @@ namespace eagles_food_backend.Services.UserServices
             }
             var photoExtension = Path.GetExtension(photo.FileName);
             var photoNewName = $"{user.Email}{photoExtension}";
+            var webHostPath =  _webHostEnvironment.ContentRootPath;
             var path = Path.Combine("storage", photoNewName);
             using (var stream = new FileStream(path, FileMode.Create))
             {
                 await photo.CopyToAsync(stream);
             }
-            user.ProfilePic = photoNewName;
+            user.ProfilePic = webHostPath+path;
             await db_context.SaveChangesAsync();
             response.success = true;
             response.data = true;
@@ -369,10 +373,10 @@ namespace eagles_food_backend.Services.UserServices
         }
 
         // update a user
-        public async Task<Response<Dictionary<string, string>>> UpdateUserProfile(
+        public async Task<Response<UserDTO>> UpdateUserProfile(
             int userId, UpdateUserDTO model)
         {
-            Response<Dictionary<string, string>> response = new();
+            Response<UserDTO> response = new();
             if (model.Photo != null)
             {
                 model.ProfilePic = null;
@@ -398,9 +402,7 @@ namespace eagles_food_backend.Services.UserServices
                     response.success = false;
                     response.message = "User not found";
                     response.statusCode = HttpStatusCode.NotFound;
-                    response.data = new Dictionary<string, string>() {
-                        { "id", userId.ToString() }
-                    };
+                    response.data = null;
 
                     return response;
                 }
@@ -411,19 +413,26 @@ namespace eagles_food_backend.Services.UserServices
                 user.Phone = model.Phone ?? user.Phone;
                 user.ProfilePic = model.ProfilePic ?? user.ProfilePic;
 
-
+                var userDTO =  new UserDTO()
+                {
+                    Name = user.LastName + " " + user.FirstName,
+                    Email = user.Email,
+                    Profile_Picture = user.ProfilePic,
+                    Role = (bool)user.IsAdmin ? "Admin" : "User",
+                    UserId = user.Id.ToString(),
+                     
+                };
                 await db_context.SaveChangesAsync();
 
-                response.success = true;
-                response.data = new Dictionary<string, string>() {
-                    { "email", user.Email },
-                    { "name", user.FirstName + " " + user.LastName },
-                    { "phone", user.Phone },
-                    { "profile_picture", user.ProfilePic }
+                return new Response<UserDTO>
+                {
+                    success = true,
+                    data = userDTO,
+                    message = "User Profile updated successfully",
+                    statusCode = HttpStatusCode.OK,
                 };
-                response.message = "User Profile updated successfully";
-                response.statusCode = HttpStatusCode.OK;
-            }
+                }
+                
             // catch any errors
             catch (Exception ex)
             {
