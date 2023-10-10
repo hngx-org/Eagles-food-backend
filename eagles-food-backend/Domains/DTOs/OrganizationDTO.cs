@@ -24,8 +24,6 @@
         public string Phone { get; set; } = null!;
         public string OrgName { get; set; } = null!;
         public decimal OrgLunchPrice { get; set; }
-        public string OrgCurrencyCode { get; set; } = null!;
-        public bool OrgHidden { get; set; }
     }
 
     public class UpdateOrganizationWalletDTO

@@ -253,10 +253,10 @@ namespace eagles_food_backend.Services.LunchRepository
                     UpdatedAt = DateTime.UtcNow,
                     IsDeleted = false,
                     Redeemed = true,
-                    LunchStatus =LunchStatus.Withdrawal,
+                    LunchStatus = LunchStatus.Withdrawal,
                     Quantity = withdrawDTO.Quantity,
                     Note = "Lunch Withdrawal",
-                    
+
 
                 };
                 await _context.AddAsync(lunchRecord);
