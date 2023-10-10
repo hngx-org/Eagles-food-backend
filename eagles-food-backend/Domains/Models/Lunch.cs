@@ -12,9 +12,17 @@
         public DateTime? CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public bool? IsDeleted { get; set; }
+        public LunchStatus? LunchStatus { get; set; }
 
         public virtual Organization? Org { get; set; }
         public virtual User? Receiver { get; set; }
         public virtual User? Sender { get; set; }
+    }
+
+    public enum LunchStatus
+    {
+        Sending,
+        Receiving,
+        Withdrawal
     }
 }

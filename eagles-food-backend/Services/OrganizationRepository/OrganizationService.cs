@@ -8,8 +8,6 @@ using eagles_food_backend.Domains.Models;
 using eagles_food_backend.Services.EmailService;
 using eagles_food_backend.Services.OrganizationRepository;
 
-using Exceptionless.Utility;
-
 using Microsoft.EntityFrameworkCore;
 
 namespace eagles_food_backend.Services
@@ -64,9 +62,9 @@ namespace eagles_food_backend.Services
             var newOrg = new Organization()
             {
                 Name = model.OrgName,
-                CurrencyCode = model.OrgCurrencyCode ?? "₦",
+                CurrencyCode = "₦",
                 LunchPrice = model.OrgLunchPrice == 0 ? 1000 : model.OrgLunchPrice,
-                Hidden = model.OrgHidden
+                Hidden = false
             };
 
             if (_context.Organizations.Any(x => x.Name == newOrg.Name && x.IsDeleted == false))
@@ -491,14 +489,14 @@ namespace eagles_food_backend.Services
                 response.data = false;
                 return response;
             }
-                if ((bool)invite.Status)
-                {
-                    response.success = true;
-                    response.message = "Invite Already Accepted";
-                    response.statusCode = HttpStatusCode.OK;
-                    response.data = true;
-                    return response;
-                }
+            if ((bool)invite.Status)
+            {
+                response.success = true;
+                response.message = "Invite Already Accepted";
+                response.statusCode = HttpStatusCode.OK;
+                response.data = true;
+                return response;
+            }
             invite.Status = model.Status;
             if (model.Status)
             {
@@ -590,7 +588,7 @@ namespace eagles_food_backend.Services
                         EmailToName = model.Email
                     });
                 }
-                   
+
 
                 await _context.OrganizationInvites.AddAsync(invite);
                 await _context.SaveChangesAsync();

@@ -1,13 +1,4 @@
-﻿using System.Net;
-
-using eagles_food_backend.Data;
-using eagles_food_backend.Domains.DTOs;
-using eagles_food_backend.Domains.Models;
-using eagles_food_backend.Services.EmailService;
-
-using Microsoft.EntityFrameworkCore;
-
-namespace eagles_food_backend.Services.LunchRepository
+﻿namespace eagles_food_backend.Services.LunchRepository
 {
     public class LunchService : ILunchRepository
     {
@@ -106,6 +97,7 @@ namespace eagles_food_backend.Services.LunchRepository
                     IsDeleted = false,
                     Redeemed = false,
                     Quantity = createLunchDTO.quantity,
+                    LunchStatus = LunchStatus.Sending,
                     Note = createLunchDTO.note,
                     Receiver = _context.Users.FirstOrDefault(x => x.Email == email)
                 }).ToList();
@@ -166,6 +158,7 @@ namespace eagles_food_backend.Services.LunchRepository
                      ReceiverId = x.ReceiverId ?? 0,
                      CreatedAt = x.CreatedAt ?? DateTime.Now,
                      Note = x.Note,
+                     LunchStatus = x.LunchStatus,
                      Quantity = x.Quantity,
                      Redeemed = x.Redeemed ?? false
                  })
@@ -179,6 +172,8 @@ namespace eagles_food_backend.Services.LunchRepository
             catch (Exception ex)
             {
                 response.message = "Error getting all lunches";
+                response.statusCode = HttpStatusCode.InternalServerError;
+                response.success = false;
                 return response;
             }
         }
@@ -248,9 +243,11 @@ namespace eagles_food_backend.Services.LunchRepository
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow,
                     IsDeleted = false,
-                    Redeemed = false,
+                    Redeemed = true,
+                    LunchStatus = LunchStatus.Withdrawal,
                     Quantity = withdrawDTO.Quantity,
                     Note = "Lunch Withdrawal",
+
 
                 };
                 await _context.AddAsync(lunchRecord);
@@ -271,6 +268,7 @@ namespace eagles_food_backend.Services.LunchRepository
             }
             catch (Exception ex)
             {
+                response.success = false;
                 response.message = "Could not process withdrawal request";
                 response.statusCode = HttpStatusCode.InternalServerError;
                 return response;

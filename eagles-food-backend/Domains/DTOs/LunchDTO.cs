@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
+using eagles_food_backend.Domains.Models;
+
 namespace eagles_food_backend.Domains.DTOs
 {
     public class CreateLunchDTO
@@ -20,6 +22,7 @@ namespace eagles_food_backend.Domains.DTOs
         public string? ReceiverName { get; set; }
         public int Quantity { get; set; }
         public bool Redeemed { get; set; }
+        public LunchStatus? LunchStatus { get; set; }
         public string Note { get; set; }
         public DateTime CreatedAt { get; set; }
     }
