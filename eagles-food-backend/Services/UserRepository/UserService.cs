@@ -389,7 +389,7 @@ namespace eagles_food_backend.Services.UserServices
                     return response;
                 }
             }
-            User? user = await db_context.Users.FindAsync(userId);
+            User? user = await db_context.Users.Where(x=>x.Id == userId).Include(x=>x.Org).FirstOrDefaultAsync();
             if (model.ProfilePic == string.Empty || model.ProfilePic == "string")
             {
                 model.ProfilePic = null;
@@ -415,11 +415,27 @@ namespace eagles_food_backend.Services.UserServices
 
                 var userDTO =  new UserDTO()
                 {
-                    Name = user.LastName + " " + user.FirstName,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName ,
                     Email = user.Email,
-                    Profile_Picture = user.ProfilePic,
+                    ProfilePic = user.ProfilePic,
                     Role = (bool)user.IsAdmin ? "Admin" : "User",
                     UserId = user.Id.ToString(),
+                    BankCode = user.BankCode,
+                    BankName = user.BankName,
+                    BankNumber = user.BankNumber,
+                    BankRegion = user.BankRegion,
+                    CreatedAt = user.CreatedAt,
+                    UpdatedAt = user.UpdatedAt,
+                    Currency = user.Currency,
+                    CurrencyCode = user.CurrencyCode,
+                    IsAdmin = user.IsAdmin,
+                    LunchCreditBalance = user.LunchCreditBalance,
+                    Organization_Name = user?.Org.Name ?? "",
+                    OrgId = user.OrgId,
+                    Phone = user.Phone,
+                    RefreshToken = user.RefreshToken,
+                    ResetToken = user.ResetToken
                      
                 };
                 await db_context.SaveChangesAsync();
