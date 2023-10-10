@@ -42,11 +42,27 @@ namespace eagles_food_backend.Domains.DTOs
 
     public class UserDTO
     {
-        public string? Name { get; set; }
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
         public string? Email { get; set; }
-        public string? Profile_Picture { get; set; }
+        public string? Phone { get; set; }
+        public string? ProfilePic { get; set; }
         public string? UserId { get; set; }
         public string? Role { get; set; }
+        public string? RefreshToken { get; set; }
+        public string? ResetToken { get; set; }
+        public string? BankNumber { get; set; }
+        public string? BankCode { get; set; }
+        public string? BankName { get; set; }
+        public string? BankRegion { get; set; }
+        public int? OrgId { get; set; }
+        public string? Currency { get; set; }
+        public string? CurrencyCode { get; set; }
+        public string? Organization_Name { get; set; }
+        public bool? IsAdmin { get; set; }
+        public int? LunchCreditBalance { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
     }
 
 
