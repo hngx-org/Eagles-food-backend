@@ -1,4 +1,13 @@
-﻿namespace eagles_food_backend.Services.LunchRepository
+﻿using System.Net;
+
+using eagles_food_backend.Data;
+using eagles_food_backend.Domains.DTOs;
+using eagles_food_backend.Domains.Models;
+using eagles_food_backend.Services.EmailService;
+
+using Microsoft.EntityFrameworkCore;
+
+namespace eagles_food_backend.Services.LunchRepository
 {
     public class LunchService : ILunchRepository
     {
