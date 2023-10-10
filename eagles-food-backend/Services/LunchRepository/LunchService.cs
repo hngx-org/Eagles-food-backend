@@ -1,7 +1,4 @@
 ﻿using System.Net;
-
-using CloudinaryDotNet;
-
 using eagles_food_backend.Data;
 using eagles_food_backend.Domains.DTOs;
 using eagles_food_backend.Domains.Models;
@@ -205,34 +202,27 @@ namespace eagles_food_backend.Services.LunchRepository
                     return response;
                 }
                 var lunches = await _context.Lunches
-                 .Where(x => x.LunchStatus != LunchStatus.Withdrawal).ToListAsync();
+                 .Where(x => x.LunchStatus != LunchStatus.Withdrawal).Include(x=>x.Sender).ToListAsync();
 
-                
+                var allUsers = await _context.Users.ToListAsync();
 
-                // .Select(x => new ResponseLunchDTO()
-                // {
-                //     Id = x.Id,
-                //     ReceiverName = _context.Users.FirstOrDefault(y => y.Id == x.ReceiverId).FirstName,
-                //     SenderName = _context.Users.FirstOrDefault(y => y.Id == x.SenderId).FirstName,
-                //     SenderId = x.SenderId ?? 0,
-                //     ReceiverId = x.ReceiverId ?? 0,
-                //     CreatedAt = x.CreatedAt ?? DateTime.Now,
-                //     Note = x.Note,
-                //     LunchStatus = x.LunchStatus,
-                //     Quantity = x.Quantity,
-                //     Redeemed = x.Redeemed ?? false
-                // })
-                // .ToListAsync();
+                var lunchResponse = lunches.GroupBy(x => x.SenderId).Select(l => new ResponseLunchDTO()
+                {
+                     SenderId =  (int)l?.First()?.SenderId,
+                     SenderName = l?.First()?.Sender.FirstName + " " + l?.First().Sender.LastName,
+                     LunchStatus = LunchStatus.Sending,
+                     Quantity =  (int)l?.Sum(p=>p.Quantity)
 
-                //response.message = "Success";
-                //response.data = newList;
+                }).ToList();
+                response.message = "Success";
+                response.data = lunchResponse;
 
                 response.success = true;
                 return response;
             }
             catch (Exception ex)
             {
-                response.message = "Error getting all lunches";
+                response.message = "Error getting lunch leaderboard";
                 response.statusCode = HttpStatusCode.InternalServerError;
                 response.success = false;
                 return response;
