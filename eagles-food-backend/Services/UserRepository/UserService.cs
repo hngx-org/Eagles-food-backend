@@ -259,6 +259,49 @@ namespace eagles_food_backend.Services.UserServices
             return response;
         }
 
+        private async Task<Response<bool>> UploadPhotoInString(string photostring, int id)
+        {
+            Response<bool> response = new();
+            User? user = await db_context.Users.FindAsync(id);
+            if (user is null)
+            {
+                response.success = false;
+                response.message = "User not found";
+                response.statusCode = HttpStatusCode.BadRequest;
+                return response;
+            }
+             var photoNewName = $"{user.Email}";
+            var webHostPath = _webHostEnvironment.ContentRootPath;
+            var path = Path.Combine("storage", photoNewName);
+            var photoInBytes = Convert.FromBase64String(photostring);
+            var uploadUrl = String.Empty;
+            using (var stream = new MemoryStream(photoInBytes))
+            {
+                var uploadParams = new ImageUploadParams()
+                {
+                    File = new FileDescription(photoNewName, stream),
+                    PublicId = photoNewName
+                };
+                var uploadResult = _cloudinary.Upload(uploadParams);
+                if (uploadResult.StatusCode != HttpStatusCode.OK)
+                {
+                    response.success = false;
+                    response.message = "Image could not be uploaded";
+                    response.statusCode = HttpStatusCode.BadRequest;
+                    return response;
+                }
+                uploadUrl = uploadResult.SecureUri.OriginalString;
+            }
+            user.ProfilePic = uploadUrl;
+            await db_context.SaveChangesAsync();
+            response.success = true;
+            response.data = true;
+            response.message = "User Photo updated successfully";
+            response.statusCode = HttpStatusCode.OK;
+            return response;
+        }
+
+
         public async Task<Response<bool>> UploadPhoto(IFormFile photo, int id)
         {
             Response<bool> response = new();
@@ -401,10 +444,10 @@ namespace eagles_food_backend.Services.UserServices
             int userId, UpdateUserDTO model)
         {
             Response<Dictionary<string, string>> response = new();
-            if (model.Photo != null)
+            if (model.PhotoString != null)
             {
                 model.ProfilePic = null;
-                var uploadImage = await UploadPhoto(model.Photo, userId);
+                var uploadImage = await UploadPhotoInString(model.PhotoString, userId);
                 if (!uploadImage.success)
                 {
                     response.success = false;
