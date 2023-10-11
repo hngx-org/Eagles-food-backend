@@ -188,9 +188,9 @@ namespace eagles_food_backend.Services.LunchRepository
         }
 
 
-        public async Task<Response<List<ResponseLunchDTO>>> Leaderboard()
+        public async Task<Response<List<LeaderBoardResponseDTO>>> Leaderboard()
         {
-            Response<List<ResponseLunchDTO>> response = new Response<List<ResponseLunchDTO>>();
+            Response<List<LeaderBoardResponseDTO>> response = new Response<List<LeaderBoardResponseDTO>>();
             try
             {
                 var id = _httpContextAccessor.HttpContext.User.Identity.Name;
@@ -206,11 +206,10 @@ namespace eagles_food_backend.Services.LunchRepository
 
                 var allUsers = await _context.Users.ToListAsync();
 
-                var lunchResponse = lunches.GroupBy(x => x.SenderId).Select(l => new ResponseLunchDTO()
+                var lunchResponse = lunches.GroupBy(x => x.SenderId).Select(l => new LeaderBoardResponseDTO()
                 {
-                     SenderId =  (int)l?.First()?.SenderId,
+                     SenderEmail =  l?.First()?.Sender.Email,
                      SenderName = l?.First()?.Sender.FirstName + " " + l?.First().Sender.LastName,
-                     LunchStatus = LunchStatus.Sending,
                      Quantity =  (int)l?.Sum(p=>p.Quantity)
 
                 }).ToList();
