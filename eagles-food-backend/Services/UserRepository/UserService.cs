@@ -944,14 +944,14 @@ namespace eagles_food_backend.Services.UserServices
                     return response;
                 }
             }
-            if (user.OrgId != null)
-            {
-                response.success = false;
-                response.message = "You already belong to an organization";
-                response.statusCode = HttpStatusCode.NotFound;
-                response.data = false;
-                return response;
-            }
+            // if (user.OrgId != null)
+            // {
+            //     response.success = false;
+            //     response.message = "You already belong to an organization";
+            //     response.statusCode = HttpStatusCode.NotFound;
+            //     response.data = false;
+            //     return response;
+            // }
             var organization = await db_context.Organizations.FindAsync(orgId);
             if (organization is null)
             {
