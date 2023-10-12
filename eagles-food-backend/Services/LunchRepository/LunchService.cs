@@ -127,6 +127,7 @@ namespace eagles_food_backend.Services.LunchRepository
                         lun.Receiver.LunchCreditBalance = lun.Receiver.LunchCreditBalance + lun.Quantity;
                 }
                 _context.Lunches.AddRange(lunchList);
+                user.LunchCreditBalance -= quantityToBeRemoved;
                 await _context.SaveChangesAsync();
 
                 foreach (var lun in lunchList)
