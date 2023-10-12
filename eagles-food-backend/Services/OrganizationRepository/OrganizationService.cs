@@ -451,7 +451,7 @@ namespace eagles_food_backend.Services
                 return response;
             }
             List<User>? users = await _context.Users.Where(x => x.Email != user.Email && x.IsAdmin == false).ToListAsync();
-            var organizationInviteRequest = await _context.InvitationRequests.Where(x => x.OrgId == user.OrgId).ToListAsync();
+            var organizationInviteRequest = await _context.InvitationRequests.Where(x => x.OrgId == user.OrgId && x.Status != true).ToListAsync();
             response.success = true;
             response.message = organizationInviteRequest.Count > 0 ? "Invites Fetched Successfuuly" : "You have any pending invites";
             response.statusCode = HttpStatusCode.OK;
@@ -545,17 +545,17 @@ namespace eagles_food_backend.Services
                     return response;
                 }
                 // make sure email is unique in invites
-                if (await _context.OrganizationInvites.AnyAsync(i => i.Email == model.Email))
-                {
-                    response.success = false;
-                    response.message = "User has already been invited before";
-                    response.data = new Dictionary<string, string>() {
-                        { "email", model.Email }
-                    };
-                    response.statusCode = HttpStatusCode.BadRequest;
+                //if (await _context.OrganizationInvites.AnyAsync(i => i.Email == model.Email))
+                //{
+                //    response.success = false;
+                //    response.message = "User has already been invited before";
+                //    response.data = new Dictionary<string, string>() {
+                //        { "email", model.Email }
+                //    };
+                //    response.statusCode = HttpStatusCode.BadRequest;
 
-                    return response;
-                }
+                //    return response;
+                //}
 
                 var orgID = admin.OrgId;
                 var org = await _context.Organizations.Where(o => o.Id == orgID).FirstAsync();
