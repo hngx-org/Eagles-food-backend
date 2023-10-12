@@ -28,6 +28,7 @@ namespace eagles_food_backend.Services.LunchRepository
             try
             {
                 var id = _httpContextAccessor.HttpContext.User.Identity.Name;
+                var quantityToBeRemoved = createLunchDTO.quantity * createLunchDTO.receivers.Length;
                 if (id == null)
                 {
                     response.message = $"UnAuthorized";
@@ -36,7 +37,9 @@ namespace eagles_food_backend.Services.LunchRepository
                     return response;
                 }
                 int senderId = int.Parse(id);
-                string? senderEmail = _context.Users.FirstOrDefault(x => x.Id == senderId)?.Email;
+                var user = _context.Users.FirstOrDefault(x => x.Id == senderId);
+
+                string? senderEmail = user?.Email;
                 #region Check for Invalid Request
                 if (!createLunchDTO.receivers.Any())
                 {
@@ -84,6 +87,14 @@ namespace eagles_food_backend.Services.LunchRepository
                     response.success = false;
                     return response;
                 }
+                if (user.LunchCreditBalance < quantityToBeRemoved)
+                {
+                    return new Response<ResponseLunchDTO>()
+                    {
+                        message = "You do not have enough balance",
+                        success = false
+                    };
+                }
                 #endregion
 
                 #region check quantity
@@ -116,6 +127,7 @@ namespace eagles_food_backend.Services.LunchRepository
                         lun.Receiver.LunchCreditBalance = lun.Receiver.LunchCreditBalance + lun.Quantity;
                 }
                 _context.Lunches.AddRange(lunchList);
+                user.LunchCreditBalance -= quantityToBeRemoved;
                 await _context.SaveChangesAsync();
 
                 foreach (var lun in lunchList)
@@ -324,9 +336,6 @@ namespace eagles_food_backend.Services.LunchRepository
                 response.statusCode = HttpStatusCode.InternalServerError;
                 return response;
             }
-
-
-
         }
 
     }
