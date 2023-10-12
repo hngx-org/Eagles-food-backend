@@ -53,6 +53,18 @@ namespace eagles_food_backend.Controllers
             return StatusCode((int)response.statusCode, response);
         }
 
+
+        /// <summary>
+        /// Gets all lunch leaderboard data
+        /// </summary>
+        /// <returns>A response with 200 and a list of the lunches</returns>
+        [HttpGet("leaderboard")]
+        public async Task<ActionResult> GetLeaderboard()
+        {
+            var response = await _lunchService.Leaderboard();
+            return StatusCode((int)response.statusCode, response);
+        }
+
         /// <summary>
         /// Get a lunch by id
         /// </summary>

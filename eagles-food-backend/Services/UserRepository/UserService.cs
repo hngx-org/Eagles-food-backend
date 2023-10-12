@@ -2,12 +2,17 @@
 using System.Net;
 using System.Reflection;
 
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
+
 using eagles_food_backend.Data;
 using eagles_food_backend.Domains.DTOs;
 using eagles_food_backend.Domains.Models;
 using eagles_food_backend.Services.EmailService;
 
 using Microsoft.EntityFrameworkCore;
+
+using Newtonsoft.Json.Linq;
 
 namespace eagles_food_backend.Services.UserServices
 {
@@ -18,18 +23,25 @@ namespace eagles_food_backend.Services.UserServices
         private readonly AuthenticationClass authentication;
         private readonly IEmailService _emailService;
         public readonly IConfiguration _config;
+        private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly Cloudinary _cloudinary;
+
 
         public UserService(LunchDbContext db_context,
             IMapper mapper,
             AuthenticationClass authentication,
             IEmailService emailService,
-            IConfiguration config)
+            IConfiguration config,
+            IWebHostEnvironment webHostEnvironment)
         {
             this.db_context = db_context;
             this.mapper = mapper;
             this.authentication = authentication;
             this._emailService = emailService;
             this._config = config;
+            _webHostEnvironment = webHostEnvironment;
+            Account account = new Account("dw5cv0yz0", "356162485995848", "LZVFaS2ZtE8JAf_GVT0sDWdtGQA");
+            _cloudinary = new Cloudinary(account);
         }
 
         private CreateBankDTO GenerateBankDetails() //Generates new account number for each created user
@@ -247,6 +259,49 @@ namespace eagles_food_backend.Services.UserServices
             return response;
         }
 
+        private async Task<Response<bool>> UploadPhotoInString(string photostring, int id)
+        {
+            Response<bool> response = new();
+            User? user = await db_context.Users.FindAsync(id);
+            if (user is null)
+            {
+                response.success = false;
+                response.message = "User not found";
+                response.statusCode = HttpStatusCode.BadRequest;
+                return response;
+            }
+             var photoNewName = $"{user.Email}";
+            var webHostPath = _webHostEnvironment.ContentRootPath;
+            var path = Path.Combine("storage", photoNewName);
+            var photoInBytes = Convert.FromBase64String(photostring);
+            var uploadUrl = String.Empty;
+            using (var stream = new MemoryStream(photoInBytes))
+            {
+                var uploadParams = new ImageUploadParams()
+                {
+                    File = new FileDescription(photoNewName, stream),
+                    PublicId = photoNewName
+                };
+                var uploadResult = _cloudinary.Upload(uploadParams);
+                if (uploadResult.StatusCode != HttpStatusCode.OK)
+                {
+                    response.success = false;
+                    response.message = "Image could not be uploaded";
+                    response.statusCode = HttpStatusCode.BadRequest;
+                    return response;
+                }
+                uploadUrl = uploadResult.SecureUri.OriginalString;
+            }
+            user.ProfilePic = uploadUrl;
+            await db_context.SaveChangesAsync();
+            response.success = true;
+            response.data = true;
+            response.message = "User Photo updated successfully";
+            response.statusCode = HttpStatusCode.OK;
+            return response;
+        }
+
+
         public async Task<Response<bool>> UploadPhoto(IFormFile photo, int id)
         {
             Response<bool> response = new();
@@ -279,12 +334,28 @@ namespace eagles_food_backend.Services.UserServices
             }
             var photoExtension = Path.GetExtension(photo.FileName);
             var photoNewName = $"{user.Email}{photoExtension}";
+            var webHostPath =  _webHostEnvironment.ContentRootPath;
             var path = Path.Combine("storage", photoNewName);
-            using (var stream = new FileStream(path, FileMode.Create))
+            var uploadUrl = String.Empty;
+            using (var stream = photo.OpenReadStream())
             {
-                await photo.CopyToAsync(stream);
+                var uploadParams = new ImageUploadParams()
+                {
+                    File = new FileDescription(photoNewName, stream),
+                    PublicId = photoNewName
+                };
+                var uploadResult = _cloudinary.Upload(uploadParams);
+                if(uploadResult.StatusCode != HttpStatusCode.OK)
+                {
+                    response.success = false;
+                    response.message = "Image could not be uploaded";
+                    response.statusCode = HttpStatusCode.BadRequest;
+                    return response;
+                }
+                uploadUrl = uploadResult.SecureUri.OriginalString; 
+              //  await photo.CopyToAsync(stream);
             }
-            user.ProfilePic = photoNewName;
+            user.ProfilePic = uploadUrl;
             await db_context.SaveChangesAsync();
             response.success = true;
             response.data = true;
@@ -373,10 +444,10 @@ namespace eagles_food_backend.Services.UserServices
             int userId, UpdateUserDTO model)
         {
             Response<Dictionary<string, string>> response = new();
-            if (model.Photo != null)
+            if (model.PhotoString != null)
             {
                 model.ProfilePic = null;
-                var uploadImage = await UploadPhoto(model.Photo, userId);
+                var uploadImage = await UploadPhotoInString(model.PhotoString, userId);
                 if (!uploadImage.success)
                 {
                     response.success = false;
@@ -385,7 +456,7 @@ namespace eagles_food_backend.Services.UserServices
                     return response;
                 }
             }
-            User? user = await db_context.Users.FindAsync(userId);
+            User? user = await db_context.Users.Where(x => x.Id == userId).Include(x => x.Org).FirstOrDefaultAsync();
             if (model.ProfilePic == string.Empty || model.ProfilePic == "string")
             {
                 model.ProfilePic = null;
@@ -398,9 +469,7 @@ namespace eagles_food_backend.Services.UserServices
                     response.success = false;
                     response.message = "User not found";
                     response.statusCode = HttpStatusCode.NotFound;
-                    response.data = new Dictionary<string, string>() {
-                        { "id", userId.ToString() }
-                    };
+                    response.data = null;
 
                     return response;
                 }
@@ -411,19 +480,34 @@ namespace eagles_food_backend.Services.UserServices
                 user.Phone = model.Phone ?? user.Phone;
                 user.ProfilePic = model.ProfilePic ?? user.ProfilePic;
 
+                var res = user
+                     .GetType()
+                     .GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                     .ToDictionary(prop => prop.Name, prop => Convert.ToString(prop.GetValue(user, null)));
+
+                // remove sensitive data
+                res.Remove("PasswordHash");
+                res.Remove("LunchReceivers");
+                res.Remove("LunchSenders");
+                res.Remove("Withdrawals");
+                res.Remove("IsDeleted");
+                res.Remove("Org");
+
+                //                res.Add("access_token", token);
+                res.Add("organization_name", user.Org?.Name ?? "");
+
+                response.data = res!;
+                response.message = "User authenticated successfully";
+                response.statusCode = HttpStatusCode.OK;
 
                 await db_context.SaveChangesAsync();
 
+
                 response.success = true;
-                response.data = new Dictionary<string, string>() {
-                    { "email", user.Email },
-                    { "name", user.FirstName + " " + user.LastName },
-                    { "phone", user.Phone },
-                    { "profile_picture", user.ProfilePic }
-                };
+                response.data = res;
                 response.message = "User Profile updated successfully";
                 response.statusCode = HttpStatusCode.OK;
-            }
+            }            
             // catch any errors
             catch (Exception ex)
             {

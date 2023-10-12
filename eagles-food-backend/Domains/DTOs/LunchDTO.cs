@@ -27,6 +27,13 @@ namespace eagles_food_backend.Domains.DTOs
         public DateTime CreatedAt { get; set; }
     }
 
+    public class LeaderBoardResponseDTO
+    {
+        public string SenderName { get; set; }
+        public int? Quantity { get; set;}
+        public string SenderEmail { get; set;}
+    }
+
     public class WithdrawLunchDTO
     {
         public int Quantity { get; set; }

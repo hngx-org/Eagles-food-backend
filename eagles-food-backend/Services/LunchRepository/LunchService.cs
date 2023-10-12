@@ -1,5 +1,4 @@
 ﻿using System.Net;
-
 using eagles_food_backend.Data;
 using eagles_food_backend.Domains.DTOs;
 using eagles_food_backend.Domains.Models;
@@ -21,6 +20,7 @@ namespace eagles_food_backend.Services.LunchRepository
             _mapper = mapper;
             _httpContextAccessor = httpContextAccessor;
             _emailService = emailService;
+
         }
         public async Task<Response<ResponseLunchDTO>> create(CreateLunchDTO createLunchDTO)
         {
@@ -186,6 +186,48 @@ namespace eagles_food_backend.Services.LunchRepository
                 return response;
             }
         }
+
+
+        public async Task<Response<List<LeaderBoardResponseDTO>>> Leaderboard()
+        {
+            Response<List<LeaderBoardResponseDTO>> response = new Response<List<LeaderBoardResponseDTO>>();
+            try
+            {
+                var id = _httpContextAccessor.HttpContext.User.Identity.Name;
+                if (id == null)
+                {
+                    response.message = $"UnAuthorized";
+                    response.statusCode = HttpStatusCode.Unauthorized;
+                    response.success = false;
+                    return response;
+                }
+                var lunches = await _context.Lunches
+                 .Where(x => x.LunchStatus != LunchStatus.Withdrawal).Include(x=>x.Sender).ToListAsync();
+
+                var allUsers = await _context.Users.ToListAsync();
+
+                var lunchResponse = lunches.GroupBy(x => x.SenderId).Select(l => new LeaderBoardResponseDTO()
+                {
+                     SenderEmail =  l?.First()?.Sender.Email,
+                     SenderName = l?.First()?.Sender.FirstName + " " + l?.First().Sender.LastName,
+                     Quantity =  (int)l?.Sum(p=>p.Quantity)
+
+                }).ToList();
+                response.message = "Success";
+                response.data = lunchResponse;
+
+                response.success = true;
+                return response;
+            }
+            catch (Exception ex)
+            {
+                response.message = "Error getting lunch leaderboard";
+                response.statusCode = HttpStatusCode.InternalServerError;
+                response.success = false;
+                return response;
+            }
+        }
+
 
         public async Task<Response<ResponseLunchDTO>> getById(int id)
         {

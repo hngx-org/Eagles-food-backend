@@ -11,7 +11,6 @@ namespace eagles_food_backend.Services.UserServices
         Task<Response<UserBankUpdateDTO>> UpdateUserBank(UserBankUpdateDTO userbank, int user_id);
         Task<Response<UserReadAllDTO>> GetAllUsersByOrganization(int user_id);
         Task<Response<UserReadDTO>> SearchForUser(string email);
-        Task<Response<Dictionary<string, string>>> UpdateUserProfile(int userId, UpdateUserDTO model);
         Task<Response<bool>> UploadPhoto(IFormFile photo, int id);
         Task<Response<Dictionary<string, string>>> ChangePassword(ChangePasswordDTO model);
         Task<Response<UserReadDTO>> ForgotUserPassword(string email);
@@ -20,5 +19,6 @@ namespace eagles_food_backend.Services.UserServices
         Task<Response<bool>> ToggleInvite(int userId, ToggleInviteDTO model);
         Task<Response<UserReadDTO>> VerifyResetToken(string email, string code);
         Task<Response<bool>> SendInvitationRequest(int userId, int orgId);
+        Task<Response<Dictionary<string,string>>> UpdateUserProfile(int userId, UpdateUserDTO model);
     }
 }
