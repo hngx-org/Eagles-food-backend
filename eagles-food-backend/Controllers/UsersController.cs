@@ -40,6 +40,22 @@ namespace eagles_food_backend.Controllers
 
         }
 
+        /// <summary>
+        /// Get The organization a user belongs to
+        /// </summary>
+        /// <returns>A response of user's Organization details</returns>
+        [HttpGet("organization")]
+        public async Task<IActionResult> GetUserOrg()
+        {
+            if (int.TryParse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value, out int id))
+            {
+                var userProfile = await _userService.GetUserOrg(id);
+                return StatusCode((int)userProfile.statusCode, userProfile);
+            }
+            else return BadRequest();
+
+        }
+
 
         /// <summary>
         /// Update a user's bank details
