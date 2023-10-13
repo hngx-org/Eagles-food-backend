@@ -226,7 +226,7 @@ namespace eagles_food_backend.Services.LunchRepository
                     .ToListAsync();
 
                 var totalLunches = await newListQuery.CountAsync();
-                return PaginationHelper.CreatePagedReponse(newList, validFilter, totalLunches, _uriService, route);
+                return PaginationHelper.CreatePagedReponse(newList, validFilter, totalLunches, _uriService, route, message: "Success");
             }
             catch (Exception ex)
             {
