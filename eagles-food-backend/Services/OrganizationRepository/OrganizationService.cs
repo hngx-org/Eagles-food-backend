@@ -4,9 +4,12 @@ using System.Reflection;
 
 using eagles_food_backend.Data;
 using eagles_food_backend.Domains.DTOs;
+using eagles_food_backend.Domains.Filters;
 using eagles_food_backend.Domains.Models;
+using eagles_food_backend.Helpers;
 using eagles_food_backend.Services.EmailService;
 using eagles_food_backend.Services.OrganizationRepository;
+using eagles_food_backend.Services.UriService;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -18,13 +21,18 @@ namespace eagles_food_backend.Services
         private readonly IMapper _mapper;
         private readonly AuthenticationClass _authentication;
         private readonly IEmailService _emailService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IUriService _uriService;
 
-        public OrganizationService(LunchDbContext context, IMapper mapper, AuthenticationClass authentication, IEmailService emailService)
+        public OrganizationService(LunchDbContext context, IMapper mapper, AuthenticationClass authentication,
+            IHttpContextAccessor httpContextAccessor, IEmailService emailService, IUriService uriService)
         {
             _context = context;
             _mapper = mapper;
             _authentication = authentication;
             _emailService = emailService;
+            _uriService = uriService;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<Response<Dictionary<string, string>>> CreateStaffMember(CreateStaffDTO model)
@@ -730,19 +738,19 @@ namespace eagles_food_backend.Services
             }
         }
 
-        public async Task<Response<List<OrganizationReadDTO>>> GetAllOrganizations()
+        public async Task<Response<List<OrganizationReadDTO>>> GetAllOrganizations(PaginationFilter validFilter)
         {
             try
             {
-                var orgs = await _context.Organizations.Where(x => x.IsDeleted == false && x.Hidden == false).ToListAsync();
+                var route = _httpContextAccessor.HttpContext.Request.Path.Value;
+                var orgsQuery = _context.Organizations.Where(x => x.IsDeleted == false && x.Hidden == false);
+                var orgs = await orgsQuery
+                    .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
+                 .Take(validFilter.PageSize)
+                 .ToListAsync();
+                var orgsCount = await orgsQuery.CountAsync();
                 var orgsDTO = _mapper.Map<List<OrganizationReadDTO>>(orgs);
-                return new Response<List<OrganizationReadDTO>>()
-                {
-                    data = orgsDTO,
-                    success = true,
-                    statusCode = HttpStatusCode.OK,
-                    message = "Organizations returned successfully"
-                };
+                return PaginationHelper.CreatePagedReponse(orgsDTO, validFilter, orgsCount, _uriService, route, message: "Organizations returned successfully");
             }
             catch (Exception)
             {

@@ -1,6 +1,7 @@
 using System.Security.Claims;
 
 using eagles_food_backend.Domains.DTOs;
+using eagles_food_backend.Domains.Filters;
 using eagles_food_backend.Services.OrganizationRepository;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -323,9 +324,10 @@ namespace eagles_food_backend.Controllers
         }
 
         [HttpGet("all")]
-        public async Task<IActionResult> GetAllOrganizations()
+        public async Task<IActionResult> GetAllOrganizations([FromQuery] PaginationFilter filter)
         {
-            var response = await _organizationService.GetAllOrganizations();
+            var validFilter = new PaginationFilter(filter.PageNumber, filter.PageSize);
+            var response = await _organizationService.GetAllOrganizations(validFilter);
             return StatusCode((int)response.statusCode, response);
         }
     }

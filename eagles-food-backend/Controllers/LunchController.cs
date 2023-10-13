@@ -1,4 +1,5 @@
 ﻿using eagles_food_backend.Domains.DTOs;
+using eagles_food_backend.Domains.Filters;
 using eagles_food_backend.Services.LunchRepository;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -47,9 +48,11 @@ namespace eagles_food_backend.Controllers
         /// </summary>
         /// <returns>A response with 200 and a list of the lunches</returns>
         [HttpGet("all")]
-        public async Task<ActionResult> GetAllLunches()
+        public async Task<ActionResult> GetAllLunches([FromQuery] PaginationFilter filter)
         {
-            var response = await _lunchService.getAll();
+
+            var validFilter = new PaginationFilter(filter.PageNumber, filter.PageSize);
+            var response = await _lunchService.getAll(validFilter);
             return StatusCode((int)response.statusCode, response);
         }
 
@@ -59,9 +62,10 @@ namespace eagles_food_backend.Controllers
         /// </summary>
         /// <returns>A response with 200 and a list of the lunches</returns>
         [HttpGet("leaderboard")]
-        public async Task<ActionResult> GetLeaderboard()
+        public async Task<ActionResult> GetLeaderboard([FromQuery] PaginationFilter filter)
         {
-            var response = await _lunchService.Leaderboard();
+            var validFilter = new PaginationFilter(filter.PageNumber, filter.PageSize);
+            var response = await _lunchService.Leaderboard(validFilter);
             return StatusCode((int)response.statusCode, response);
         }
 
