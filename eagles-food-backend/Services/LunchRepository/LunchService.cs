@@ -186,7 +186,7 @@ namespace eagles_food_backend.Services.LunchRepository
                  .ToListAsync();
 
                 response.message = "Success";
-                response.data = newList;
+                response.data = newList.OrderByDescending(x=>x.CreatedAt).ToList();
                 response.success = true;
                 return response;
             }
