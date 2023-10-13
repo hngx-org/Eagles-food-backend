@@ -65,6 +65,13 @@ namespace eagles_food_backend.Controllers
             return StatusCode((int)response.statusCode, response);
         }
 
+        [HttpGet("lunch-balance")]
+        public async Task<ActionResult> GetLunchBalance()
+        {
+            var response = await _lunchService.GetLunchBalance();
+            return StatusCode((int)response.statusCode, response);
+        }
+
         /// <summary>
         /// Get a lunch by id
         /// </summary>
@@ -74,7 +81,7 @@ namespace eagles_food_backend.Controllers
         public async Task<ActionResult> GetLunchById(int id)
         {
             var response = await _lunchService.getById(id);
-            return StatusCode((int)response.statusCode ,response);
+            return StatusCode((int)response.statusCode, response);
         }
 
         /// <summary>

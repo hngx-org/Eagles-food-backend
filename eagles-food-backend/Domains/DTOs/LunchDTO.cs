@@ -13,6 +13,12 @@ namespace eagles_food_backend.Domains.DTOs
         [Required]
         public string note { get; set; } = string.Empty;
     }
+
+    public class LunchBalanceDTO
+    {
+        public int Balance { get; set; }
+    }
+
     public class ResponseLunchDTO
     {
         public int Id { get; set; }
@@ -30,8 +36,8 @@ namespace eagles_food_backend.Domains.DTOs
     public class LeaderBoardResponseDTO
     {
         public string SenderName { get; set; }
-        public int? Quantity { get; set;}
-        public string SenderEmail { get; set;}
+        public int? Quantity { get; set; }
+        public string SenderEmail { get; set; }
     }
 
     public class WithdrawLunchDTO
