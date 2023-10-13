@@ -633,6 +633,40 @@ namespace eagles_food_backend.Services.UserServices
             }
         }
 
+        public async Task<Response<Dictionary<string, string>>> GetUserOrg(int userId)
+        {
+            var response = new Dictionary<string, string>();
+            try
+            {
+                var user = await db_context.Users.Include(x => x.Org).FirstOrDefaultAsync(x => x.Id == userId);
+                if (user == null)
+                {
+                    return new Response<Dictionary<string, string>>()
+                    {
+                        message = "User not found",
+                        success = false,
+                        statusCode = HttpStatusCode.NotFound
+                    };
+                }
+
+                response.Add("Organization", user.Org?.Name ?? "");
+                response.Add("Organization_Id", user?.OrgId?.ToString() ?? "");
+                return new Response<Dictionary<string, string>>()
+                {
+                    data = response,
+                    message = "User Organization fetched successfully"
+                };
+            }
+            catch (Exception)
+            {
+                return new Response<Dictionary<string, string>>()
+                {
+                    message = "Internal Server Error",
+                    statusCode = HttpStatusCode.InternalServerError
+                };
+            }
+        }
+
         public async Task<Response<UserBankUpdateDTO>> UpdateUserBank(UserBankUpdateDTO userbank, int user_id)
         {
             try
