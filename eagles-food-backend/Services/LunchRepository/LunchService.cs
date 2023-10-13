@@ -220,12 +220,13 @@ namespace eagles_food_backend.Services.LunchRepository
                      Redeemed = x.Redeemed ?? false
                  });
                 var newList = await newListQuery
-                 .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
-                 .Take(validFilter.PageSize)
-                .ToListAsync();
+                    .OrderByDescending(x => x.CreatedAt)
+                    .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
+                    .Take(validFilter.PageSize)
+                    .ToListAsync();
 
                 var totalLunches = await newListQuery.CountAsync();
-                return PaginationHelper.CreatePagedReponse<ResponseLunchDTO>(newList, validFilter, totalLunches, _uriService, route);
+                return PaginationHelper.CreatePagedReponse(newList, validFilter, totalLunches, _uriService, route);
             }
             catch (Exception ex)
             {
