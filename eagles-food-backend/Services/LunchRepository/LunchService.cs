@@ -2,8 +2,11 @@
 
 using eagles_food_backend.Data;
 using eagles_food_backend.Domains.DTOs;
+using eagles_food_backend.Domains.Filters;
 using eagles_food_backend.Domains.Models;
+using eagles_food_backend.Helpers;
 using eagles_food_backend.Services.EmailService;
+using eagles_food_backend.Services.UriService;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -15,13 +18,14 @@ namespace eagles_food_backend.Services.LunchRepository
         private readonly IMapper _mapper;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IEmailService _emailService;
-        public LunchService(LunchDbContext context, IMapper mapper, IHttpContextAccessor httpContextAccessor, IEmailService emailService)
+        private readonly IUriService _uriService;
+        public LunchService(LunchDbContext context, IMapper mapper, IHttpContextAccessor httpContextAccessor, IEmailService emailService, IUriService uriService)
         {
             _context = context;
             _mapper = mapper;
             _httpContextAccessor = httpContextAccessor;
             _emailService = emailService;
-
+            _uriService = uriService;
         }
         public async Task<Response<ResponseLunchDTO>> create(CreateLunchDTO createLunchDTO)
         {
@@ -185,11 +189,12 @@ namespace eagles_food_backend.Services.LunchRepository
 
         }
 
-        public async Task<Response<List<ResponseLunchDTO>>> getAll()
+        public async Task<Response<List<ResponseLunchDTO>>> getAll(PaginationFilter validFilter)
         {
             Response<List<ResponseLunchDTO>> response = new Response<List<ResponseLunchDTO>>();
             try
             {
+                var route = _httpContextAccessor.HttpContext.Request.Path.Value;
                 var id = _httpContextAccessor.HttpContext.User.Identity.Name;
                 if (id == null)
                 {
@@ -199,7 +204,7 @@ namespace eagles_food_backend.Services.LunchRepository
                     return response;
                 }
                 int userId = int.Parse(id);
-                var newList = await _context.Lunches
+                var newListQuery = _context.Lunches
                  .Where(x => x.ReceiverId == userId || x.SenderId == userId)
                  .Select(x => new ResponseLunchDTO()
                  {
@@ -213,13 +218,14 @@ namespace eagles_food_backend.Services.LunchRepository
                      LunchStatus = x.LunchStatus,
                      Quantity = x.Quantity,
                      Redeemed = x.Redeemed ?? false
-                 })
-                 .ToListAsync();
+                 });
+                var newList = await newListQuery
+                 .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
+                 .Take(validFilter.PageSize)
+                .ToListAsync();
 
-                response.message = "Success";
-                response.data = newList;
-                response.success = true;
-                return response;
+                var totalLunches = await newListQuery.CountAsync();
+                return PaginationHelper.CreatePagedReponse<ResponseLunchDTO>(newList, validFilter, totalLunches, _uriService, route);
             }
             catch (Exception ex)
             {
@@ -231,11 +237,12 @@ namespace eagles_food_backend.Services.LunchRepository
         }
 
 
-        public async Task<Response<List<LeaderBoardResponseDTO>>> Leaderboard()
+        public async Task<Response<List<LeaderBoardResponseDTO>>> Leaderboard(PaginationFilter validFilter)
         {
             Response<List<LeaderBoardResponseDTO>> response = new Response<List<LeaderBoardResponseDTO>>();
             try
             {
+                var route = _httpContextAccessor.HttpContext.Request.Path.Value;
                 var id = _httpContextAccessor.HttpContext.User.Identity.Name;
                 if (id == null)
                 {
@@ -247,7 +254,7 @@ namespace eagles_food_backend.Services.LunchRepository
                 var lunches = await _context.Lunches
                  .Where(x => x.LunchStatus != LunchStatus.Withdrawal).Include(x => x.Sender).ToListAsync();
 
-                var allUsers = await _context.Users.ToListAsync();
+                //var allUsers = await _context.Users.ToListAsync();
 
                 var lunchResponse = lunches.GroupBy(x => x.SenderId).Select(l => new LeaderBoardResponseDTO()
                 {
@@ -255,12 +262,15 @@ namespace eagles_food_backend.Services.LunchRepository
                     SenderName = l?.First()?.Sender.FirstName + " " + l?.First().Sender.LastName,
                     Quantity = (int)l?.Sum(p => p.Quantity)
 
-                }).ToList();
-                response.message = "Success";
-                response.data = lunchResponse;
+                });
+                var lunchResponseList = lunchResponse
+                    .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
+                    .Take(validFilter.PageSize)
+                    .ToList();
+                var lunchResponseCount = lunchResponse.Count();
 
-                response.success = true;
-                return response;
+                return PaginationHelper.CreatePagedReponse(lunchResponseList, validFilter, lunchResponseCount, _uriService, route, message: "Success");
+
             }
             catch (Exception ex)
             {
