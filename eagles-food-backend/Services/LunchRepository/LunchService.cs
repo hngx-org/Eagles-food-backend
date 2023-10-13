@@ -1,4 +1,5 @@
 ﻿using System.Net;
+
 using eagles_food_backend.Data;
 using eagles_food_backend.Domains.DTOs;
 using eagles_food_backend.Domains.Models;
@@ -154,6 +155,36 @@ namespace eagles_food_backend.Services.LunchRepository
             }
         }
 
+        public async Task<Response<LunchBalanceDTO>> GetLunchBalance()
+        {
+            try
+            {
+                var id = _httpContextAccessor.HttpContext.User.Identity.Name;
+                var user = _context.Users.FirstOrDefault(x => x.Id == int.Parse(id));
+                return new Response<LunchBalanceDTO>()
+                {
+                    statusCode = HttpStatusCode.OK,
+                    data = new LunchBalanceDTO()
+                    {
+                        Balance = user.LunchCreditBalance ?? 0
+                    },
+                    success = true,
+                    message = "Credit balance retrieved successfully"
+                };
+            }
+            catch
+            {
+                return new Response<LunchBalanceDTO>()
+                {
+                    statusCode = HttpStatusCode.InternalServerError,
+                    data = null,
+                    success = false,
+                    message = "Internal Server Error"
+                };
+            }
+
+        }
+
         public async Task<Response<List<ResponseLunchDTO>>> getAll()
         {
             Response<List<ResponseLunchDTO>> response = new Response<List<ResponseLunchDTO>>();
@@ -214,15 +245,15 @@ namespace eagles_food_backend.Services.LunchRepository
                     return response;
                 }
                 var lunches = await _context.Lunches
-                 .Where(x => x.LunchStatus != LunchStatus.Withdrawal).Include(x=>x.Sender).ToListAsync();
+                 .Where(x => x.LunchStatus != LunchStatus.Withdrawal).Include(x => x.Sender).ToListAsync();
 
                 var allUsers = await _context.Users.ToListAsync();
 
                 var lunchResponse = lunches.GroupBy(x => x.SenderId).Select(l => new LeaderBoardResponseDTO()
                 {
-                     SenderEmail =  l?.First()?.Sender.Email,
-                     SenderName = l?.First()?.Sender.FirstName + " " + l?.First().Sender.LastName,
-                     Quantity =  (int)l?.Sum(p=>p.Quantity)
+                    SenderEmail = l?.First()?.Sender.Email,
+                    SenderName = l?.First()?.Sender.FirstName + " " + l?.First().Sender.LastName,
+                    Quantity = (int)l?.Sum(p => p.Quantity)
 
                 }).ToList();
                 response.message = "Success";
