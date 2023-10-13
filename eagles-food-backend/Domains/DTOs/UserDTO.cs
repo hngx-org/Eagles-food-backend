@@ -36,7 +36,29 @@ namespace eagles_food_backend.Domains.DTOs
         public string NewPassword { get; set; } = null!;
     }
 
-    public record UserProfileReadDTO(string? user_id, string? name, string? email, string? phone_number, string? profile_picture, bool isAdmin, string organization, string balance);
+    public class UserProfileReadDTO
+    {
+        public int Id { get; set; }
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+        public string? ProfilePic { get; set; }
+        public string Email { get; set; } = null!;
+        public string? Phone { get; set; }
+        public bool? IsAdmin { get; set; }
+        public int? LunchCreditBalance { get; set; }
+        public string? RefreshToken { get; set; }
+        public string? ResetToken { get; set; }
+        public string? BankNumber { get; set; }
+        public string? BankCode { get; set; }
+        public string? BankName { get; set; }
+        public string? BankRegion { get; set; }
+        public string? Currency { get; set; }
+        public string? CurrencyCode { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
+    }
+
+    //public record UserProfileReadDTO(, , , , , , , );
 
     public record UserBankUpdateDTO([Required] string bank_region, [Required] string bank_number, [Required] string bank_code, [Required] string bank_name);
     public record UserReadDTO(string? name, string? email, string? profile_picture, string? user_id, string? role);
