@@ -24,7 +24,8 @@ namespace eagles_food_backend.Services
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IUriService _uriService;
 
-        public OrganizationService(LunchDbContext context, IMapper mapper, AuthenticationClass authentication, IHttpContextAccessor httpContextAccessor, IEmailService emailService, IUriService uriService)
+        public OrganizationService(LunchDbContext context, IMapper mapper, AuthenticationClass authentication,
+            IHttpContextAccessor httpContextAccessor, IEmailService emailService, IUriService uriService)
         {
             _context = context;
             _mapper = mapper;
