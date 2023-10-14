@@ -8,7 +8,7 @@ namespace eagles_food_backend.Services.UserServices
     {
         Task<Response<Dictionary<string, string>>> CreateUser(CreateUserDTO user);
         Task<Response<Dictionary<string, string>>> Login(UserLoginDTO user);
-        Task<Response<UserProfileReadDTO>> GetUserProfile(int id);
+        Task<Response<Dictionary<string, string>>> GetUserProfile(int id);
         Task<Response<UserBankUpdateDTO>> UpdateUserBank(UserBankUpdateDTO userbank, int user_id);
         Task<Response<List<UserReadDTO>>> GetAllUsersByOrganization(int user_id, PaginationFilter validFilter);
         Task<Response<List<UserReadDTO>>> GetAllUsersOutsideOrganization(int user_id, PaginationFilter validFilter);

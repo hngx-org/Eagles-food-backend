@@ -631,14 +631,14 @@ namespace eagles_food_backend.Services.UserServices
                 };
             }
         }
-        public async Task<Response<UserProfileReadDTO>> GetUserProfile(int id)
+        public async Task<Response<Dictionary<string, string>>> GetUserProfile(int id)
         {
             try
             {
                 var user = await db_context.Users.Include(x => x.Org).FirstOrDefaultAsync(x => x.Id == id);
                 if (user == null)
                 {
-                    return new Response<UserProfileReadDTO>()
+                    return new Response<Dictionary<string, string>>()
                     {
                         message = "User not found",
                         success = false,
@@ -646,27 +646,31 @@ namespace eagles_food_backend.Services.UserServices
                     };
                 }
 
-                var userprofile = new UserProfileReadDTO
-                (
-                    user_id: user.Id.ToString(),
-                    name: $"{user.FirstName} {user.LastName}",
-                    email: user.Email,
-                    profile_picture: user.ProfilePic,
-                    phone_number: user.Phone,
-                    isAdmin: user.IsAdmin ?? false,
-                    organization: user.Org?.Name ?? "Unassigned",
-                    balance: user.LunchCreditBalance.ToString() ?? "0"
-                );
+                var userprofile = new UserProfileReadDTO();
 
-                return new Response<UserProfileReadDTO>()
+                var res = user
+                        .GetType()
+                        .GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                        .ToDictionary(prop => prop.Name, prop => Convert.ToString(prop.GetValue(user, null)));
+
+                // remove sensitive data
+                res.Remove("PasswordHash");
+                res.Remove("LunchReceivers");
+                res.Remove("LunchSenders");
+                res.Remove("Withdrawals");
+                res.Remove("IsDeleted");
+                res.Remove("Org");
+                res.Add("organization_name", user.Org?.Name ?? "Default Organization");
+
+                return new Response<Dictionary<string, string>>()
                 {
-                    data = userprofile,
+                    data = res,
                     message = "User data fetched successfully"
                 };
             }
             catch (Exception)
             {
-                return new Response<UserProfileReadDTO>()
+                return new Response<Dictionary<string, string>>()
                 {
                     message = "Internal Server Error",
                     statusCode = HttpStatusCode.InternalServerError

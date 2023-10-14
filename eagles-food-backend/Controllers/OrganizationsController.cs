@@ -243,11 +243,12 @@ namespace eagles_food_backend.Controllers
         /// <returns>It returns all the invites a person has unattended to </returns>
         /// <response code="200">Returns the user</response>
         [HttpGet("organizationinvites")]
-        public async Task<IActionResult> GetUserInvites()
+        public async Task<IActionResult> GetUserInvites([FromQuery] PaginationFilter filter)
         {
             if (int.TryParse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value, out int id))
             {
-                var response = await _organizationService.OrganizationInvites(id);
+                var validFilter = new PaginationFilter(filter.PageNumber, filter.PageSize);
+                var response = await _organizationService.OrganizationInvites(id, validFilter);
                 return StatusCode((int)response.statusCode, response);
             }
             else return BadRequest();
@@ -260,11 +261,12 @@ namespace eagles_food_backend.Controllers
         /// <returns>It returns all the invites a person has unattended to </returns>
         /// <response code="200">Returns the user</response>
         [HttpGet("organizationinviterequest")]
-        public async Task<IActionResult> GetUserInviteRequests()
+        public async Task<IActionResult> GetUserInviteRequests([FromQuery] PaginationFilter filter)
         {
             if (int.TryParse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value, out int id))
             {
-                var response = await _organizationService.OrganizationInviteRequests(id);
+                var validFilter = new PaginationFilter(filter.PageNumber, filter.PageSize);
+                var response = await _organizationService.OrganizationInviteRequests(id, validFilter);
                 return StatusCode((int)response.statusCode, response);
             }
             else return BadRequest();

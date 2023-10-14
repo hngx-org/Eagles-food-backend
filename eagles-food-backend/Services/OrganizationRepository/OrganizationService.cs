@@ -382,8 +382,9 @@ namespace eagles_food_backend.Services
         }
 
         //Get all Organization Invites
-        public async Task<Response<List<OrganizationInvitationDTO>>> OrganizationInvites(int userId)
+        public async Task<Response<List<OrganizationInvitationDTO>>> OrganizationInvites(int userId, PaginationFilter validFilter)
         {
+            var route = _httpContextAccessor.HttpContext.Request.Path.Value;
             Response<List<OrganizationInvitationDTO>> response = new();
             User? user = await _context.Users.FindAsync(userId);
             if (user is null)
@@ -412,25 +413,31 @@ namespace eagles_food_backend.Services
                 return response;
             }
             List<User>? users = await _context.Users.Where(x => x.Email != user.Email && x.IsAdmin == false).ToListAsync();
-            var organizationInvites = await _context.OrganizationInvites.Where(x => x.OrgId == user.OrgId).ToListAsync();
-            response.success = true;
-            response.message = organizationInvites.Count > 0 ? "Invites Fetched Successfuuly" : "You have any Invitations";
-            response.statusCode = HttpStatusCode.OK;
-            response.data = organizationInvites.Select(x => new OrganizationInvitationDTO()
-            {
-                CreatedAt = x.CreatedAt,
-                Id = x.Id,
-                OrgId = organization.Id,
-                Org = organization.Name,
-                Email = x.Email,
-                Status = x.Status
-            }).ToList();
-            return response;
+            var organizationInviteRequestQuery = _context.OrganizationInvites
+                .Where(x => x.OrgId == user.OrgId)
+                .Select(x => new OrganizationInvitationDTO()
+                {
+                    CreatedAt = x.CreatedAt,
+                    Id = x.Id,
+                    OrgId = organization.Id,
+                    Org = organization.Name,
+                    Email = x.Email,
+                    Status = x.Status
+                });
+
+            var organizationInviteRequest = await organizationInviteRequestQuery
+                            .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
+                            .Take(validFilter.PageSize)
+                            .ToListAsync();
+
+            var orgsCount = await organizationInviteRequestQuery.CountAsync();
+            return PaginationHelper.CreatePagedReponse(organizationInviteRequest, validFilter, orgsCount, _uriService, route, message: orgsCount > 0 ? "Invites Fetched Successfuuly" : "You have any Invitations");
         }
 
         //Get all Organization Invite Request from User
-        public async Task<Response<List<OrganizationInvitationDTO>>> OrganizationInviteRequests(int userId)
+        public async Task<Response<List<OrganizationInvitationDTO>>> OrganizationInviteRequests(int userId, PaginationFilter validFilter)
         {
+            var route = _httpContextAccessor.HttpContext.Request.Path.Value;
             Response<List<OrganizationInvitationDTO>> response = new();
             User? user = await _context.Users.FindAsync(userId);
             if (user is null)
@@ -459,20 +466,25 @@ namespace eagles_food_backend.Services
                 return response;
             }
             List<User>? users = await _context.Users.Where(x => x.Email != user.Email && x.IsAdmin == false).ToListAsync();
-            var organizationInviteRequest = await _context.InvitationRequests.Where(x => x.OrgId == user.OrgId && x.Status != true).ToListAsync();
-            response.success = true;
-            response.message = organizationInviteRequest.Count > 0 ? "Invites Fetched Successfuuly" : "You have any pending invites";
-            response.statusCode = HttpStatusCode.OK;
-            response.data = organizationInviteRequest.Select(x => new OrganizationInvitationDTO()
-            {
-                CreatedAt = x.CreatedAt,
-                Id = x.Id,
-                OrgId = organization.Id,
-                Org = organization.Name,
-                Email = x.UserEmail,
-                Status = x.Status
-            }).ToList();
-            return response;
+            var organizationInviteRequestQuery = _context.InvitationRequests
+                .Where(x => x.OrgId == user.OrgId && x.Status != true)
+                .Select(x => new OrganizationInvitationDTO()
+                {
+                    CreatedAt = x.CreatedAt,
+                    Id = x.Id,
+                    OrgId = organization.Id,
+                    Org = organization.Name,
+                    Email = x.UserEmail,
+                    Status = x.Status
+                });
+
+            var organizationInviteRequest = await organizationInviteRequestQuery
+                .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
+                .Take(validFilter.PageSize)
+                .ToListAsync();
+
+            var orgsCount = await organizationInviteRequestQuery.CountAsync();
+            return PaginationHelper.CreatePagedReponse(organizationInviteRequest, validFilter, orgsCount, _uriService, route, message: "Invites returned successfully");
         }
 
         public async Task<Response<bool>> ToggleInviteRequest(int userId, ToggleInviteDTO model)
