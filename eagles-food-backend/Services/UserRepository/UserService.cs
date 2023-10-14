@@ -7,12 +7,13 @@ using CloudinaryDotNet.Actions;
 
 using eagles_food_backend.Data;
 using eagles_food_backend.Domains.DTOs;
+using eagles_food_backend.Domains.Filters;
 using eagles_food_backend.Domains.Models;
+using eagles_food_backend.Helpers;
 using eagles_food_backend.Services.EmailService;
+using eagles_food_backend.Services.UriService;
 
 using Microsoft.EntityFrameworkCore;
-
-using Newtonsoft.Json.Linq;
 
 namespace eagles_food_backend.Services.UserServices
 {
@@ -25,14 +26,17 @@ namespace eagles_food_backend.Services.UserServices
         public readonly IConfiguration _config;
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly Cloudinary _cloudinary;
-
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IUriService _uriService;
 
         public UserService(LunchDbContext db_context,
             IMapper mapper,
             AuthenticationClass authentication,
             IEmailService emailService,
             IConfiguration config,
-            IWebHostEnvironment webHostEnvironment)
+            IWebHostEnvironment webHostEnvironment,
+            IHttpContextAccessor httpContextAccessor,
+            IUriService uriService)
         {
             this.db_context = db_context;
             this.mapper = mapper;
@@ -42,6 +46,8 @@ namespace eagles_food_backend.Services.UserServices
             _webHostEnvironment = webHostEnvironment;
             Account account = new Account("dw5cv0yz0", "356162485995848", "LZVFaS2ZtE8JAf_GVT0sDWdtGQA");
             _cloudinary = new Cloudinary(account);
+            _uriService = uriService;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         private CreateBankDTO GenerateBankDetails() //Generates new account number for each created user
@@ -108,7 +114,7 @@ namespace eagles_food_backend.Services.UserServices
                 return response;
             }
 
-          
+
             // find eagles org
             var org = await db_context.Organizations.FirstAsync(o => o.Name == "Eagles Food");
 
@@ -129,8 +135,8 @@ namespace eagles_food_backend.Services.UserServices
                 newUser.BankRegion = generatedDetails.BankRegion;
                 if (user.InviteCode != null)
                 {
-                    var invitation = db_context.OrganizationInvites.Where(x=>x.Token == user.InviteCode && x.Email == user.Email).FirstOrDefault();
-                    if(invitation == null)
+                    var invitation = db_context.OrganizationInvites.Where(x => x.Token == user.InviteCode && x.Email == user.Email).FirstOrDefault();
+                    if (invitation == null)
                     {
                         response.success = false;
                         response.message = "Invalid Invite Code";
@@ -270,7 +276,7 @@ namespace eagles_food_backend.Services.UserServices
                 response.statusCode = HttpStatusCode.BadRequest;
                 return response;
             }
-             var photoNewName = $"{user.Email}";
+            var photoNewName = $"{user.Email}";
             var webHostPath = _webHostEnvironment.ContentRootPath;
             var path = Path.Combine("storage", photoNewName);
             var photoInBytes = Convert.FromBase64String(photostring);
@@ -334,7 +340,7 @@ namespace eagles_food_backend.Services.UserServices
             }
             var photoExtension = Path.GetExtension(photo.FileName);
             var photoNewName = $"{user.Email}{photoExtension}";
-            var webHostPath =  _webHostEnvironment.ContentRootPath;
+            var webHostPath = _webHostEnvironment.ContentRootPath;
             var path = Path.Combine("storage", photoNewName);
             var uploadUrl = String.Empty;
             using (var stream = photo.OpenReadStream())
@@ -345,15 +351,15 @@ namespace eagles_food_backend.Services.UserServices
                     PublicId = photoNewName
                 };
                 var uploadResult = _cloudinary.Upload(uploadParams);
-                if(uploadResult.StatusCode != HttpStatusCode.OK)
+                if (uploadResult.StatusCode != HttpStatusCode.OK)
                 {
                     response.success = false;
                     response.message = "Image could not be uploaded";
                     response.statusCode = HttpStatusCode.BadRequest;
                     return response;
                 }
-                uploadUrl = uploadResult.SecureUri.OriginalString; 
-              //  await photo.CopyToAsync(stream);
+                uploadUrl = uploadResult.SecureUri.OriginalString;
+                //  await photo.CopyToAsync(stream);
             }
             user.ProfilePic = uploadUrl;
             await db_context.SaveChangesAsync();
@@ -507,7 +513,7 @@ namespace eagles_food_backend.Services.UserServices
                 response.data = res;
                 response.message = "User Profile updated successfully";
                 response.statusCode = HttpStatusCode.OK;
-            }            
+            }
             // catch any errors
             catch (Exception ex)
             {
@@ -519,17 +525,16 @@ namespace eagles_food_backend.Services.UserServices
             return response;
         }
 
-        public async Task<Response<UserReadAllDTO>> GetAllUsersByOrganization(int user_id)
+        public async Task<Response<List<UserReadDTO>>> GetAllUsersByOrganization(int user_id, PaginationFilter validFilter)
         {
             List<UserReadDTO> org_people = new();
-            List<UserReadDTO> other_people = new();
-
+            var route = _httpContextAccessor.HttpContext.Request.Path.Value;
             try
             {
                 // ensure user exists
                 if (!await db_context.Users.AnyAsync(x => x.Id == user_id))
                 {
-                    return new Response<UserReadAllDTO>()
+                    return new Response<List<UserReadDTO>>()
                     {
                         message = "User not found",
                         success = false,
@@ -544,45 +549,30 @@ namespace eagles_food_backend.Services.UserServices
                     // do nothing, the list is already empty
                 }
 
-                org_people = await db_context.Users
-                                    .Where(x => x.OrgId == org_id)
+                var org_people_query = db_context.Users
+                                    .Where(x => x.OrgId == org_id && x.Id != user_id)
                                     .Select(x => new UserReadDTO(
                                         $"{x.FirstName} {x.LastName}",
                                         x.Email,
                                         x.ProfilePic,
                                         x.Id.ToString(),
                                         x.IsAdmin == null ? "User" : (bool)x.IsAdmin ? "Admin" : "User"
-                                    )).ToListAsync();
+                                    ));
+                org_people = await org_people_query
+                    .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
+                    .Take(validFilter.PageSize)
+                    .ToListAsync();
 
+                var org_people_count = await org_people_query.CountAsync();
                 // remove the current user from the list
-                org_people.RemoveAll(users => users.user_id == user_id.ToString());
+                //org_people.RemoveAll(users => users.user_id == user_id.ToString());
 
-                // get everyone else with a non-null org
-                other_people = await db_context.Users
-                                    .Where(x => x.OrgId != null && x.OrgId != org_id)
-                                    .Select(x => new UserReadDTO(
-                                        $"{x.FirstName} {x.LastName}",
-                                        x.Email,
-                                        x.ProfilePic,
-                                        x.Id.ToString(),
-                                        x.IsAdmin == null ? "User" : (bool)x.IsAdmin ? "Admin" : "User"
-                                    )).ToListAsync();
+                return PaginationHelper.CreatePagedReponse(org_people, validFilter, org_people_count, _uriService, route, message: "Users fetched successfully");
 
-                var res = new UserReadAllDTO()
-                {
-                    org = org_people,
-                    others = other_people
-                };
-
-                return new Response<UserReadAllDTO>()
-                {
-                    data = res,
-                    message = "Users fetched successfully"
-                };
             }
             catch (Exception)
             {
-                return new Response<UserReadAllDTO>()
+                return new Response<List<UserReadDTO>>()
                 {
                     message = "Internal Server Error",
                     statusCode = HttpStatusCode.InternalServerError
@@ -590,14 +580,16 @@ namespace eagles_food_backend.Services.UserServices
             }
         }
 
-        public async Task<Response<UserProfileReadDTO>> GetUserProfile(int id)
+        public async Task<Response<List<UserReadDTO>>> GetAllUsersOutsideOrganization(int user_id, PaginationFilter validFilter)
         {
+            List<UserReadDTO> other_people = new();
+            var route = _httpContextAccessor.HttpContext.Request.Path.Value;
             try
             {
-                var user = await db_context.Users.Include(x => x.Org).FirstOrDefaultAsync(x => x.Id == id);
-                if (user == null)
+                // ensure user exists
+                if (!await db_context.Users.AnyAsync(x => x.Id == user_id))
                 {
-                    return new Response<UserProfileReadDTO>()
+                    return new Response<List<UserReadDTO>>()
                     {
                         message = "User not found",
                         success = false,
@@ -605,27 +597,80 @@ namespace eagles_food_backend.Services.UserServices
                     };
                 }
 
-                var userprofile = new UserProfileReadDTO
-                (
-                    user_id: user.Id.ToString(),
-                    name: $"{user.FirstName} {user.LastName}",
-                    email: user.Email,
-                    profile_picture: user.ProfilePic,
-                    phone_number: user.Phone,
-                    isAdmin: user.IsAdmin ?? false,
-                    organization: user.Org?.Name ?? "Unassigned",
-                    balance: user.LunchCreditBalance.ToString() ?? "0"
-                );
+                long? org_id = (await db_context.Users.FirstOrDefaultAsync(x => x.Id == user_id))?.OrgId;
 
-                return new Response<UserProfileReadDTO>()
+                if (org_id == null)
                 {
-                    data = userprofile,
+                    // do nothing, the list is already empty
+                }
+
+                // get everyone else with a non-null org
+                var other_people_query = db_context.Users
+                                    .Where(x => x.OrgId != null && x.OrgId != org_id)
+                                    .Select(x => new UserReadDTO(
+                                        $"{x.FirstName} {x.LastName}",
+                                        x.Email,
+                                        x.ProfilePic,
+                                        x.Id.ToString(),
+                                        x.IsAdmin == null ? "User" : (bool)x.IsAdmin ? "Admin" : "User"
+                                    ));
+                other_people = await other_people_query
+                    .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
+                    .Take(validFilter.PageSize)
+                    .ToListAsync();
+                var other_people_count = await other_people_query.CountAsync();
+
+                return PaginationHelper.CreatePagedReponse(other_people, validFilter, other_people_count, _uriService, route, message: "Users fetched successfully");
+            }
+            catch (Exception)
+            {
+                return new Response<List<UserReadDTO>>()
+                {
+                    message = "Internal Server Error",
+                    statusCode = HttpStatusCode.InternalServerError
+                };
+            }
+        }
+        public async Task<Response<Dictionary<string, string>>> GetUserProfile(int id)
+        {
+            try
+            {
+                var user = await db_context.Users.Include(x => x.Org).FirstOrDefaultAsync(x => x.Id == id);
+                if (user == null)
+                {
+                    return new Response<Dictionary<string, string>>()
+                    {
+                        message = "User not found",
+                        success = false,
+                        statusCode = HttpStatusCode.NotFound
+                    };
+                }
+
+                var userprofile = new UserProfileReadDTO();
+
+                var res = user
+                        .GetType()
+                        .GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                        .ToDictionary(prop => prop.Name, prop => Convert.ToString(prop.GetValue(user, null)));
+
+                // remove sensitive data
+                res.Remove("PasswordHash");
+                res.Remove("LunchReceivers");
+                res.Remove("LunchSenders");
+                res.Remove("Withdrawals");
+                res.Remove("IsDeleted");
+                res.Remove("Org");
+                res.Add("organization_name", user.Org?.Name ?? "Default Organization");
+
+                return new Response<Dictionary<string, string>>()
+                {
+                    data = res,
                     message = "User data fetched successfully"
                 };
             }
             catch (Exception)
             {
-                return new Response<UserProfileReadDTO>()
+                return new Response<Dictionary<string, string>>()
                 {
                     message = "Internal Server Error",
                     statusCode = HttpStatusCode.InternalServerError
@@ -951,12 +996,12 @@ namespace eagles_food_backend.Services.UserServices
                 };
             }
         }
-    
+
         public async Task<Response<bool>> SendInvitationRequest(int userId, int orgId)
         {
             Response<bool> response = new();
             User? user = await db_context.Users.FindAsync(userId);
-           
+
             if (user is null)
             {
                 response.success = false;
@@ -966,10 +1011,10 @@ namespace eagles_food_backend.Services.UserServices
                 return response;
             }
             var sentInviteRequest = db_context.InvitationRequests.Where(x => x.UserEmail == user.Email).ToList();
-            if(sentInviteRequest.Any())
+            if (sentInviteRequest.Any())
             {
                 var requested = sentInviteRequest.FirstOrDefault(x => x.OrgId == orgId);
-                if(requested != null)
+                if (requested != null)
                 {
                     response.success = false;
                     response.message = "You already sent this organization an invite";

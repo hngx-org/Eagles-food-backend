@@ -2,6 +2,7 @@
 using System.Security.Claims;
 
 using eagles_food_backend.Domains.DTOs;
+using eagles_food_backend.Domains.Filters;
 using eagles_food_backend.Services.UserServices;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -81,7 +82,7 @@ namespace eagles_food_backend.Controllers
         /// <param name="model"></param>
         /// <returns>The updated user details</returns>
         [HttpPut("update")]
-        public async Task<IActionResult> UpdateUser([FromForm]UpdateUserDTO model)
+        public async Task<IActionResult> UpdateUser([FromForm] UpdateUserDTO model)
         {
             if (int.TryParse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value, out int id))
             {
@@ -92,7 +93,7 @@ namespace eagles_food_backend.Controllers
         }
 
         [HttpPost("photo")]
-        public async Task<IActionResult> UpdatePhoto([Required]IFormFile file)
+        public async Task<IActionResult> UpdatePhoto([Required] IFormFile file)
         {
             if (int.TryParse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value, out int id))
             {
@@ -108,16 +109,24 @@ namespace eagles_food_backend.Controllers
         /// </summary>
         /// <returns>A response containing all the users divided by whether they're in the callers org. or not</returns>
         [HttpGet("all")]
-        public async Task<IActionResult> GetUsersForOrganization()
+        public async Task<IActionResult> GetUsersForOrganization([FromQuery] PaginationFilter filter)
         {
             if (int.TryParse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value, out int id))
             {
-                //var role = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
-                //if (role != "admin")
-                //{
-                //    return Unauthorized();
-                //}
-                var response = await _userService.GetAllUsersByOrganization(id);
+                var validFilter = new PaginationFilter(filter.PageNumber, filter.PageSize);
+                var response = await _userService.GetAllUsersByOrganization(id, validFilter);
+                return StatusCode((int)response.statusCode, response);
+            }
+            else return BadRequest();
+        }
+
+        [HttpGet("others")]
+        public async Task<IActionResult> GetUsersForOtherOrganizations([FromQuery] PaginationFilter filter)
+        {
+            if (int.TryParse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value, out int id))
+            {
+                var validFilter = new PaginationFilter(filter.PageNumber, filter.PageSize);
+                var response = await _userService.GetAllUsersOutsideOrganization(id, validFilter);
                 return StatusCode((int)response.statusCode, response);
             }
             else return BadRequest();
