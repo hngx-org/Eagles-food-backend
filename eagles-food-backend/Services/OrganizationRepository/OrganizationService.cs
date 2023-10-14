@@ -470,8 +470,8 @@ namespace eagles_food_backend.Services
         public async Task<Response<bool>> ToggleInviteRequest(int userId, ToggleInviteDTO model)
         {
             Response<bool> response = new();
-            User? user = await _context.Users.FindAsync(userId);
-            if (user is null)
+            User? loggedInuser = await _context.Users.FindAsync(userId);
+            if (loggedInuser is null)
             {
                 response.success = false;
                 response.message = "User not found";
@@ -489,6 +489,15 @@ namespace eagles_food_backend.Services
                 response.data = false;
                 return response;
             }
+            User? user = await _context.Users.Where(x=>x.Email == invite.UserEmail).FirstOrDefaultAsync();
+            if (user is null)
+            {
+                response.success = false;
+                response.message = "User not found";
+                response.statusCode = HttpStatusCode.NotFound;
+                response.data = false;
+                return response;
+            }
             if ((bool)invite.Status)
             {
                 response.success = true;
@@ -502,8 +511,9 @@ namespace eagles_food_backend.Services
             {
                 user.Org = organization;
                 user.OrgId = organization.Id;
+                _context.Update(user);
             }
-
+            
             await _context.SaveChangesAsync();
             response.message = "Successful Operation";
             response.statusCode = HttpStatusCode.OK;
