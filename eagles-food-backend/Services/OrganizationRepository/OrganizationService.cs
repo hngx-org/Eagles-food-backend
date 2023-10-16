@@ -509,7 +509,7 @@ namespace eagles_food_backend.Services
                 response.data = false;
                 return response;
             }
-            User? user = await _context.Users.Where(x=>x.Email == invite.UserEmail).FirstOrDefaultAsync();
+            User? user = await _context.Users.Where(x => x.Email == invite.UserEmail).FirstOrDefaultAsync();
             if (user is null)
             {
                 response.success = false;
@@ -533,7 +533,7 @@ namespace eagles_food_backend.Services
                 user.OrgId = organization.Id;
                 _context.Update(user);
             }
-            
+
             await _context.SaveChangesAsync();
             response.message = "Successful Operation";
             response.statusCode = HttpStatusCode.OK;
@@ -760,19 +760,23 @@ namespace eagles_food_backend.Services
             }
         }
 
-        public async Task<Response<List<OrganizationReadDTO>>> GetAllOrganizations(PaginationFilter validFilter)
+        public async Task<Response<List<OrganizationReadDTO>>> GetAllOrganizations(PaginationFilter validFilter, string? searchTerm)
         {
             try
             {
+                searchTerm = searchTerm?.Trim().ToLower();
                 var route = _httpContextAccessor.HttpContext.Request.Path.Value;
-                var orgsQuery = _context.Organizations.Where(x => x.IsDeleted == false && x.Hidden == false);
+                var orgsQuery = _context.Organizations
+                    .Where(x => x.IsDeleted == false
+                    && x.Hidden == false
+                    && (string.IsNullOrEmpty(searchTerm) ? true : x.Name.Contains(searchTerm)));
                 var orgs = await orgsQuery
                     .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
                  .Take(validFilter.PageSize)
                  .ToListAsync();
                 var orgsCount = await orgsQuery.CountAsync();
                 var orgsDTO = _mapper.Map<List<OrganizationReadDTO>>(orgs);
-                return PaginationHelper.CreatePagedReponse(orgsDTO, validFilter, orgsCount, _uriService, route, message: "Organizations returned successfully");
+                return PaginationHelper.CreatePagedReponse(orgsDTO, validFilter, orgsCount, _uriService, route, message: "Organizations returned successfully", searchTerm: searchTerm);
             }
             catch (Exception)
             {
