@@ -769,7 +769,7 @@ namespace eagles_food_backend.Services
                 var orgsQuery = _context.Organizations
                     .Where(x => x.IsDeleted == false
                     && x.Hidden == false
-                    && (string.IsNullOrEmpty(validFilter.SearchTerm) ? true : x.Name.Contains(validFilter.SearchTerm)));
+                    && (string.IsNullOrEmpty(validFilter.SearchTerm) || x.Name.Contains(validFilter.SearchTerm)));
                 var orgs = await orgsQuery
                     .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
                  .Take(validFilter.PageSize)
