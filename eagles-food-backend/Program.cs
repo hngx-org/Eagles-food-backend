@@ -1,8 +1,8 @@
 global using AutoMapper;
 
-using System;
 using System.Reflection;
 using System.Text;
+
 using eagles_food_backend;
 using eagles_food_backend.Data;
 using eagles_food_backend.Services;
@@ -10,9 +10,8 @@ using eagles_food_backend.Services.EmailService;
 using eagles_food_backend.Services.LunchRepository;
 using eagles_food_backend.Services.OrganizationRepository;
 using eagles_food_backend.Services.ResponseService;
+using eagles_food_backend.Services.UriService;
 using eagles_food_backend.Services.UserServices;
-
-using Exceptionless;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -27,6 +26,14 @@ var connectionString = "Server=MYSQL8002.site4now.net;Database=db_a9ef58_teagle;
 builder.Services.AddDbContext<LunchDbContext>(options =>
     options.UseMySql(
         connectionString, ServerVersion.AutoDetect(connectionString)));
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddSingleton<IUriService>(o =>
+{
+    var accessor = o.GetRequiredService<IHttpContextAccessor>();
+    var request = accessor.HttpContext.Request;
+    var uri = string.Concat(request.Scheme, "://", request.Host.ToUriComponent());
+    return new UriService(uri);
+});
 builder.Services.AddControllers();
 var config = builder.Configuration;
 
