@@ -144,6 +144,19 @@ namespace eagles_food_backend.Controllers
             var response = await _userService.SearchForUser(email);
             return StatusCode((int)response.statusCode, response);
         }
+        
+        /// <summary>
+        /// Search for a user by their name
+        /// </summary>
+        /// <param name="email">The email of the user to be retrieved</param>
+        /// <returns>The user that owns the specified email</returns>
+        /// <response code="200">Returns the user</response>
+        [HttpGet("searchname/{name}")]
+        public async Task<IActionResult> GetUserByName(string name)
+        {
+            var response = await _userService.SearchForUserByName(name);
+            return StatusCode((int)response.statusCode, response);
+        }
 
         /// <summary>
         /// This end point is for users to see all thier pending invites

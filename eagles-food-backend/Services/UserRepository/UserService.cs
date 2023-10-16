@@ -1,10 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Reflection;
-
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
-
 using eagles_food_backend.Data;
 using eagles_food_backend.Domains.DTOs;
 using eagles_food_backend.Domains.Filters;
@@ -781,6 +779,46 @@ namespace eagles_food_backend.Services.UserServices
             catch (Exception)
             {
                 return new Response<UserReadDTO>()
+                {
+                    message = "Internal Server Error",
+                    statusCode = HttpStatusCode.InternalServerError
+                };
+            }
+        }
+
+
+        public async Task<Response<List<UserReadDTO>>> SearchForUserByName(string name)
+        {
+            try
+            {
+                var users = await db_context.Users.Where(x => x.FirstName.Contains(name) || x.LastName.Contains(name)).ToListAsync();
+                if (!users.Any())
+                {
+                    return new Response<List<UserReadDTO>>()
+                    {
+                        message = "No result found",
+                        success = false,
+                        statusCode = HttpStatusCode.NotFound
+                    };
+                }
+
+                var userDtos = users.Select(user => new UserReadDTO(
+                    name: $"{user.FirstName} {user.LastName}",
+                    email: user.Email,
+                    profile_picture: user.ProfilePic,
+                    user_id: user.Id.ToString(),
+                    role: (bool)user.IsAdmin ? "Admin" : "User"
+                    )).ToList();
+
+                return new Response<List<UserReadDTO>>()
+                {
+                    data = userDtos,
+                    message = "User found"
+                };
+            }
+            catch (Exception)
+            {
+                return new Response<List<UserReadDTO>>()
                 {
                     message = "Internal Server Error",
                     statusCode = HttpStatusCode.InternalServerError
