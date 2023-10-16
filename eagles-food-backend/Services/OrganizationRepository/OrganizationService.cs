@@ -760,23 +760,23 @@ namespace eagles_food_backend.Services
             }
         }
 
-        public async Task<Response<List<OrganizationReadDTO>>> GetAllOrganizations(PaginationFilter validFilter, string? searchTerm)
+
+        public async Task<Response<List<OrganizationReadDTO>>> GetAllOrganizations(PaginationFilter validFilter)
         {
             try
             {
-                searchTerm = searchTerm?.Trim().ToLower();
                 var route = _httpContextAccessor.HttpContext.Request.Path.Value;
                 var orgsQuery = _context.Organizations
                     .Where(x => x.IsDeleted == false
                     && x.Hidden == false
-                    && (string.IsNullOrEmpty(searchTerm) ? true : x.Name.Contains(searchTerm)));
+                    && (string.IsNullOrEmpty(validFilter.SearchTerm) ? true : x.Name.Contains(validFilter.SearchTerm)));
                 var orgs = await orgsQuery
                     .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
                  .Take(validFilter.PageSize)
                  .ToListAsync();
                 var orgsCount = await orgsQuery.CountAsync();
                 var orgsDTO = _mapper.Map<List<OrganizationReadDTO>>(orgs);
-                return PaginationHelper.CreatePagedReponse(orgsDTO, validFilter, orgsCount, _uriService, route, message: "Organizations returned successfully", searchTerm: searchTerm);
+                return PaginationHelper.CreatePagedReponse(orgsDTO, validFilter, orgsCount, _uriService, route, message: "Organizations returned successfully", searchTerm: validFilter.SearchTerm);
             }
             catch (Exception)
             {

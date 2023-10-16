@@ -326,10 +326,10 @@ namespace eagles_food_backend.Controllers
         }
 
         [HttpGet("all")]
-        public async Task<IActionResult> GetAllOrganizations([FromQuery] PaginationFilter filter, [FromQuery] string? searchTerm)
+        public async Task<IActionResult> GetAllOrganizations([FromQuery] PaginationFilter filter)
         {
-            var validFilter = new PaginationFilter(filter.PageNumber, filter.PageSize);
-            var response = await _organizationService.GetAllOrganizations(validFilter, searchTerm);
+            var validFilter = new PaginationFilter(filter.PageNumber, filter.PageSize, filter.SearchTerm);
+            var response = await _organizationService.GetAllOrganizations(validFilter);
             return StatusCode((int)response.statusCode, response);
         }
     }
