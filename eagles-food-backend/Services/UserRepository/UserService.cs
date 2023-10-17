@@ -548,7 +548,11 @@ namespace eagles_food_backend.Services.UserServices
                 }
 
                 var org_people_query = db_context.Users
-                                    .Where(x => x.OrgId == org_id && x.Id != user_id)
+                                    .Where(x =>
+                                    (x.OrgId == org_id && x.Id != user_id) && 
+                                    (string.IsNullOrEmpty(validFilter.SearchTerm) 
+                                    || (x.FirstName.Contains(validFilter.SearchTerm) 
+                                    || (x.LastName.Contains(validFilter.SearchTerm)) )))
                                     .Select(x => new UserReadDTO(
                                         $"{x.FirstName} {x.LastName}",
                                         x.Email,
@@ -604,7 +608,10 @@ namespace eagles_food_backend.Services.UserServices
 
                 // get everyone else with a non-null org
                 var other_people_query = db_context.Users
-                                    .Where(x => x.OrgId != null && x.OrgId != org_id)
+                                    .Where(x => (x.OrgId != null && x.OrgId != org_id) &&
+                                    (string.IsNullOrEmpty(validFilter.SearchTerm)
+                                    || (x.FirstName.Contains(validFilter.SearchTerm)
+                                    || (x.LastName.Contains(validFilter.SearchTerm)))))
                                     .Select(x => new UserReadDTO(
                                         $"{x.FirstName} {x.LastName}",
                                         x.Email,

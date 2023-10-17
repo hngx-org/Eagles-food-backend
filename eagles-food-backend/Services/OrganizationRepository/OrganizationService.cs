@@ -414,7 +414,10 @@ namespace eagles_food_backend.Services
             }
             List<User>? users = await _context.Users.Where(x => x.Email != user.Email && x.IsAdmin == false).ToListAsync();
             var organizationInviteRequestQuery = _context.OrganizationInvites
-                .Where(x => x.OrgId == user.OrgId)
+                .Where(x => (x.OrgId == user.OrgId) &&
+                                    (string.IsNullOrEmpty(validFilter.SearchTerm)
+                                    || (x.Email.Contains(validFilter.SearchTerm)
+                                   )))
                 .Select(x => new OrganizationInvitationDTO()
                 {
                     CreatedAt = x.CreatedAt,
@@ -467,7 +470,10 @@ namespace eagles_food_backend.Services
             }
             List<User>? users = await _context.Users.Where(x => x.Email != user.Email && x.IsAdmin == false).ToListAsync();
             var organizationInviteRequestQuery = _context.InvitationRequests
-                .Where(x => x.OrgId == user.OrgId && x.Status != true)
+                .Where(x => (x.OrgId == user.OrgId && x.Status != true) &&
+                                    (string.IsNullOrEmpty(validFilter.SearchTerm)
+                                    || (x.UserEmail.Contains(validFilter.SearchTerm)
+                                   )))
                 .Select(x => new OrganizationInvitationDTO()
                 {
                     CreatedAt = x.CreatedAt,
