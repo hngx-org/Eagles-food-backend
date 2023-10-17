@@ -767,7 +767,7 @@ namespace eagles_food_backend.Services
             {
                 var route = _httpContextAccessor.HttpContext.Request.Path.Value;
                 var orgsQuery = _context.Organizations
-                    .Where(x => x.IsDeleted == false
+                    .Where(x => !(x.IsDeleted ?? false)
                     && !x.Hidden
                     && (string.IsNullOrEmpty(validFilter.SearchTerm) || x.Name.Contains(validFilter.SearchTerm)));
                 var orgs = await orgsQuery
