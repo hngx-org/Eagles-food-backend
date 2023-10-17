@@ -332,5 +332,17 @@ namespace eagles_food_backend.Controllers
             var response = await _organizationService.GetAllOrganizations(validFilter);
             return StatusCode((int)response.statusCode, response);
         }
+
+        [HttpGet("leave")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<IActionResult> LeaveOrganization()
+        {
+            if (int.TryParse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value, out int id))
+            {
+                var response = await _organizationService.LeaveOrganization(id);
+                return StatusCode((int)response.statusCode, response);
+            }
+            else return BadRequest();
+        }
     }
 }

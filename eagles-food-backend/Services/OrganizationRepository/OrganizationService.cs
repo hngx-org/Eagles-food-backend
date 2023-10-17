@@ -790,5 +790,74 @@ namespace eagles_food_backend.Services
             }
 
         }
+
+        public async Task<Response<string>> LeaveOrganization(int userId)
+        {
+            User? user = await _context.Users.FindAsync(userId);
+
+            try
+            {
+                //Check that user exists
+                if (user is null)
+                {
+                    return new Response<string>()
+                    {
+                        success = false,
+                        message = "User not found",
+                        statusCode = HttpStatusCode.NotFound,
+                        data = null
+                    };
+                }
+
+                //Check that the user is not admin
+                if (user.IsAdmin == true)
+                {
+                    return new Response<string>()
+                    {
+                        success = false,
+                        message = "Admin cannot leave organization",
+                        statusCode = HttpStatusCode.Unauthorized,
+                        data = null
+                    };
+                }
+
+                var orgID = user.OrgId;
+                var org = await _context.Organizations.FindAsync(orgID);
+
+                //Check that organization exists
+                if (org is null)
+                {
+                    return new Response<string>()
+                    {
+                        success = false,
+                        message = "Organization does not exist",
+                        statusCode = HttpStatusCode.BadRequest
+                    };
+                }
+
+                //Remove user from the organization and save changes
+                user.Org = null;
+                user.OrgId = null;
+                _context.Update(user);
+                await _context.SaveChangesAsync();
+                return new Response<string>()
+                {
+                    success = true,
+                    message = "Successful Operation",
+                    statusCode = HttpStatusCode.OK,
+                    data = "Success"
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return new Response<string>()
+                {
+                    success = false,
+                    message = "Internal Server Error",
+                    statusCode = HttpStatusCode.InternalServerError
+                };
+            }
+        }
     }
 }

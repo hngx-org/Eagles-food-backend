@@ -17,5 +17,6 @@ namespace eagles_food_backend.Services.OrganizationRepository
         Task<Response<List<OrganizationReadDTO>>> GetAllOrganizations(PaginationFilter validFilter);
         Task<Response<List<OrganizationInvitationDTO>>> OrganizationInviteRequests(int userId, PaginationFilter validFilter);
         Task<Response<bool>> ToggleInviteRequest(int userId, ToggleInviteDTO model);
+        Task<Response<string>> LeaveOrganization(int userId);
     }
 }
