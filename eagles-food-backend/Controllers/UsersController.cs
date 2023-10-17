@@ -113,7 +113,7 @@ namespace eagles_food_backend.Controllers
         {
             if (int.TryParse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value, out int id))
             {
-                var validFilter = new PaginationFilter(filter.PageNumber, filter.PageSize);
+                var validFilter = new PaginationFilter(filter.PageNumber, filter.PageSize, filter.SearchTerm);
                 var response = await _userService.GetAllUsersByOrganization(id, validFilter);
                 return StatusCode((int)response.statusCode, response);
             }
@@ -125,7 +125,7 @@ namespace eagles_food_backend.Controllers
         {
             if (int.TryParse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value, out int id))
             {
-                var validFilter = new PaginationFilter(filter.PageNumber, filter.PageSize);
+                var validFilter = new PaginationFilter(filter.PageNumber, filter.PageSize, filter.SearchTerm);
                 var response = await _userService.GetAllUsersOutsideOrganization(id, validFilter);
                 return StatusCode((int)response.statusCode, response);
             }
