@@ -11,12 +11,12 @@ namespace eagles_food_backend.Services.UriService
         {
             _baseUri = baseUri;
         }
-        public Uri GetPageUri(PaginationFilter filter, string route, string? searchTerm = null)
+        public Uri GetPageUri(PaginationFilter filter, string route)
         {
             var _endpointUri = new Uri(string.Concat(_baseUri, route));
-            var modifiedUri = string.IsNullOrEmpty(searchTerm)
+            var modifiedUri = string.IsNullOrEmpty(filter.SearchTerm)
                 ? _endpointUri.ToString()
-                : QueryHelpers.AddQueryString(_endpointUri.ToString(), "searchTerm", searchTerm);
+                : QueryHelpers.AddQueryString(_endpointUri.ToString(), "searchTerm", filter.SearchTerm);
             modifiedUri = QueryHelpers.AddQueryString(modifiedUri.ToString(), "pageNumber", filter.PageNumber.ToString());
             modifiedUri = QueryHelpers.AddQueryString(modifiedUri, "pageSize", filter.PageSize.ToString());
 

@@ -776,7 +776,7 @@ namespace eagles_food_backend.Services
                  .ToListAsync();
                 var orgsCount = await orgsQuery.CountAsync();
                 var orgsDTO = _mapper.Map<List<OrganizationReadDTO>>(orgs);
-                return PaginationHelper.CreatePagedReponse(orgsDTO, validFilter, orgsCount, _uriService, route, message: "Organizations returned successfully", searchTerm: validFilter.SearchTerm);
+                return PaginationHelper.CreatePagedReponse(orgsDTO, validFilter, orgsCount, _uriService, route, message: "Organizations returned successfully");
             }
             catch (Exception)
             {
