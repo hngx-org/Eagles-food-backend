@@ -247,7 +247,7 @@ namespace eagles_food_backend.Controllers
         {
             if (int.TryParse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value, out int id))
             {
-                var validFilter = new PaginationFilter(filter.PageNumber, filter.PageSize);
+                var validFilter = new PaginationFilter(filter.PageNumber, filter.PageSize, filter.SearchTerm);
                 var response = await _organizationService.OrganizationInvites(id, validFilter);
                 return StatusCode((int)response.statusCode, response);
             }
@@ -331,6 +331,18 @@ namespace eagles_food_backend.Controllers
             var validFilter = new PaginationFilter(filter.PageNumber, filter.PageSize, filter.SearchTerm);
             var response = await _organizationService.GetAllOrganizations(validFilter);
             return StatusCode((int)response.statusCode, response);
+        }
+
+        [HttpGet("leave")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<IActionResult> LeaveOrganization()
+        {
+            if (int.TryParse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value, out int id))
+            {
+                var response = await _organizationService.LeaveOrganization(id);
+                return StatusCode((int)response.statusCode, response);
+            }
+            else return BadRequest();
         }
     }
 }
