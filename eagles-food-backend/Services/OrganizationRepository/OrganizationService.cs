@@ -414,7 +414,10 @@ namespace eagles_food_backend.Services
             }
             List<User>? users = await _context.Users.Where(x => x.Email != user.Email && x.IsAdmin == false).ToListAsync();
             var organizationInviteRequestQuery = _context.OrganizationInvites
-                .Where(x => x.OrgId == user.OrgId)
+                .Where(x => (x.OrgId == user.OrgId) &&
+                                    (string.IsNullOrEmpty(validFilter.SearchTerm)
+                                    || (x.Email.Contains(validFilter.SearchTerm)
+                                   )))
                 .Select(x => new OrganizationInvitationDTO()
                 {
                     CreatedAt = x.CreatedAt,
@@ -467,7 +470,10 @@ namespace eagles_food_backend.Services
             }
             List<User>? users = await _context.Users.Where(x => x.Email != user.Email && x.IsAdmin == false).ToListAsync();
             var organizationInviteRequestQuery = _context.InvitationRequests
-                .Where(x => x.OrgId == user.OrgId && x.Status != true)
+                .Where(x => (x.OrgId == user.OrgId && x.Status != true) &&
+                                    (string.IsNullOrEmpty(validFilter.SearchTerm)
+                                    || (x.UserEmail.Contains(validFilter.SearchTerm)
+                                   )))
                 .Select(x => new OrganizationInvitationDTO()
                 {
                     CreatedAt = x.CreatedAt,
@@ -789,6 +795,75 @@ namespace eagles_food_backend.Services
                 };
             }
 
+        }
+
+        public async Task<Response<string>> LeaveOrganization(int userId)
+        {
+            User? user = await _context.Users.FindAsync(userId);
+
+            try
+            {
+                //Check that user exists
+                if (user is null)
+                {
+                    return new Response<string>()
+                    {
+                        success = false,
+                        message = "User not found",
+                        statusCode = HttpStatusCode.NotFound,
+                        data = null
+                    };
+                }
+
+                //Check that the user is not admin
+                if (user.IsAdmin == true)
+                {
+                    return new Response<string>()
+                    {
+                        success = false,
+                        message = "Admin cannot leave organization",
+                        statusCode = HttpStatusCode.Unauthorized,
+                        data = null
+                    };
+                }
+
+                var orgID = user.OrgId;
+                var org = await _context.Organizations.FindAsync(orgID);
+
+                //Check that organization exists
+                if (org is null)
+                {
+                    return new Response<string>()
+                    {
+                        success = false,
+                        message = "Organization does not exist",
+                        statusCode = HttpStatusCode.BadRequest
+                    };
+                }
+
+                //Remove user from the organization and save changes
+                user.Org = null;
+                user.OrgId = null;
+                _context.Update(user);
+                await _context.SaveChangesAsync();
+                return new Response<string>()
+                {
+                    success = true,
+                    message = "Successful Operation",
+                    statusCode = HttpStatusCode.OK,
+                    data = "Success"
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return new Response<string>()
+                {
+                    success = false,
+                    message = "Internal Server Error",
+                    statusCode = HttpStatusCode.InternalServerError
+                };
+            }
         }
     }
 }
