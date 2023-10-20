@@ -69,6 +69,9 @@ namespace eagles_food_backend.Controllers
             return StatusCode((int)response.statusCode, response);
         }
 
+        /// <summary>
+        /// Get lunch balance of logged in user
+        /// </summary>
         [HttpGet("lunch-balance")]
         public async Task<ActionResult> GetLunchBalance()
         {
