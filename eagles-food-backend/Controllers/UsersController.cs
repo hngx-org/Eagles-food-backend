@@ -1,4 +1,17 @@
 ﻿// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
+
+using Asp.Versioning;
+
+using eagles_food_backend.Domains.DTOs;
+using eagles_food_backend.Domains.Filters;
+using eagles_food_backend.Services.UserServices;
+
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
 namespace eagles_food_backend.Controllers
 {
     [Route("api/v{version:apiVersion}/user")]
