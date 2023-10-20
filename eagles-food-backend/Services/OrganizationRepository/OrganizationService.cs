@@ -845,6 +845,12 @@ namespace eagles_food_backend.Services
                 user.Org = null;
                 user.OrgId = null;
                 _context.Update(user);
+                var invite = await _context.OrganizationInvites.FirstOrDefaultAsync(x=>x.OrgId == orgID && x.Email == user.Email);
+                if(invite != default)
+                    _context.Remove(invite);
+                var request = await _context.InvitationRequests.FirstOrDefaultAsync(x => x.OrgId == orgID && x.UserEmail == user.Email);
+                if (request != default)
+                    _context.Remove(request);
                 await _context.SaveChangesAsync();
                 return new Response<string>()
                 {
