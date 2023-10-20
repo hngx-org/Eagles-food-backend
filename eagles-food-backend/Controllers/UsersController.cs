@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
+using Asp.Versioning;
+
 using eagles_food_backend.Domains.DTOs;
 using eagles_food_backend.Domains.Filters;
 using eagles_food_backend.Services.UserServices;
@@ -11,8 +13,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace eagles_food_backend.Controllers
 {
-    [Route("api/user")]
+    [Route("api/v{version:apiVersion}/user")]
     [ApiController]
+    [ApiVersion(1.0)]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class UsersController : ControllerBase
     {
