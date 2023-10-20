@@ -128,5 +128,4 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 Console.WriteLine("Connected to db: " + connectionString);
-
 app.Run();
