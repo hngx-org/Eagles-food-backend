@@ -1,20 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Security.Claims;
-
-using eagles_food_backend.Domains.DTOs;
-using eagles_food_backend.Domains.Filters;
-using eagles_food_backend.Services.UserServices;
-
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-
+﻿// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 namespace eagles_food_backend.Controllers
 {
-    [Route("api/user")]
+    [Route("api/v{version:apiVersion}/user")]
     [ApiController]
+    [ApiVersion(1.0)]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class UsersController : ControllerBase
     {

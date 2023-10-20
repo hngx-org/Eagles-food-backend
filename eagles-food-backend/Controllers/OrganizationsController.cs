@@ -1,9 +1,8 @@
 using System.Security.Claims;
-
+using Asp.Versioning;
 using eagles_food_backend.Domains.DTOs;
 using eagles_food_backend.Domains.Filters;
 using eagles_food_backend.Services.OrganizationRepository;
-
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,7 +10,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace eagles_food_backend.Controllers
 {
     [ApiController]
-    [Route("api/organization")]
+    [Route("api/v{version:apiVersion}/organization")]
+    [ApiVersion(1.0)]
     [Produces("application/json")]
     public class OrganizationsController : ControllerBase
     {

@@ -1,4 +1,6 @@
-﻿using eagles_food_backend.Domains.DTOs;
+﻿using Asp.Versioning;
+
+using eagles_food_backend.Domains.DTOs;
 using eagles_food_backend.Domains.Filters;
 using eagles_food_backend.Services.LunchRepository;
 
@@ -9,7 +11,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace eagles_food_backend.Controllers
 {
     [ApiController]
-    [Route("api/lunch")]
+    [Route("api/v{version:apiVersion}/lunch")]
+    [ApiVersion(1.0)]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class LunchController : ControllerBase
     {
