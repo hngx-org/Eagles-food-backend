@@ -1,8 +1,7 @@
 global using AutoMapper;
-
 using System.Reflection;
 using System.Text;
-
+using Asp.Versioning;
 using eagles_food_backend;
 using eagles_food_backend.Data;
 using eagles_food_backend.Services;
@@ -102,6 +101,17 @@ builder.Services.AddControllersWithViews()
     .AddNewtonsoftJson(options =>
     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
 );
+builder.Services.AddApiVersioning()
+.AddMvc()
+.AddApiExplorer(
+ options =>
+ {
+    // the default is ToString(), but we want "'v'major[.minor][-status]"
+    options.GroupNameFormat = "'v'VVV";
+   // if we have both parts, decided how to format the group
+   // from the example: "Sales - v1"
+   options.FormatGroupName = (group, version) => $"{group} - {version}";
+ });
 
 var app = builder.Build();
 
