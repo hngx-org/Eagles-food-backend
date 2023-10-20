@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace eagles_food_backend.Controllers
 {
     [ApiController]
-    [Route("api/organization")]
+    [Route("api/organizations")]
     [Produces("application/json")]
     public class OrganizationsController : ControllerBase
     {
@@ -242,7 +242,7 @@ namespace eagles_food_backend.Controllers
         /// </summary>
         /// <returns>It returns all the invites a person has unattended to </returns>
         /// <response code="200">Returns the user</response>
-        [HttpGet("organizationinvites")]
+        [HttpGet("organization-invites")]
         public async Task<IActionResult> GetUserInvites([FromQuery] PaginationFilter filter)
         {
             if (int.TryParse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value, out int id))
@@ -260,7 +260,7 @@ namespace eagles_food_backend.Controllers
         /// </summary>
         /// <returns>It returns all the invites a person has unattended to </returns>
         /// <response code="200">Returns the user</response>
-        [HttpGet("organizationinviterequest")]
+        [HttpGet("organization-invite-request")]
         public async Task<IActionResult> GetUserInviteRequests([FromQuery] PaginationFilter filter)
         {
             if (int.TryParse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value, out int id))
@@ -278,7 +278,7 @@ namespace eagles_food_backend.Controllers
         /// </summary>
         /// <returns>it returns the state of the Invite Request </returns>
         /// <response code="200">Returns the user</response>
-        [HttpPost("toggleinvite")]
+        [HttpPost("toggle-invite")]
         public async Task<IActionResult> Invite([FromBody] ToggleInviteDTO model)
         {
             if (int.TryParse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value, out int id))

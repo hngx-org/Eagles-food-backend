@@ -89,7 +89,7 @@ namespace eagles_food_backend.Controllers
         /// <response code="200">Returns the token</response>
         /// <response code="404">If the email or password is incorrect</response>
         /// <response code="500">If there was an error logging in</response>
-        [HttpPost("changePassword")]
+        [HttpPost("change-password")]
         public async Task<ActionResult> ChangePassword([FromBody] ChangePasswordDTO model)
         {
             var res = await _userService.ChangePassword(model);

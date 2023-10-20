@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace eagles_food_backend.Controllers
 {
     [ApiController]
-    [Route("api/lunch")]
+    [Route("api/lunches")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class LunchController : ControllerBase
     {
@@ -103,7 +103,7 @@ namespace eagles_food_backend.Controllers
         /// </remarks>
         /// <param name="withdrawDTO">Request body containing the quantity to bw withdrawn</param>
         /// <returns>A response with 200 and withdrawal amount</returns>
-        [HttpPost("withdrawlunch")]
+        [HttpPost("withdraw-lunch")]
         public async Task<ActionResult> WithdrawLunch([FromBody] WithdrawLunchDTO withdrawDTO)
         {
             var response = await _lunchService.withdrawLunch(withdrawDTO);
