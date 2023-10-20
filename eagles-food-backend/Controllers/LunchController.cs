@@ -1,15 +1,17 @@
-﻿using eagles_food_backend.Domains.DTOs;
+﻿using Asp.Versioning;
+
+using eagles_food_backend.Domains.DTOs;
 using eagles_food_backend.Domains.Filters;
 using eagles_food_backend.Services.LunchRepository;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
 namespace eagles_food_backend.Controllers
 {
     [ApiController]
-    [Route("api/lunches")]
+    [Route("api/v{version:apiVersion}/lunches")]
+    [ApiVersion(1.0)]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class LunchController : ControllerBase
     {
@@ -69,6 +71,9 @@ namespace eagles_food_backend.Controllers
             return StatusCode((int)response.statusCode, response);
         }
 
+        /// <summary>
+        /// Get lunch balance of logged in user
+        /// </summary>
         [HttpGet("lunch-balance")]
         public async Task<ActionResult> GetLunchBalance()
         {

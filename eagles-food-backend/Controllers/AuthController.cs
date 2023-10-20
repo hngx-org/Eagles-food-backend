@@ -1,3 +1,5 @@
+using Asp.Versioning;
+
 using eagles_food_backend.Domains.DTOs;
 using eagles_food_backend.Services.UserServices;
 
@@ -6,7 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace eagles_food_backend.Controllers
 {
     [ApiController]
-    [Route("api/auth")]
+    [Route("api/v{version:apiVersion}/auth")]
+    [ApiVersion(1.0)]
     [Produces("application/json")]
     public class AuthController : ControllerBase
     {
@@ -96,6 +99,9 @@ namespace eagles_food_backend.Controllers
             return StatusCode((int)res.statusCode, res);
         }
 
+        /// <summary>
+        /// Initiate a forgot password process
+        /// </summary>
         [HttpPost("forgot-password")]
         public async Task<ActionResult> ForgotPassword([FromBody] ForgotPasswordDTO passwordDto)
         {
@@ -103,6 +109,9 @@ namespace eagles_food_backend.Controllers
             return StatusCode((int)res.statusCode, res);
         }
 
+        /// <summary>
+        /// Complete the forgot password by providing a new password
+        /// </summary>
         [HttpPost("reset-password")]
         public async Task<ActionResult> ResetPassword([FromBody] ResetPasswordDTO resetDto)
         {
@@ -110,6 +119,9 @@ namespace eagles_food_backend.Controllers
             return StatusCode((int)res.statusCode, res);
         }
 
+        /// <summary>
+        /// Validate the token sent to user email
+        /// </summary>
         [HttpGet("verify-reset-token")]
         public async Task<ActionResult> VerifyResetToken([FromQuery] string email, [FromQuery] string token)
         {

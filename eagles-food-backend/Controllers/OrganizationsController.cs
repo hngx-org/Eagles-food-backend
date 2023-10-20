@@ -1,5 +1,7 @@
 using System.Security.Claims;
 
+using Asp.Versioning;
+
 using eagles_food_backend.Domains.DTOs;
 using eagles_food_backend.Domains.Filters;
 using eagles_food_backend.Services.OrganizationRepository;
@@ -7,11 +9,11 @@ using eagles_food_backend.Services.OrganizationRepository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
 namespace eagles_food_backend.Controllers
 {
     [ApiController]
-    [Route("api/organizations")]
+    [Route("api/v{version:apiVersion}/organizations")]
+    [ApiVersion(1.0)]
     [Produces("application/json")]
     public class OrganizationsController : ControllerBase
     {
@@ -325,7 +327,11 @@ namespace eagles_food_backend.Controllers
             }
         }
 
+        /// <summary>
+        /// Get all organizations
+        /// </summary>
         [HttpGet("all")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> GetAllOrganizations([FromQuery] PaginationFilter filter)
         {
             var validFilter = new PaginationFilter(filter.PageNumber, filter.PageSize, filter.SearchTerm);
@@ -333,6 +339,9 @@ namespace eagles_food_backend.Controllers
             return StatusCode((int)response.statusCode, response);
         }
 
+        /// <summary>
+        /// Leave the organization of the authenticated user
+        /// </summary>
         [HttpGet("leave")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> LeaveOrganization()
