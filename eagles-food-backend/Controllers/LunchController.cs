@@ -7,11 +7,10 @@ using eagles_food_backend.Services.LunchRepository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
 namespace eagles_food_backend.Controllers
 {
     [ApiController]
-    [Route("api/v{version:apiVersion}/lunch")]
+    [Route("api/v{version:apiVersion}/lunches")]
     [ApiVersion(1.0)]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class LunchController : ControllerBase
@@ -109,7 +108,7 @@ namespace eagles_food_backend.Controllers
         /// </remarks>
         /// <param name="withdrawDTO">Request body containing the quantity to bw withdrawn</param>
         /// <returns>A response with 200 and withdrawal amount</returns>
-        [HttpPost("withdrawlunch")]
+        [HttpPost("withdraw-lunch")]
         public async Task<ActionResult> WithdrawLunch([FromBody] WithdrawLunchDTO withdrawDTO)
         {
             var response = await _lunchService.withdrawLunch(withdrawDTO);
