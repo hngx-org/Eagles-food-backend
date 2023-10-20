@@ -325,7 +325,11 @@ namespace eagles_food_backend.Controllers
             }
         }
 
+        /// <summary>
+        /// Get all organizations
+        /// </summary>
         [HttpGet("all")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> GetAllOrganizations([FromQuery] PaginationFilter filter)
         {
             var validFilter = new PaginationFilter(filter.PageNumber, filter.PageSize, filter.SearchTerm);
@@ -333,6 +337,9 @@ namespace eagles_food_backend.Controllers
             return StatusCode((int)response.statusCode, response);
         }
 
+        /// <summary>
+        /// Leave the organization of the authenticated user
+        /// </summary>
         [HttpGet("leave")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> LeaveOrganization()

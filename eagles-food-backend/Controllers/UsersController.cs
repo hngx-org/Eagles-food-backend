@@ -1,15 +1,16 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
+
 using Asp.Versioning;
 
 using eagles_food_backend.Domains.DTOs;
 using eagles_food_backend.Domains.Filters;
 using eagles_food_backend.Services.UserServices;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace eagles_food_backend.Controllers
 {
@@ -93,6 +94,9 @@ namespace eagles_food_backend.Controllers
             return BadRequest();
         }
 
+        /// <summary>
+        /// Upload profile picture
+        /// </summary>
         [HttpPost("photo")]
         public async Task<IActionResult> UpdatePhoto([Required] IFormFile file)
         {
@@ -106,7 +110,7 @@ namespace eagles_food_backend.Controllers
         }
 
         /// <summary>
-        /// Get all users
+        /// Get all users in authenticated user's organization
         /// </summary>
         /// <returns>A response containing all the users divided by whether they're in the callers org. or not</returns>
         [HttpGet("all")]
@@ -121,6 +125,9 @@ namespace eagles_food_backend.Controllers
             else return BadRequest();
         }
 
+        /// <summary>
+        /// Get all users outside authenticated user's organization
+        /// </summary>
         [HttpGet("others")]
         public async Task<IActionResult> GetUsersForOtherOrganizations([FromQuery] PaginationFilter filter)
         {
@@ -145,7 +152,7 @@ namespace eagles_food_backend.Controllers
             var response = await _userService.SearchForUser(email);
             return StatusCode((int)response.statusCode, response);
         }
-        
+
         /// <summary>
         /// Search for a user by their name
         /// </summary>
