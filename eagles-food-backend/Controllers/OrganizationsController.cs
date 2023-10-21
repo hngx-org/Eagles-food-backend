@@ -27,11 +27,11 @@ namespace eagles_food_backend.Controllers
         }
 
         /// <summary>
-        /// Get an organization
+        /// Get my organization as a logged in admin
         /// </summary>
         /// <returns>The Organization of the Logged in User</returns>
         /// <response code="200">Returns the Organization of Logged In user</response>
-        [HttpGet]
+        [HttpGet("me")]
         public async Task<IActionResult> GetOrganization()
         {
             if (HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value != "admin")
@@ -99,7 +99,7 @@ namespace eagles_food_backend.Controllers
         /// <response code="400">If staff doesnt belong to an org</response>
         /// <response code="404">If unauthorised</response>        
         /// <response code="500">If there was an error creating the staff</response>        
-        [HttpPut("modify")]
+        [HttpPut]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> ModifyOrganization([FromBody] ModifyOrganizationDTO model)
         {
@@ -179,7 +179,7 @@ namespace eagles_food_backend.Controllers
         ///  <response code="404">If unauthorised</response>
         ///  <response code="500">If there was an error updating</response>
         ///  <response code="401">If unauthorised</response>
-        [HttpPatch("lunch/update")]
+        [HttpPatch("lunch")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 
         public async Task<IActionResult> UpdateOrganizationLunchPrice([FromBody] UpdateOrganizationLunchPriceDTO model)
@@ -219,7 +219,7 @@ namespace eagles_food_backend.Controllers
         ///  <response code="404">If unauthorised</response>
         ///  <response code="500">If there was an error </response>
         ///  <response code="401">If unauthorised</response>
-        [HttpPost("invite")]
+        [HttpPost("invites")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> InviteToOrganization([FromBody] InviteToOrganizationDTO model)
         {
@@ -240,11 +240,11 @@ namespace eagles_food_backend.Controllers
         }
 
         /// <summary>
-        /// This end point is for orgnizations to see all thier invites
+        /// This end point is for organizations to see all their pending invites
         /// </summary>
         /// <returns>It returns all the invites a person has unattended to </returns>
         /// <response code="200">Returns the user</response>
-        [HttpGet("organization-invites")]
+        [HttpGet("pending-invites")]
         public async Task<IActionResult> GetUserInvites([FromQuery] PaginationFilter filter)
         {
             if (int.TryParse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value, out int id))
@@ -258,11 +258,11 @@ namespace eagles_food_backend.Controllers
 
 
         /// <summary>
-        /// This end point is for organization to see all invites request for thier account
+        /// This end point is for organization to see all invites request for their account
         /// </summary>
         /// <returns>It returns all the invites a person has unattended to </returns>
         /// <response code="200">Returns the user</response>
-        [HttpGet("organization-invite-request")]
+        [HttpGet("invite-requests")]
         public async Task<IActionResult> GetUserInviteRequests([FromQuery] PaginationFilter filter)
         {
             if (int.TryParse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value, out int id))
@@ -292,7 +292,7 @@ namespace eagles_food_backend.Controllers
         }
 
         /// <summary>
-        /// Hides an Organization
+        /// Hides an Organization: set the query string ?hidden=true to hide the organization.
         /// </summary>
         /// <remarks>
         /// Sample request:
@@ -300,16 +300,15 @@ namespace eagles_food_backend.Controllers
         /// POST api/organizations/{status}
         /// </code>
         /// </remarks>
-        ///  <param name="model">The request body with the details</param>
         ///  <returns>nothing</returns>
         ///  <response code="200">Returns success</response>
         ///  <response code="400">If valudation fails</response>
         ///  <response code="404">If unauthorised</response>
         ///  <response code="500">If there was an error </response>
         ///  <response code="401">If unauthorised</response>
-        [HttpGet("invite/{hide}")]
+        [HttpGet("set-status")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        public async Task<IActionResult> HideOrganization(bool hide)
+        public async Task<IActionResult> HideOrganization([FromQuery(Name = "hidden")] bool hide)
         {
             if (HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value != "admin")
             {
@@ -330,7 +329,7 @@ namespace eagles_food_backend.Controllers
         /// <summary>
         /// Get all organizations
         /// </summary>
-        [HttpGet("all")]
+        [HttpGet]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> GetAllOrganizations([FromQuery] PaginationFilter filter)
         {

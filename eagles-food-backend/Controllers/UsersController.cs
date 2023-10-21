@@ -84,7 +84,7 @@ namespace eagles_food_backend.Controllers
         /// </summary>
         /// <param name="model"></param>
         /// <returns>The updated user details</returns>
-        [HttpPut("update")]
+        [HttpPut]
         public async Task<IActionResult> UpdateUser([FromForm] UpdateUserDTO model)
         {
             if (int.TryParse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value, out int id))
@@ -168,11 +168,11 @@ namespace eagles_food_backend.Controllers
         }
 
         /// <summary>
-        /// This end point is for users to see all thier pending invites
+        /// This end point is for users to see all their pending invites
         /// </summary>
         /// <returns>It returns all the invites a person has unattended to </returns>
         /// <response code="200">Returns the user</response>
-        [HttpGet("user-invites")]
+        [HttpGet("pending-invites")]
         public async Task<IActionResult> GetUserInvites()
         {
             if (int.TryParse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value, out int id))
@@ -201,8 +201,7 @@ namespace eagles_food_backend.Controllers
         }
 
         /// <summary>
-        /// This end point is for users accept invites
-        /// send true for yes(acceptance) and false for no(rejection)
+        /// Endpoint for the user to request to join organization
         /// </summary>
         /// <returns>It returns all the invites a person has unattended to </returns>
         /// <response code="200">Returns the user</response>
