@@ -38,7 +38,7 @@ namespace eagles_food_backend.Controllers
         /// </remarks>
         /// <param name="model">Request body containing a note, the quantity and the receivers id</param>
         /// <returns>A response with 201 and a message</returns>
-        [HttpPost("send")]
+        [HttpPost]
         public async Task<ActionResult> CreateLunch([FromBody] CreateLunchDTO model)
         {
             var response = await _lunchService.create(model);
@@ -49,7 +49,7 @@ namespace eagles_food_backend.Controllers
         /// Gets all lunch
         /// </summary>
         /// <returns>A response with 200 and a list of the lunches</returns>
-        [HttpGet("all")]
+        [HttpGet]
         public async Task<ActionResult> GetAllLunches([FromQuery] PaginationFilter filter)
         {
 
